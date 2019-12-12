@@ -38,6 +38,7 @@ pub const KEY_8: KEY = ('8', '*');
 pub const KEY_9: KEY = ('9', '(');
 pub const KEY_0: KEY = ('0', ')');
 
+pub const KEY_TILDA: KEY = ('`', '~');
 pub const KEY_DASH: KEY  = ('-', '_');
 pub const KEY_PLUS: KEY  = ('+', '=');
 pub const KEY_SQ_O: KEY  = ('[', '{');
