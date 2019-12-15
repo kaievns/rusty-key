@@ -1,14 +1,12 @@
 mod source;
-mod ui;
-mod layout;
-mod keys;
+mod keyboard;
 
 
 fn main() -> Result<(), std::io::Error> {
   let data = source::load(String::from("text"))?;
   println!("Loaded text: {:}", data.len());
 
-  ui::render()?;
+  println!("QUERTY: {:?}", keyboard::Keyboard::querty());
 
   Ok(())
 }

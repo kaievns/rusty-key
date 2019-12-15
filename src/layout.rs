@@ -1,119 +1,100 @@
-#[path = "keys.rs"]
-mod keys;
-use keys::*;
+#[derive(Debug)]
+pub struct Key {
+  pub normal: String,
+  pub shifted: String,
+  pub row: usize,
+  pub finger: usize,
+  pub hand: bool
+}
 
-pub type Layout = Vec<KEY>;
+pub type Layout = Vec<Key>;
 
-pub fn parse(layout: String) -> Vec<KEY> {
-  let mut stack = Vec::new();
+pub const QUERTY: &'static str = "
+  ~ ! @ # $ % ^ & * ( ) _ +
+  ` 1 2 3 4 5 6 7 8 9 0 - =
+    Q W E R T Y U I O P { } |
+    q w e r t y u i o p [ ] \\
+    A S D F G H J K L : \"
+    a s d f g h j k l ; '
+      Z X C V B N M < > ?
+      z x c v b n m , . /
+";
 
-  for symbol in layout.chars() {
-    match symbol {
-      'a' => stack.push(KEY_A),
-      'b' => stack.push(KEY_B),
-      'c' => stack.push(KEY_C),
-      'd' => stack.push(KEY_D),
-      'e' => stack.push(KEY_E),
-      'f' => stack.push(KEY_F),
-      'g' => stack.push(KEY_G),
-      'h' => stack.push(KEY_H),
-      'i' => stack.push(KEY_I),
-      'j' => stack.push(KEY_J),
-      'k' => stack.push(KEY_K),
-      'm' => stack.push(KEY_M),
-      'n' => stack.push(KEY_N),
-      'l' => stack.push(KEY_L),
-      'o' => stack.push(KEY_O),
-      'p' => stack.push(KEY_P),
-      'q' => stack.push(KEY_Q),
-      'r' => stack.push(KEY_R),
-      's' => stack.push(KEY_S),
-      't' => stack.push(KEY_T),
-      'u' => stack.push(KEY_U),
-      'v' => stack.push(KEY_V),
-      'w' => stack.push(KEY_W),
-      'x' => stack.push(KEY_X),
-      'y' => stack.push(KEY_Y),
-      'z' => stack.push(KEY_Z),
+pub fn parse(layout: String) -> Layout {
+  let mut keys: Layout = vec![];
 
-      '1' => stack.push(KEY_1),
-      '2' => stack.push(KEY_2),
-      '3' => stack.push(KEY_3),
-      '4' => stack.push(KEY_4),
-      '5' => stack.push(KEY_5),
-      '6' => stack.push(KEY_6),
-      '7' => stack.push(KEY_7),
-      '8' => stack.push(KEY_8),
-      '9' => stack.push(KEY_9),
-      '0' => stack.push(KEY_0),
+  let mut upper_line = "".to_string();
+  
+  for (i, line) in layout.trim().lines().enumerate() {
+    if i % 2 == 0 {
+      upper_line = line.trim().to_string();
+    } else {
+      let lower_line = line.trim().to_string();
 
-      '`' => stack.push(KEY_TILDA), 
-      '-' => stack.push(KEY_DASH), 
-      '+' => stack.push(KEY_PLUS), 
-      '[' => stack.push(KEY_SQ_O), 
-      ']' => stack.push(KEY_SQ_C), 
-      '\\' => stack.push(KEY_COLON),
-      ';' => stack.push(KEY_SEMI), 
-      '\'' => stack.push(KEY_QUOTE),
-      ',' => stack.push(KEY_COMA), 
-      '.' => stack.push(KEY_DOT), 
-      '/' => stack.push(KEY_SLASH),
+      let ups = upper_line.split_whitespace();
+      let lows = lower_line.split_whitespace();
+      let row = 4 - (i - 1) / 2; // as in keyboard row
 
-      _ => {},
+      for (i, (up, low)) in ups.zip(lows).enumerate() {
+        let (hand, finger) = hand_and_finger(row, i);
+        let key = Key { normal: low.to_string(), shifted: up.to_string(), row, hand, finger };
+
+        keys.push(key);
+      }
     }
   }
 
-  stack
+  keys
 }
 
 pub fn print(layout: Layout) -> String {
   let mut string = "".to_string();
 
   for (i, key) in layout.iter().enumerate() {
-    string = format!("{} {}", string, key.0);
+    string = format!("{} {}", string, key.normal);
 
-    match (i) {
-      11 => string = format!("{}\n  ", string),
-      24 => string = format!("{}\n  ", string),
-      35 => string = format!("{}\n   ", string),
+    match i {
+      12 => string = format!("{}\n  ", string),
+      25 => string = format!("{}\n  ", string),
+      36 => string = format!("{}\n   ", string),
       _ => {}
     }
-    // println!("{} {:?}", i, key)
   }
 
   string
 }
 
+fn hand_and_finger(row: usize, i: usize) -> (bool, usize) {
+  let mut hand = false;
+  let mut finger = 0;
+
+  (hand, finger)
+}
+
 #[cfg(test)]
 mod test {
   use super::*;
-  use keys::*;
 
   #[test]
   fn it_parses() {
-    let layout = "
-      s h n t
-    ";
-    let result = parse(layout.to_string());
+    let layout = parse(QUERTY.to_string());
 
-    assert_eq!(result, vec![KEY_S, KEY_H, KEY_N, KEY_T])
+    assert_eq!(format!("{:?}", layout[13]), format!("{:?}", Key {
+      normal: "q".to_string(),
+      shifted: "Q".to_string(),
+      row: 3,
+      finger: 0,
+      hand: false
+    }));
   }
 
   #[test]
   fn it_prints() {
-    let qwerty = "
-    ` 1 2 3 4 5 6 7 8 9 0 - =
-      q w e r t y u i o p [ ] \\
-      a s d f g h j k l ; '
-        z x c v b n m , . /
-    ".to_string();
-
-
-    let layout = parse(qwerty);
+    let layout = parse(QUERTY.to_string());
     let result = print(layout);
 
     println!("{}", result);
 
-    assert_eq!(result, " ` 1 2 3 4 5 6 7 8 9 0 -\n   q w e r t y u i o p [ ] \\\n   a s d f g h j k l ; \'\n    z x c v b n m , . /")
+    assert_eq!(result, " ` 1 2 3 4 5 6 7 8 9 0 - =\n   q w e r t y u i o p [ ] \\\n   a s d f g h j k l ; \'\n    z x c v b n m , . /")
   }
 }
