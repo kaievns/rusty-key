@@ -1,3 +1,7 @@
+#[path = "config.rs"]
+mod config;
+use config::*;
+
 #[derive(Debug)]
 pub struct Key {
   pub normal: String,
@@ -64,13 +68,6 @@ pub fn print(layout: Layout) -> String {
   string
 }
 
-fn hand_and_finger(row: usize, i: usize) -> (bool, usize) {
-  let mut hand = false;
-  let mut finger = 0;
-
-  (hand, finger)
-}
-
 #[cfg(test)]
 mod test {
   use super::*;
@@ -83,7 +80,23 @@ mod test {
       normal: "q".to_string(),
       shifted: "Q".to_string(),
       row: 3,
-      finger: 0,
+      finger: 1,
+      hand: false
+    }));
+
+    assert_eq!(format!("{:?}", layout[27]), format!("{:?}", Key {
+      normal: "s".to_string(),
+      shifted: "S".to_string(),
+      row: 2,
+      finger: 2,
+      hand: false
+    }));
+
+    assert_eq!(format!("{:?}", layout[39]), format!("{:?}", Key {
+      normal: "c".to_string(),
+      shifted: "C".to_string(),
+      row: 1,
+      finger: 3,
       hand: false
     }));
   }
