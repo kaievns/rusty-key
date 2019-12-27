@@ -1,12 +1,9 @@
-#[path = "layout.rs"]
-mod layout;
-use layout::*;
-
+use crate::layout::*;
 
 #[derive(Debug)]
 pub struct Keyboard {
-  name: String,
-  layout: Layout
+  pub name: String,
+  pub layout: Layout
 }
 
 impl Keyboard {

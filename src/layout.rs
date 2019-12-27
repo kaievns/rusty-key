@@ -1,12 +1,11 @@
-#[path = "config.rs"]
-mod config;
-use config::*;
+use crate::config::*;
 
 #[derive(Debug)]
 pub struct Key {
   pub normal: String,
   pub shifted: String,
   pub row: usize,
+  pub pos: usize,
   pub finger: usize,
   pub hand: bool
 }
@@ -41,7 +40,7 @@ pub fn parse(layout: String) -> Layout {
 
       for (i, (up, low)) in ups.zip(lows).enumerate() {
         let (hand, finger) = hand_and_finger(row, i);
-        let key = Key { normal: low.to_string(), shifted: up.to_string(), row, hand, finger };
+        let key = Key { normal: low.to_string(), shifted: up.to_string(), row, pos: i, hand, finger };
 
         keys.push(key);
       }
@@ -80,6 +79,7 @@ mod test {
       normal: "q".to_string(),
       shifted: "Q".to_string(),
       row: 3,
+      pos: 0,
       finger: 1,
       hand: false
     }));
@@ -88,6 +88,7 @@ mod test {
       normal: "s".to_string(),
       shifted: "S".to_string(),
       row: 2,
+      pos: 1,
       finger: 2,
       hand: false
     }));
@@ -96,6 +97,7 @@ mod test {
       normal: "c".to_string(),
       shifted: "C".to_string(),
       row: 1,
+      pos: 2,
       finger: 3,
       hand: false
     }));
