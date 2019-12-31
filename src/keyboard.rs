@@ -12,11 +12,11 @@ pub struct Keyboard {
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Key {
-  row: usize,
-  hand: bool,
-  finger: usize,
-  shifted: bool,
-  effort: usize
+  pub row: usize,
+  pub hand: bool,
+  pub finger: usize,
+  pub shifted: bool,
+  pub effort: usize
 }
 
 pub type KeyMap = HashMap<String, Key>;
@@ -35,6 +35,10 @@ impl Keyboard {
     let keys = Self::keys_from(&layout);
     
     Keyboard { name, layout, key_map: keys }
+  }
+
+  pub fn key_for(self: &Self, symbol: &String) -> Option<&Key> {
+    self.key_map.get(symbol)
   }
 
   fn name_from(layout: &Layout) -> String {
@@ -148,5 +152,13 @@ mod test {
       Some(&Key { row: 2, hand: true, finger: 1, shifted: false, effort: 11 }), 
       Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 15 })
     ))
+  }
+
+  #[test]
+  fn gives_access_to_keys() {
+    let keyboard = Keyboard::querty();
+
+    assert_eq!(keyboard.key_for(&"q".to_string()), Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_for(&"S".to_string()), Some(&Key { row: 2, hand: false, finger: 2, shifted: true, effort: 11 }));
   }
 }

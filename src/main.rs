@@ -15,7 +15,7 @@ fn main() -> Result<(), std::io::Error> {
   println!("QUERTY: {:?}", querty);
 
   let calculator = Calculator::from(&querty);
-  println!("Score: {:?}", calculator.summary());
+  println!("Score: {:?}", calculator.run(&"Hello world!".to_string()));
 
   Ok(())
 }
