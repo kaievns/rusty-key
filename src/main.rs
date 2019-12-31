@@ -14,7 +14,7 @@ fn main() -> Result<(), std::io::Error> {
   let querty = Keyboard::querty();
   println!("QUERTY: {:?}", querty);
 
-  let calculator = Calculator::from(&querty.layout);
+  let calculator = Calculator::from(&querty);
   println!("Score: {:?}", calculator.summary());
 
   Ok(())

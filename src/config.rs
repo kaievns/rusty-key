@@ -22,6 +22,7 @@ const EFFORTS: Mapping = [
       [07, 08, 10, 06, 10, 04, 02, 05, 05, 03, 0, 0, 0]
 ];
 
+pub const TAB_EFFORT: usize = 15;
 pub const SPACE_EFFORT: usize = 0;
 pub const ENTER_EFFORT: usize = 11;
 const LEFT_SHIFT_EFFORT: usize = 5;

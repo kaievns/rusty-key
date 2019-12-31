@@ -1,16 +1,12 @@
-use crate::config::*;
-
 #[derive(Debug)]
-pub struct Key {
+pub struct Entry {
   pub normal: String,
   pub shifted: String,
   pub row: usize,
-  pub pos: usize,
-  pub finger: usize,
-  pub hand: bool
+  pub pos: usize
 }
 
-pub type Layout = Vec<Key>;
+pub type Layout = Vec<Entry>;
 
 pub const QUERTY: &'static str = "
   ~ ! @ # $ % ^ & * ( ) _ +
@@ -38,9 +34,8 @@ pub fn parse(layout: String) -> Layout {
       let lows = lower_line.split_whitespace();
       let row = 4 - (i - 1) / 2; // as in keyboard row
 
-      for (i, (up, low)) in ups.zip(lows).enumerate() {
-        let (hand, finger) = hand_and_finger(row, i);
-        let key = Key { normal: low.to_string(), shifted: up.to_string(), row, pos: i, hand, finger };
+      for (pos, (up, low)) in ups.zip(lows).enumerate() {
+        let key = Entry { normal: low.to_string(), shifted: up.to_string(), row, pos };
 
         keys.push(key);
       }
@@ -75,31 +70,25 @@ mod test {
   fn it_parses() {
     let layout = parse(QUERTY.to_string());
 
-    assert_eq!(format!("{:?}", layout[13]), format!("{:?}", Key {
+    assert_eq!(format!("{:?}", layout[13]), format!("{:?}", Entry {
       normal: "q".to_string(),
       shifted: "Q".to_string(),
       row: 3,
-      pos: 0,
-      finger: 1,
-      hand: false
+      pos: 0
     }));
 
-    assert_eq!(format!("{:?}", layout[27]), format!("{:?}", Key {
+    assert_eq!(format!("{:?}", layout[27]), format!("{:?}", Entry {
       normal: "s".to_string(),
       shifted: "S".to_string(),
       row: 2,
-      pos: 1,
-      finger: 2,
-      hand: false
+      pos: 1
     }));
 
-    assert_eq!(format!("{:?}", layout[39]), format!("{:?}", Key {
+    assert_eq!(format!("{:?}", layout[39]), format!("{:?}", Entry {
       normal: "c".to_string(),
       shifted: "C".to_string(),
       row: 1,
-      pos: 2,
-      finger: 3,
-      hand: false
+      pos: 2
     }));
   }
 
