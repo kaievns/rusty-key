@@ -1,39 +1,112 @@
+use std::cell::Cell;
+use crate::config::*;
 use crate::keyboard::*;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
-  keyboard: &'a Keyboard
+  keyboard: &'a Keyboard,
+  previous_key: Cell<&'a Key>
 }
 
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Summary {
   pub effort: usize,
-  pub distance: usize
+  pub distance: usize,
+  pub overheads: usize
 }
 
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
-    Calculator { keyboard }
+    let space_key = keyboard.key_for(&" ".to_string()).unwrap();
+
+    Calculator { keyboard, previous_key: Cell::new(space_key) }
   }
 
   pub fn run(self: &Self, text: &String) -> Summary {
     let mut effort: usize = 0;
     let mut distance: usize = 0;
+    let mut overheads: usize = 0;
 
     for symbol in text.chars() {
       let key = self.keyboard.key_for(&symbol.to_string());
 
       match key {
         Some(key) => {
-          effort += key.effort;
           distance += 1;
+          effort += key.effort;
+          
+          if self.same_hand(key) {
+            let penalties = self.same_hand_penalties(key);
+            
+            effort += penalties;
+            overheads += penalties;
+          }
+
+          self.previous_key.set(key);
         },
         None => {},
       }
     }
 
-    Summary { effort, distance }
+    Summary { effort, distance, overheads }
+  }
+
+  fn same_hand_penalties(self: &Self, next_key: &Key) -> usize {
+    let mut penalties = 0;
+    let last_key = self.previous_key.get();
+    
+    if self.same_finger(last_key, next_key) {
+      penalties += SAME_FINGER_PENALTY;
+    }
+
+    if self.bad_starter(last_key) {
+      penalties += BAD_STARTER_PENALTY;
+    }
+    
+    if !self.comfy_combo(last_key, next_key) {
+      match self.row_distance(last_key, next_key) {
+        2 => {
+          penalties += ROW_SKIP_PENALTY;
+        },
+        1 => {
+          penalties += ROW_JUMP_PENALTY;
+        },
+        _ => {}
+      }
+    }
+
+    penalties
+  }
+
+  fn same_hand(self: &Self, key: &Key) -> bool {
+    let previous_key = self.previous_key.get();
+
+    previous_key.hand == key.hand
+  }
+
+  fn same_finger(self: &Self, last_key: &Key, next_key: &Key) -> bool {
+    last_key.finger == next_key.finger
+  }
+
+  fn bad_starter(self: &Self, last_key: &Key) -> bool {
+    // TODO implement me
+    false
+  }
+
+  fn comfy_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
+    // TODO implement me
+    false
+  }
+
+  fn row_distance(self: &Self, last_key: &Key, next_key: &Key) -> usize {
+    if last_key.row == 0 {
+      0 // last key was space
+    } else if last_key.row > next_key.row { 
+      last_key.row - next_key.row 
+    } else { 
+      next_key.row - last_key.row 
+    }
   }
 }
 
@@ -41,16 +114,52 @@ impl Calculator<'_> {
 mod test {
   use super::*;
 
-  #[test]
-  fn calculates_basic() {
-    let text = "Hello world!".to_string();
+  fn run_text(text: &'static str) -> Summary {
     let keyboard = Keyboard::querty();
     let calculator = Calculator::from(&keyboard);
-    let result = calculator.run(&text);
+  
+    calculator.run(&text.to_string())
+  }
 
-    assert_eq!(result, Summary {
-      effort: 48,
-      distance: text.len()
+  #[test]
+  fn calculates_basic() {
+    assert_eq!(run_text("QUwiEOrp"), Summary {
+      effort: 65,
+      distance: 8,
+      overheads: 0
+    })
+  }
+
+  #[test]
+  fn add_up_same_finger_penalty() {
+    let penalty = SAME_FINGER_PENALTY + ROW_JUMP_PENALTY;
+
+    assert_eq!(run_text("fr"), Summary {
+      effort: penalty + 6,
+      distance: 2,
+      overheads: penalty
+    })
+  } 
+
+  #[test]
+  fn penalises_row_jumps() {
+    let penalty = ROW_JUMP_PENALTY;
+
+    assert_eq!(run_text("vd"), Summary {
+      effort: penalty + 6 + 0,
+      distance: 2,
+      overheads: penalty
+    })
+  }
+
+  #[test]
+  fn penalises_row_sips() {
+    let penalty = ROW_SKIP_PENALTY;
+
+    assert_eq!(run_text("vq"), Summary {
+      effort: penalty + 6 + 6,
+      distance: 2,
+      overheads: penalty
     })
   }
 }

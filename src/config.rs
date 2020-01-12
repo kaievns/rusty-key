@@ -28,6 +28,30 @@ pub const ENTER_EFFORT: usize = 11;
 const LEFT_SHIFT_EFFORT: usize = 5;
 const RIGHT_SHIFT_EFFORT: usize = 11;
 
+pub const SAME_FINGER_PENALTY: usize = 100;
+pub const BAD_STARTER_PENALTY: usize = 80;
+pub const ROW_SKIP_PENALTY: usize = 50;
+pub const ROW_JUMP_PENALTY: usize = 30;
+
+pub const COMFIES: &'static str = "
+       we wf     er    re
+
+  as af   sd se sf          fe fw fs fa
+
+                      vd vw vs va
+
+          oi oj
+
+  ji jl j; jo   lk li lj lm    ;l ;j
+
+  mk ml m; mo
+";
+
+pub const BAD_STARTES: &'static str = "
+  q      t y u     p [ ] \\
+      d   g h   k    '
+    z x c  b n   , . / 
+";
 
 fn find_in_mapping(mapping: Mapping, row: usize, i: usize) -> usize {
   let y = if row < 4 { 4 - row } else { 0 };
