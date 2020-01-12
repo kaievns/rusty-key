@@ -37,8 +37,9 @@ impl Calculator<'_> {
           effort += key.effort;
 
           let previous_key = self.previous_key.get();
+          let same_key = previous_key == key;
           
-          if self.same_hand(previous_key, key) {
+          if !same_key && self.same_hand(previous_key, key) {
             let penalties = self.same_hand_penalties(previous_key, key);
             
             effort += penalties;
@@ -130,7 +131,7 @@ mod test {
   }
 
   #[test]
-  fn add_up_same_finger_penalty() {
+  fn penalises_same_finger_usage() {
     let penalty = SAME_FINGER_PENALTY + ROW_JUMP_PENALTY;
 
     assert_eq!(run_text("fr"), Summary {
@@ -138,7 +139,16 @@ mod test {
       distance: 2,
       overheads: penalty
     })
-  } 
+  }
+
+  #[test]
+  fn does_not_penalise_same_key_usage() {
+    assert_eq!(run_text("ff"), Summary {
+      effort: 0,
+      distance: 2,
+      overheads: 0
+    })
+  }
 
   #[test]
   fn penalises_row_jumps() {
