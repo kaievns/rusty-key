@@ -18,7 +18,7 @@ pub struct Summary {
 
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
-    let space_key = keyboard.key_for(&" ".to_string()).unwrap();
+    let space_key = keyboard.key_for(&' ').unwrap();
 
     Calculator { keyboard, previous_key: Cell::new(space_key) }
   }
@@ -29,15 +29,17 @@ impl Calculator<'_> {
     let mut overheads: usize = 0;
 
     for symbol in text.chars() {
-      let key = self.keyboard.key_for(&symbol.to_string());
+      let key = self.keyboard.key_for(&symbol);
 
       match key {
         Some(key) => {
           distance += 1;
           effort += key.effort;
+
+          let previous_key = self.previous_key.get();
           
-          if self.same_hand(key) {
-            let penalties = self.same_hand_penalties(key);
+          if self.same_hand(previous_key, key) {
+            let penalties = self.same_hand_penalties(previous_key, key);
             
             effort += penalties;
             overheads += penalties;
@@ -52,9 +54,8 @@ impl Calculator<'_> {
     Summary { effort, distance, overheads }
   }
 
-  fn same_hand_penalties(self: &Self, next_key: &Key) -> usize {
+  fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
     let mut penalties = 0;
-    let last_key = self.previous_key.get();
     
     if self.same_finger(last_key, next_key) {
       penalties += SAME_FINGER_PENALTY;
@@ -79,9 +80,7 @@ impl Calculator<'_> {
     penalties
   }
 
-  fn same_hand(self: &Self, key: &Key) -> bool {
-    let previous_key = self.previous_key.get();
-
+  fn same_hand(self: &Self, previous_key: &Key, key: &Key) -> bool {
     previous_key.hand == key.hand
   }
 

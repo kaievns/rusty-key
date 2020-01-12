@@ -19,7 +19,7 @@ pub struct Key {
   pub effort: usize
 }
 
-pub type KeyMap = HashMap<String, Key>;
+pub type KeyMap = HashMap<char, Key>;
 
 impl Keyboard {
   pub fn querty() -> Keyboard {
@@ -37,7 +37,7 @@ impl Keyboard {
     Keyboard { name, layout, key_map: keys }
   }
 
-  pub fn key_for(self: &Self, symbol: &String) -> Option<&Key> {
+  pub fn key_for(self: &Self, symbol: &char) -> Option<&Key> {
     self.key_map.get(symbol)
   }
 
@@ -56,14 +56,14 @@ impl Keyboard {
       let pos = key.pos;
       let (hand, finger) = hand_and_finger(row, pos);
 
-      map.insert(key.normal.to_lowercase(), Key {
+      map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
         shifted: false,
         row,
         hand,
         finger,
         effort: effort_for(row, pos, false)
       });
-      map.insert(key.shifted.to_uppercase(), Key {
+      map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
         shifted: true,
         row,
         hand,
@@ -72,21 +72,21 @@ impl Keyboard {
       });
     }
 
-    map.insert(" ".to_string(), Key {
+    map.insert(' ', Key {
       shifted: false,
       row: 0,
       hand: false,
       finger: 0,
       effort: SPACE_EFFORT
     });
-    map.insert("\n".to_string(), Key {
+    map.insert('\n', Key {
       shifted: false,
       row: 2,
       hand: true,
       finger: 1,
       effort: ENTER_EFFORT
     });
-    map.insert("\t".to_string(), Key {
+    map.insert('\t', Key {
       shifted: false,
       row: 3,
       hand: false,
@@ -124,18 +124,18 @@ mod test {
     let keyboard = Keyboard::querty();
 
     let keys = (
-      keyboard.key_map.get(&"q".to_string()),
-      keyboard.key_map.get(&"S".to_string()),
-      keyboard.key_map.get(&"c".to_string()),
-      keyboard.key_map.get(&"F".to_string()),
-      keyboard.key_map.get(&"t".to_string()),
-      keyboard.key_map.get(&"^".to_string()),
-      keyboard.key_map.get(&"y".to_string()),
-      keyboard.key_map.get(&"J".to_string()),
-      keyboard.key_map.get(&"M".to_string()),
-      keyboard.key_map.get(&" ".to_string()),
-      keyboard.key_map.get(&"\n".to_string()),
-      keyboard.key_map.get(&"\t".to_string())
+      keyboard.key_map.get(&'q'),
+      keyboard.key_map.get(&'S'),
+      keyboard.key_map.get(&'c'),
+      keyboard.key_map.get(&'F'),
+      keyboard.key_map.get(&'t'),
+      keyboard.key_map.get(&'^'),
+      keyboard.key_map.get(&'y'),
+      keyboard.key_map.get(&'J'),
+      keyboard.key_map.get(&'M'),
+      keyboard.key_map.get(&' '),
+      keyboard.key_map.get(&'\n'),
+      keyboard.key_map.get(&'\t')
     );
 
     assert_eq!(keys, (
@@ -158,7 +158,7 @@ mod test {
   fn gives_access_to_keys() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_for(&"q".to_string()), Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_for(&"S".to_string()), Some(&Key { row: 2, hand: false, finger: 2, shifted: true, effort: 11 }));
+    assert_eq!(keyboard.key_for(&'q'), Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_for(&'S'), Some(&Key { row: 2, hand: false, finger: 2, shifted: true, effort: 11 }));
   }
 }
