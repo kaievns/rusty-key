@@ -13,6 +13,7 @@ pub struct Keyboard {
 #[derive(PartialEq)]
 pub struct Key {
   pub row: usize,
+  pub pos: usize,
   pub hand: bool,
   pub finger: usize,
   pub shifted: bool,
@@ -59,6 +60,7 @@ impl Keyboard {
       map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
         shifted: false,
         row,
+        pos,
         hand,
         finger,
         effort: effort_for(row, pos, false)
@@ -66,6 +68,7 @@ impl Keyboard {
       map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
         shifted: true,
         row,
+        pos,
         hand,
         finger,
         effort: effort_for(row, pos, true)
@@ -75,6 +78,7 @@ impl Keyboard {
     map.insert(' ', Key {
       shifted: false,
       row: 0,
+      pos: 0,
       hand: false,
       finger: 0,
       effort: SPACE_EFFORT
@@ -82,6 +86,7 @@ impl Keyboard {
     map.insert('\n', Key {
       shifted: false,
       row: 2,
+      pos: 0,
       hand: true,
       finger: 1,
       effort: ENTER_EFFORT
@@ -89,6 +94,7 @@ impl Keyboard {
     map.insert('\t', Key {
       shifted: false,
       row: 3,
+      pos: 0,
       hand: false,
       finger: 1,
       effort: TAB_EFFORT
@@ -139,18 +145,18 @@ mod test {
     );
 
     assert_eq!(keys, (
-      Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 6 }), 
-      Some(&Key { row: 2, hand: false, finger: 2, shifted: true, effort: 11 }), 
-      Some(&Key { row: 1, hand: false, finger: 3, shifted: false, effort: 10 }), 
-      Some(&Key { row: 2, hand: false, finger: 4, shifted: true, effort: 11 }), 
-      Some(&Key { row: 3, hand: false, finger: 4, shifted: false, effort: 11 }), 
-      Some(&Key { row: 4, hand: true, finger: 4, shifted: true, effort: 28 }), 
-      Some(&Key { row: 3, hand: true, finger: 4, shifted: false, effort: 14 }), 
-      Some(&Key { row: 2, hand: true, finger: 4, shifted: true, effort: 5 }), 
-      Some(&Key { row: 1, hand: true, finger: 4, shifted: true, effort: 7 }), 
-      Some(&Key { row: 0, hand: false, finger: 0, shifted: false, effort: 0 }), 
-      Some(&Key { row: 2, hand: true, finger: 1, shifted: false, effort: 11 }), 
-      Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 15 })
+      Some(&Key { row: 3, pos: 0, hand: false, finger: 1, shifted: false, effort: 6 }), 
+      Some(&Key { row: 2, pos: 1, hand: false, finger: 2, shifted: true, effort: 11 }), 
+      Some(&Key { row: 1, pos: 2, hand: false, finger: 3, shifted: false, effort: 10 }), 
+      Some(&Key { row: 2, pos: 3, hand: false, finger: 4, shifted: true, effort: 11 }), 
+      Some(&Key { row: 3, pos: 4, hand: false, finger: 4, shifted: false, effort: 11 }), 
+      Some(&Key { row: 4, pos: 6, hand: true, finger: 4, shifted: true, effort: 28 }), 
+      Some(&Key { row: 3, pos: 5, hand: true, finger: 4, shifted: false, effort: 14 }), 
+      Some(&Key { row: 2, pos: 6, hand: true, finger: 4, shifted: true, effort: 5 }), 
+      Some(&Key { row: 1, pos: 6, hand: true, finger: 4, shifted: true, effort: 7 }), 
+      Some(&Key { row: 0, pos: 0, hand: false, finger: 0, shifted: false, effort: 0 }), 
+      Some(&Key { row: 2, pos: 0, hand: true, finger: 1, shifted: false, effort: 11 }), 
+      Some(&Key { row: 3, pos: 0, hand: false, finger: 1, shifted: false, effort: 15 })
     ))
   }
 
@@ -158,7 +164,7 @@ mod test {
   fn gives_access_to_keys() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_for(&'q'), Some(&Key { row: 3, hand: false, finger: 1, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_for(&'S'), Some(&Key { row: 2, hand: false, finger: 2, shifted: true, effort: 11 }));
+    assert_eq!(keyboard.key_for(&'q'), Some(&Key { row: 3, pos: 0, hand: false, finger: 1, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_for(&'S'), Some(&Key { row: 2, pos: 1, hand: false, finger: 2, shifted: true, effort: 11 }));
   }
 }

@@ -47,7 +47,7 @@ pub const COMFIES: &'static str = "
   mk ml m; mo
 ";
 
-pub const BAD_STARTES: &'static str = "
+pub const BAD_STARTERS_LIST: &'static str = "
   q      t y u     p [ ] \\
       d   g h   k    '
     z x c  b n   , . / 
