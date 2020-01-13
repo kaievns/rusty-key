@@ -1,14 +1,17 @@
 use std::cell::Cell;
+use std::collections::HashMap;
 use crate::config::*;
 use crate::keyboard::*;
 
 type Coordinate = (usize, usize); // row, pos
+type CoordinateMap = HashMap<Coordinate, Coordinate>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
   previous_key: Cell<&'a Key>,
-  bad_starters: Vec<Coordinate>
+  bad_starters: Vec<Coordinate>,
+  comfies: CoordinateMap
 }
 
 #[derive(Debug)]
@@ -19,26 +22,70 @@ pub struct Summary {
   pub overheads: usize
 }
 
+fn calculate_bad_startes() -> Vec<Coordinate> {
+  let querty = Keyboard::querty();
+  let mut coordinates = vec![];
+
+  for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
+    let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
+
+    coordinates.push((key.row, key.pos));
+  }
+
+  coordinates
+}
+
+fn calculate_comfies() -> CoordinateMap {
+  let querty = Keyboard::querty();
+  let mut map = CoordinateMap::new();
+
+  for pair in COMFIES.trim().split_whitespace() {
+    let mut chars = pair.chars();
+    
+    let first_letter = chars.next().unwrap();
+    let second_letter = chars.next().unwrap();
+
+    let first_key = querty.key_for(&first_letter).unwrap();
+    let second_key = querty.key_for(&second_letter).unwrap();
+
+    map.insert((first_key.row, first_key.pos), (second_key.row, second_key.pos));
+  }
+
+  map
+}
+
+fn same_hand(last_key: &Key, next_key: &Key) -> bool {
+  last_key.hand == next_key.hand
+}
+
+fn same_finger(last_key: &Key, next_key: &Key) -> bool {
+  last_key.finger == next_key.finger
+}
+
+fn same_place(coordinate: &Coordinate, key: &Key) -> bool {
+  let (row, pos) = coordinate;
+
+  key.row == *row && key.pos == *pos
+}
+
+fn row_distance(last_key: &Key, next_key: &Key) -> usize {
+  if last_key.row == 0 {
+    0 // last key was space
+  } else if last_key.row > next_key.row { 
+    last_key.row - next_key.row 
+  } else { 
+    next_key.row - last_key.row 
+  }
+}
+
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
     let space_key = keyboard.key_for(&' ').unwrap();
-    let bad_starters = Self::calculate_bad_startes();
+    let bad_starters = calculate_bad_startes();
+    let comfies = calculate_comfies();
 
-    Calculator { keyboard, previous_key: Cell::new(space_key), bad_starters }
+    Calculator { keyboard, previous_key: Cell::new(space_key), bad_starters, comfies }
   }
-
-  fn calculate_bad_startes() -> Vec<Coordinate> {
-    let querty = Keyboard::querty();
-    let mut coordinates = vec![];
-
-    for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
-      let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
-
-      coordinates.push((key.row, key.pos));
-    }
-
-    coordinates
-  } 
 
   pub fn run(self: &Self, text: &String) -> Summary {
     let mut effort: usize = 0;
@@ -56,7 +103,7 @@ impl Calculator<'_> {
           let previous_key = self.previous_key.get();
           let same_key = previous_key == key;
           
-          if !same_key && self.same_hand(previous_key, key) {
+          if !same_key && same_hand(previous_key, key) {
             let penalties = self.same_hand_penalties(previous_key, key);
             
             effort += penalties;
@@ -75,7 +122,7 @@ impl Calculator<'_> {
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
     let mut penalties = 0;
     
-    if self.same_finger(last_key, next_key) {
+    if same_finger(last_key, next_key) {
       penalties += SAME_FINGER_PENALTY;
     }
 
@@ -84,7 +131,7 @@ impl Calculator<'_> {
     }
     
     if !self.comfy_combo(last_key, next_key) {
-      match self.row_distance(last_key, next_key) {
+      match row_distance(last_key, next_key) {
         2 => {
           penalties += ROW_SKIP_PENALTY;
         },
@@ -98,19 +145,11 @@ impl Calculator<'_> {
     penalties
   }
 
-  fn same_hand(self: &Self, previous_key: &Key, key: &Key) -> bool {
-    previous_key.hand == key.hand
-  }
-
-  fn same_finger(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    last_key.finger == next_key.finger
-  }
-
   fn bad_starter(self: &Self, last_key: &Key) -> bool {
     let mut bad_starter = false;
     
     for coordinate in self.bad_starters.iter() {
-      if self.same_place(coordinate, last_key) {
+      if same_place(coordinate, last_key) {
         bad_starter = true;
         break;
       }
@@ -120,24 +159,16 @@ impl Calculator<'_> {
   }
 
   fn comfy_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    // TODO implement me
-    false
-  }
-
-  fn same_place(self: &Self, coordinate: &Coordinate, key: &Key) -> bool {
-    let (row, pos) = coordinate;
-
-    key.row == *row && key.pos == *pos
-  }
-
-  fn row_distance(self: &Self, last_key: &Key, next_key: &Key) -> usize {
-    if last_key.row == 0 {
-      0 // last key was space
-    } else if last_key.row > next_key.row { 
-      last_key.row - next_key.row 
-    } else { 
-      next_key.row - last_key.row 
+    let mut comfy_combo = false;
+    
+    for (first_coord, second_coord) in self.comfies.iter() {
+      if same_place(first_coord, last_key) && same_place(second_coord, next_key) {
+        comfy_combo = true;
+        break;
+      }
     }
+    
+    comfy_combo
   }
 }
 
@@ -251,6 +282,15 @@ mod test {
       effort: penalty + 6 + 7,
       distance: 2,
       overheads: penalty
+    });
+  }
+
+  #[test]
+  fn doesnt_penalise_comfies_for_row_jumps() {
+    assert_eq!(run_text("as;l"), Summary {
+      effort: 2,
+      distance: 4,
+      overheads: 0
     });
   }
 }
