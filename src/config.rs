@@ -28,6 +28,7 @@ pub const ENTER_EFFORT: usize = 11;
 const LEFT_SHIFT_EFFORT: usize = 5;
 const RIGHT_SHIFT_EFFORT: usize = 11;
 
+pub const SAME_HAND_PENALTY: usize = 5;
 pub const SAME_FINGER_PENALTY: usize = 100;
 pub const BAD_STARTER_PENALTY: usize = 80;
 pub const ROW_SKIP_PENALTY: usize = 50;

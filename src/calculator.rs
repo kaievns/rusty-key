@@ -83,7 +83,7 @@ impl Calculator<'_> {
     let space_key = keyboard.key_for(&' ').unwrap();
     let bad_starters = calculate_bad_startes();
     let comfies = calculate_comfies();
-
+    
     Calculator { keyboard, previous_key: Cell::new(space_key), bad_starters, comfies }
   }
 
@@ -102,8 +102,8 @@ impl Calculator<'_> {
 
           let previous_key = self.previous_key.get();
           let same_key = previous_key == key;
-          
-          if !same_key && same_hand(previous_key, key) {
+
+          if !same_key && previous_key.row != 0 && same_hand(previous_key, key) {
             let penalties = self.same_hand_penalties(previous_key, key);
             
             effort += penalties;
@@ -120,8 +120,8 @@ impl Calculator<'_> {
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
-    let mut penalties = 0;
-    
+    let mut penalties = SAME_HAND_PENALTY;
+
     if same_finger(last_key, next_key) {
       penalties += SAME_FINGER_PENALTY;
     }
@@ -194,7 +194,7 @@ mod test {
 
   #[test]
   fn penalises_same_finger_usage() {
-    let penalty = SAME_FINGER_PENALTY + ROW_JUMP_PENALTY;
+    let penalty = SAME_HAND_PENALTY + SAME_FINGER_PENALTY + ROW_JUMP_PENALTY;
 
     assert_eq!(run_text("fr"), Summary {
       effort: penalty + 6,
@@ -214,7 +214,7 @@ mod test {
 
   #[test]
   fn penalises_row_jumps() {
-    let penalty = ROW_JUMP_PENALTY;
+    let penalty = SAME_HAND_PENALTY + ROW_JUMP_PENALTY;
 
     assert_eq!(run_text("vd"), Summary {
       effort: penalty + 6 + 0,
@@ -225,7 +225,7 @@ mod test {
 
   #[test]
   fn penalises_row_skips() {
-    let penalty = ROW_SKIP_PENALTY;
+    let penalty = SAME_HAND_PENALTY + ROW_SKIP_PENALTY;
 
     assert_eq!(run_text("vq"), Summary {
       effort: penalty + 6 + 6,
@@ -236,10 +236,12 @@ mod test {
 
   #[test]
   fn penalises_bad_starters() {
+    let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY;
+
     assert_eq!(run_text("qw"), Summary {
-      effort: BAD_STARTER_PENALTY + 6 + 2,
+      effort: penalty + 6 + 2,
       distance: 2,
-      overheads: BAD_STARTER_PENALTY
+      overheads: penalty
     });
   }
 
@@ -254,7 +256,7 @@ mod test {
 
   #[test]
   fn adds_extra_penalty_on_bad_starters_and_row_jump() {
-    let penalty = BAD_STARTER_PENALTY + ROW_JUMP_PENALTY;
+    let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_JUMP_PENALTY;
 
     assert_eq!(run_text("qs"), Summary {
       effort: penalty + 6 + 0,
@@ -265,7 +267,7 @@ mod test {
 
   #[test]
   fn adds_extra_penalty_on_bad_starters_and_skip_jump() {
-    let penalty = BAD_STARTER_PENALTY + ROW_SKIP_PENALTY;
+    let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_SKIP_PENALTY;
 
     assert_eq!(run_text("qv"), Summary {
       effort: penalty + 6 + 6,
@@ -276,7 +278,7 @@ mod test {
 
   #[test]
   fn adds_extra_penalty_on_bad_starters_and_same_finger() {
-    let penalty = BAD_STARTER_PENALTY + ROW_SKIP_PENALTY + SAME_FINGER_PENALTY;
+    let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_SKIP_PENALTY + SAME_FINGER_PENALTY;
 
     assert_eq!(run_text("qz"), Summary {
       effort: penalty + 6 + 7,
@@ -287,10 +289,12 @@ mod test {
 
   #[test]
   fn doesnt_penalise_comfies_for_row_jumps() {
+    let penalty = SAME_HAND_PENALTY + SAME_HAND_PENALTY;
+
     assert_eq!(run_text("as;l"), Summary {
-      effort: 2,
+      effort: penalty + 2,
       distance: 4,
-      overheads: 0
+      overheads: penalty
     });
   }
 }
