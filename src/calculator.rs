@@ -19,7 +19,8 @@ pub struct Calculator<'a> {
 pub struct Summary {
   pub effort: usize,
   pub distance: usize,
-  pub overheads: usize
+  pub overheads: usize,
+  pub awkwardness: usize
 }
 
 fn calculate_bad_startes() -> Vec<Coordinate> {
@@ -91,6 +92,7 @@ impl Calculator<'_> {
     let mut effort: usize = 0;
     let mut distance: usize = 0;
     let mut overheads: usize = 0;
+    let mut awkwardness: usize = 0;
 
     for symbol in text.chars() {
       let key = self.keyboard.key_for(&symbol);
@@ -104,10 +106,12 @@ impl Calculator<'_> {
           let same_key = previous_key == key;
 
           if !same_key && previous_key.row != 0 && same_hand(previous_key, key) {
-            let penalties = self.same_hand_penalties(previous_key, key);
+            let same_hand_penalties = self.same_hand_penalties(previous_key, key);
+            let awkwardness_penalty = self.awkward_penalty(previous_key, key);
             
-            effort += penalties;
-            overheads += penalties;
+            effort += same_hand_penalties + awkwardness_penalty;
+            overheads += same_hand_penalties + awkwardness_penalty;
+            awkwardness += awkwardness_penalty;
           }
 
           self.previous_key.set(key);
@@ -116,7 +120,7 @@ impl Calculator<'_> {
       }
     }
 
-    Summary { effort, distance, overheads }
+    Summary { effort, distance, overheads, awkwardness }
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
@@ -124,10 +128,6 @@ impl Calculator<'_> {
 
     if same_finger(last_key, next_key) {
       penalties += SAME_FINGER_PENALTY;
-    }
-
-    if self.bad_starter(last_key) {
-      penalties += BAD_STARTER_PENALTY;
     }
     
     if !self.comfy_combo(last_key, next_key) {
@@ -145,17 +145,17 @@ impl Calculator<'_> {
     penalties
   }
 
-  fn bad_starter(self: &Self, last_key: &Key) -> bool {
-    let mut bad_starter = false;
-    
+  fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key) -> usize {
+    let mut penalties = 0;
+
     for coordinate in self.bad_starters.iter() {
       if same_place(coordinate, last_key) {
-        bad_starter = true;
+        penalties += BAD_STARTER_PENALTY;
         break;
       }
     }
 
-    bad_starter
+    penalties
   }
 
   fn comfy_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
@@ -188,7 +188,8 @@ mod test {
     assert_eq!(run_text("QUwiEOrp"), Summary {
       effort: 65,
       distance: 8,
-      overheads: 0
+      overheads: 0,
+      awkwardness: 0
     })
   }
 
@@ -199,7 +200,8 @@ mod test {
     assert_eq!(run_text("fr"), Summary {
       effort: penalty + 6,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: 0
     })
   }
 
@@ -208,7 +210,8 @@ mod test {
     assert_eq!(run_text("ff"), Summary {
       effort: 0,
       distance: 2,
-      overheads: 0
+      overheads: 0,
+      awkwardness: 0
     })
   }
 
@@ -219,7 +222,8 @@ mod test {
     assert_eq!(run_text("vd"), Summary {
       effort: penalty + 6 + 0,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: 0
     })
   }
 
@@ -230,7 +234,8 @@ mod test {
     assert_eq!(run_text("vq"), Summary {
       effort: penalty + 6 + 6,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: 0
     })
   }
 
@@ -241,7 +246,8 @@ mod test {
     assert_eq!(run_text("qw"), Summary {
       effort: penalty + 6 + 2,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: BAD_STARTER_PENALTY
     });
   }
 
@@ -250,7 +256,8 @@ mod test {
     assert_eq!(run_text("qi"), Summary {
       effort: 6 + 1,
       distance: 2,
-      overheads: 0
+      overheads: 0,
+      awkwardness: 0
     });
   }
 
@@ -261,7 +268,8 @@ mod test {
     assert_eq!(run_text("qs"), Summary {
       effort: penalty + 6 + 0,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: BAD_STARTER_PENALTY
     });
   }
 
@@ -272,7 +280,8 @@ mod test {
     assert_eq!(run_text("qv"), Summary {
       effort: penalty + 6 + 6,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: BAD_STARTER_PENALTY
     });
   }
 
@@ -283,7 +292,8 @@ mod test {
     assert_eq!(run_text("qz"), Summary {
       effort: penalty + 6 + 7,
       distance: 2,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: BAD_STARTER_PENALTY
     });
   }
 
@@ -294,7 +304,8 @@ mod test {
     assert_eq!(run_text("as;l"), Summary {
       effort: penalty + 2,
       distance: 4,
-      overheads: penalty
+      overheads: penalty,
+      awkwardness: 0
     });
   }
 }
