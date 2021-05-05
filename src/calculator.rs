@@ -6,6 +6,9 @@ use crate::keyboard::*;
 type Coordinate = (usize, usize); // row, pos
 type CoordinateMap = HashMap<Coordinate, Coordinate>;
 
+type FingerUsageMap = HashMap<usize, usize>;
+type UsageMap = HashMap<usize, FingerUsageMap>;
+
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
@@ -17,6 +20,7 @@ pub struct Calculator<'a> {
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Summary {
+  pub usage: UsageMap,
   pub effort: usize,
   pub distance: usize,
   pub overheads: usize,
@@ -79,6 +83,13 @@ fn row_distance(last_key: &Key, next_key: &Key) -> usize {
   }
 }
 
+fn record_usage_map(usage: &mut UsageMap, key: &Key) {
+  let rows = usage.entry(key.row).or_insert(FingerUsageMap::new());
+  let count = rows.entry(key.pos).or_insert(0);
+
+  *count += 1;
+}
+
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
     let space_key = keyboard.key_for(&' ').unwrap();
@@ -93,6 +104,7 @@ impl Calculator<'_> {
     let mut distance: usize = 0;
     let mut overheads: usize = 0;
     let mut awkwardness: usize = 0;
+    let mut usage = UsageMap::new();
 
     for symbol in text.chars() {
       let key = self.keyboard.key_for(&symbol);
@@ -101,11 +113,14 @@ impl Calculator<'_> {
         Some(key) => {
           distance += 1;
           effort += key.effort;
+          record_usage_map(&mut usage, key);
 
           let previous_key = self.previous_key.get();
           let same_key = previous_key == key;
+          let changed_row = previous_key.row != 0;
+          let is_row_jumping = !same_key && changed_row;
 
-          if !same_key && previous_key.row != 0 && same_hand(previous_key, key) {
+          if is_row_jumping && same_hand(previous_key, key) {
             let same_hand_penalties = self.same_hand_penalties(previous_key, key);
             let awkwardness_penalty = self.awkward_penalty(previous_key, key);
             
@@ -120,7 +135,7 @@ impl Calculator<'_> {
       }
     }
 
-    Summary { effort, distance, overheads, awkwardness }
+    Summary { effort, distance, overheads, awkwardness, usage }
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
@@ -176,6 +191,18 @@ impl Calculator<'_> {
 mod test {
   use super::*;
 
+  macro_rules! map(
+    { $($key:expr => $value:expr),+ } => {
+        {
+            let mut m = ::std::collections::HashMap::new();
+            $(
+                m.insert($key, $value);
+            )+
+            m
+        }
+     };
+  );
+
   fn run_text(text: &'static str) -> Summary {
     let keyboard = Keyboard::querty();
     let calculator = Calculator::from(&keyboard);
@@ -189,7 +216,19 @@ mod test {
       effort: 65,
       distance: 8,
       overheads: 0,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        3 => map!{
+          0 => 1,
+          1 => 1,
+          2 => 1,
+          3 => 1,
+          6 => 1,
+          7 => 1,
+          8 => 1,
+          9 => 1
+        }
+      }
     })
   }
 
@@ -201,7 +240,11 @@ mod test {
       effort: penalty + 6,
       distance: 2,
       overheads: penalty,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        2 => map! { 3 => 1 },
+        3 => map! { 3 => 1 }
+      }
     })
   }
 
@@ -211,7 +254,10 @@ mod test {
       effort: 0,
       distance: 2,
       overheads: 0,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        2 => map! { 3 => 2 }
+      }
     })
   }
 
@@ -223,7 +269,11 @@ mod test {
       effort: penalty + 6 + 0,
       distance: 2,
       overheads: penalty,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        1 => map!{ 3 => 1 },
+        2 => map!{ 2 => 1 }
+      }
     })
   }
 
@@ -235,7 +285,11 @@ mod test {
       effort: penalty + 6 + 6,
       distance: 2,
       overheads: penalty,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        1 => map! { 3 => 1 },
+        3 => map! { 0 => 1 }
+      }
     })
   }
 
@@ -247,7 +301,10 @@ mod test {
       effort: penalty + 6 + 2,
       distance: 2,
       overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY
+      awkwardness: BAD_STARTER_PENALTY,
+      usage: map! {
+        3 => map!{ 0 => 1, 1 => 1 }
+      }
     });
   }
 
@@ -257,7 +314,10 @@ mod test {
       effort: 6 + 1,
       distance: 2,
       overheads: 0,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        3 => map! { 0 => 1, 7 => 1 }
+      }
     });
   }
 
@@ -269,7 +329,11 @@ mod test {
       effort: penalty + 6 + 0,
       distance: 2,
       overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY
+      awkwardness: BAD_STARTER_PENALTY,
+      usage: map! {
+        3 => map! { 0 => 1 },
+        2 => map! { 1 => 1 }
+      }
     });
   }
 
@@ -281,7 +345,11 @@ mod test {
       effort: penalty + 6 + 6,
       distance: 2,
       overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY
+      awkwardness: BAD_STARTER_PENALTY,
+      usage: map! {
+        3 => map! { 0 => 1 },
+        1 => map! { 3 => 1 }
+      }
     });
   }
 
@@ -293,7 +361,11 @@ mod test {
       effort: penalty + 6 + 7,
       distance: 2,
       overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY
+      awkwardness: BAD_STARTER_PENALTY,
+      usage: map! {
+        3 => map! { 0 => 1 },
+        1 => map! { 0 => 1 }
+      }
     });
   }
 
@@ -305,7 +377,10 @@ mod test {
       effort: penalty + 2,
       distance: 4,
       overheads: penalty,
-      awkwardness: 0
+      awkwardness: 0,
+      usage: map! {
+        2 => map! { 0 => 1, 1 => 1, 9 => 1, 8 => 1 }
+      }
     });
   }
 }

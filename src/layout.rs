@@ -62,6 +62,17 @@ pub fn print(layout: Layout) -> String {
   string
 }
 
+// pub trait Printable {
+//   // fn parse(layout: String) -> Layout;
+//   fn print(&self) -> String;
+// }
+
+// impl Printable for Layout {
+//   fn print(&self) -> String {
+//     print(*self)
+//   }
+// }
+
 #[cfg(test)]
 mod test {
   use super::*;
