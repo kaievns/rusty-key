@@ -4,7 +4,8 @@ use crate::config::*;
 use crate::keyboard::*;
 
 type Coordinate = (usize, usize); // row, pos
-type CoordinateMap = HashMap<Coordinate, Coordinate>;
+type CoordinatePair = (Coordinate, Coordinate);
+type CoordinatePairs = Vec<CoordinatePair>;
 
 type FingerUsageMap = HashMap<usize, usize>;
 type UsageMap = HashMap<usize, FingerUsageMap>;
@@ -14,7 +15,7 @@ pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
   previous_key: Cell<&'a Key>,
   bad_starters: Vec<Coordinate>,
-  comfies: CoordinateMap
+  comfies_map: CoordinatePairs
 }
 
 #[derive(Debug)]
@@ -24,7 +25,8 @@ pub struct Summary {
   pub effort: usize,
   pub distance: usize,
   pub overheads: usize,
-  pub awkwardness: usize
+  pub awkwardness: usize,
+  pub comfiness: usize
 }
 
 fn calculate_bad_startes() -> Vec<Coordinate> {
@@ -40,23 +42,23 @@ fn calculate_bad_startes() -> Vec<Coordinate> {
   coordinates
 }
 
-fn calculate_comfies() -> CoordinateMap {
+fn calculate_comfies() -> CoordinatePairs {
   let querty = Keyboard::querty();
-  let mut map = CoordinateMap::new();
+  let mut pairs = vec![];
 
   for pair in COMFIES.trim().split_whitespace() {
     let mut chars = pair.chars();
-    
+
     let first_letter = chars.next().unwrap();
     let second_letter = chars.next().unwrap();
 
     let first_key = querty.key_for(&first_letter).unwrap();
     let second_key = querty.key_for(&second_letter).unwrap();
 
-    map.insert((first_key.row, first_key.pos), (second_key.row, second_key.pos));
+    pairs.push(((first_key.row, first_key.pos), (second_key.row, second_key.pos)));
   }
 
-  map
+  pairs
 }
 
 fn same_hand(last_key: &Key, next_key: &Key) -> bool {
@@ -94,9 +96,9 @@ impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
     let space_key = keyboard.key_for(&' ').unwrap();
     let bad_starters = calculate_bad_startes();
-    let comfies = calculate_comfies();
+    let comfies_map = calculate_comfies();
     
-    Calculator { keyboard, previous_key: Cell::new(space_key), bad_starters, comfies }
+    Calculator { keyboard, previous_key: Cell::new(space_key), bad_starters, comfies_map }
   }
 
   pub fn run(self: &Self, text: &String) -> Summary {
@@ -104,6 +106,7 @@ impl Calculator<'_> {
     let mut distance: usize = 0;
     let mut overheads: usize = 0;
     let mut awkwardness: usize = 0;
+    let mut comfiness: usize = 0;
     let mut usage = UsageMap::new();
 
     for symbol in text.chars() {
@@ -116,12 +119,17 @@ impl Calculator<'_> {
           record_usage_map(&mut usage, key);
 
           let previous_key = self.previous_key.get();
+          let is_a_comfy = self.comfy_combo(previous_key, key);
           let same_key = previous_key == key;
           let changed_row = previous_key.row != 0;
           let is_row_jumping = !same_key && changed_row;
 
+          if is_a_comfy {
+            comfiness += 1;
+          }
+
           if is_row_jumping && same_hand(previous_key, key) {
-            let same_hand_penalties = self.same_hand_penalties(previous_key, key);
+            let same_hand_penalties = self.same_hand_penalties(previous_key, key, is_a_comfy);
             let awkwardness_penalty = self.awkward_penalty(previous_key, key);
             
             effort += same_hand_penalties + awkwardness_penalty;
@@ -135,17 +143,17 @@ impl Calculator<'_> {
       }
     }
 
-    Summary { effort, distance, overheads, awkwardness, usage }
+    Summary { effort, distance, overheads, awkwardness, comfiness, usage }
   }
 
-  fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
+  fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, is_a_comfy: bool) -> usize {
     let mut penalties = SAME_HAND_PENALTY;
 
     if same_finger(last_key, next_key) {
       penalties += SAME_FINGER_PENALTY;
     }
     
-    if !self.comfy_combo(last_key, next_key) {
+    if !is_a_comfy {
       match row_distance(last_key, next_key) {
         2 => {
           penalties += ROW_SKIP_PENALTY;
@@ -174,16 +182,12 @@ impl Calculator<'_> {
   }
 
   fn comfy_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    let mut comfy_combo = false;
-    
-    for (first_coord, second_coord) in self.comfies.iter() {
-      if same_place(first_coord, last_key) && same_place(second_coord, next_key) {
-        comfy_combo = true;
-        break;
-      }
-    }
-    
-    comfy_combo
+    let pair: CoordinatePair = (
+      (last_key.row, last_key.pos),
+      (next_key.row, next_key.pos)
+    );
+
+    self.comfies_map.contains(&pair)
   }
 }
 
@@ -217,6 +221,7 @@ mod test {
       distance: 8,
       overheads: 0,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
         3 => map!{
           0 => 1,
@@ -241,6 +246,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
         2 => map! { 3 => 1 },
         3 => map! { 3 => 1 }
@@ -255,6 +261,7 @@ mod test {
       distance: 2,
       overheads: 0,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
         2 => map! { 3 => 2 }
       }
@@ -265,14 +272,15 @@ mod test {
   fn penalises_row_jumps() {
     let penalty = SAME_HAND_PENALTY + ROW_JUMP_PENALTY;
 
-    assert_eq!(run_text("vd"), Summary {
-      effort: penalty + 6 + 0,
+    assert_eq!(run_text("at"), Summary {
+      effort: penalty + 1 + 11,
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
-        1 => map!{ 3 => 1 },
-        2 => map!{ 2 => 1 }
+        2 => map!{ 0 => 1 },
+        3 => map!{ 4 => 1 }
       }
     })
   }
@@ -286,6 +294,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
         1 => map! { 3 => 1 },
         3 => map! { 0 => 1 }
@@ -302,6 +311,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
+      comfiness: 0,
       usage: map! {
         3 => map!{ 0 => 1, 1 => 1 }
       }
@@ -315,6 +325,7 @@ mod test {
       distance: 2,
       overheads: 0,
       awkwardness: 0,
+      comfiness: 0,
       usage: map! {
         3 => map! { 0 => 1, 7 => 1 }
       }
@@ -330,6 +341,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
+      comfiness: 0,
       usage: map! {
         3 => map! { 0 => 1 },
         2 => map! { 1 => 1 }
@@ -346,6 +358,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
+      comfiness: 0,
       usage: map! {
         3 => map! { 0 => 1 },
         1 => map! { 3 => 1 }
@@ -362,6 +375,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
+      comfiness: 0,
       usage: map! {
         3 => map! { 0 => 1 },
         1 => map! { 0 => 1 }
@@ -373,13 +387,15 @@ mod test {
   fn doesnt_penalise_comfies_for_row_jumps() {
     let penalty = SAME_HAND_PENALTY + SAME_HAND_PENALTY;
 
-    assert_eq!(run_text("as;l"), Summary {
-      effort: penalty + 2,
+    assert_eq!(run_text("wfli"), Summary {
+      effort: penalty + 3,
       distance: 4,
       overheads: penalty,
       awkwardness: 0,
+      comfiness: 2,
       usage: map! {
-        2 => map! { 0 => 1, 1 => 1, 9 => 1, 8 => 1 }
+        2 => map! { 8 => 1, 3 => 1 },
+        3 => map! { 7 => 1, 1 => 1 }
       }
     });
   }
