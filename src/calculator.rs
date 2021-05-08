@@ -120,22 +120,17 @@ impl Calculator<'_> {
 
           let previous_key = self.previous_key.get();
           let is_a_comfy = self.comfy_combo(previous_key, key);
-          let same_key = previous_key == key;
-          let changed_row = previous_key.row != 0;
-          let is_row_jumping = !same_key && changed_row;
-
+          
           if is_a_comfy {
             comfiness += 1;
           }
 
-          if is_row_jumping && same_hand(previous_key, key) {
-            let same_hand_penalties = self.same_hand_penalties(previous_key, key, is_a_comfy);
-            let awkwardness_penalty = self.awkward_penalty(previous_key, key);
-            
-            effort += same_hand_penalties + awkwardness_penalty;
-            overheads += same_hand_penalties + awkwardness_penalty;
-            awkwardness += awkwardness_penalty;
-          }
+          let (same_hand_penalties, awkwardness_penalty) = self.get_penalties(previous_key, key, is_a_comfy);
+          let total_penalties = same_hand_penalties + awkwardness_penalty;
+
+          effort += total_penalties;
+          overheads += total_penalties;
+          awkwardness += awkwardness_penalty;
 
           self.previous_key.set(key);
         },
@@ -144,6 +139,22 @@ impl Calculator<'_> {
     }
 
     Summary { effort, distance, overheads, awkwardness, comfiness, usage }
+  }
+
+  fn get_penalties(self: &Self, last_key: &Key, next_key: &Key, is_a_comfy: bool) -> (usize, usize) {
+    let same_key = last_key == next_key;
+    let changed_row = last_key.row != 0;
+    let is_row_jumping = !same_key && changed_row;
+
+    let mut same_hand_penalties = 0;
+    let mut awkwardness_penalty = 0;
+
+    if is_row_jumping && same_hand(last_key, next_key) {
+      same_hand_penalties = self.same_hand_penalties(last_key, next_key, is_a_comfy);
+      awkwardness_penalty = self.awkward_penalty(last_key, next_key);
+    }
+
+    (same_hand_penalties, awkwardness_penalty)
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, is_a_comfy: bool) -> usize {
