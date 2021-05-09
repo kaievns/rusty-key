@@ -1,8 +1,11 @@
 use std::fmt;
+
+use hashbrown::HashMap;
+
 use crate::config::*;
 use crate::layout::*;
 use crate::layouts::{QUERTY};
-use std::collections::HashMap;
+
 
 #[derive(Debug)]
 pub struct Keyboard {

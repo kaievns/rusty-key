@@ -2,20 +2,20 @@ use crate::config::*;
 use crate::keyboard::*;
 use crate::summary::*;
 
-use std::collections::BTreeSet;
+use hashbrown::HashSet;
 
-type CoordinatePairs = BTreeSet<(Coordinates, Coordinates)>;
+type CoordinatePairs = HashSet<(Coordinates, Coordinates)>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
-  bad_starters: BTreeSet<Coordinates>,
+  bad_starters: HashSet<Coordinates>,
   rolling_pairs_map: CoordinatePairs
 }
 
-fn calculate_bad_startes() -> BTreeSet<Coordinates> {
+fn calculate_bad_startes() -> HashSet<Coordinates> {
   let querty = Keyboard::querty();
-  let mut coordinates = BTreeSet::new();
+  let mut coordinates = HashSet::new();
 
   for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
     let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
@@ -28,7 +28,7 @@ fn calculate_bad_startes() -> BTreeSet<Coordinates> {
 
 fn calculate_rolling_pairs() -> CoordinatePairs {
   let querty = Keyboard::querty();
-  let mut pairs = BTreeSet::new();
+  let mut pairs = HashSet::new();
 
   for pair in ROLLING_PAIRS.trim().split_whitespace() {
     let mut chars = pair.chars();
@@ -183,7 +183,7 @@ mod test {
   macro_rules! map(
     { $($key:expr => $value:expr),+ } => {
         {
-            let mut m = ::std::collections::HashMap::new();
+            let mut m = ::hashbrown::HashMap::new();
             $(
                 m.insert($key, $value);
             )+

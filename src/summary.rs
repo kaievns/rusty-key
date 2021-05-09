@@ -1,5 +1,5 @@
 use std::fmt;
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use crate::keyboard::{Coordinates};
 
 pub type UsageMap = HashMap<Coordinates, usize>;
