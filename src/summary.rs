@@ -12,14 +12,14 @@ pub struct Summary {
   pub distance: usize,
   pub overheads: usize,
   pub awkwardness: usize,
-  pub comfiness: usize
+  pub rollingness: usize
 }
 
 impl fmt::Display for Summary {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, 
-      "effort: {}\ndistance: {}\noverheads: {}\nawkwardness: {}\ncomfiness: {}", 
-      self.effort, self.distance, self.overheads, self.awkwardness, self.comfiness
+      "effort: {}\ndistance: {}\noverheads: {}\nawkwardness: {}\nrollingness: {}", 
+      self.effort, self.distance, self.overheads, self.awkwardness, self.rollingness
     )
   }
 }

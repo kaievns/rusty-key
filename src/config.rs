@@ -34,18 +34,18 @@ pub const BAD_STARTER_PENALTY: usize = 80;
 pub const ROW_SKIP_PENALTY: usize = 50;
 pub const ROW_JUMP_PENALTY: usize = 30;
 
-pub const COMFIES: &'static str = "
-       we wf     er    re
+pub const ROLLING_PAIRS: &'static str = "
+       we wf     er ew   re
 
-  as af   sd se sf          fe fw fs fa
+  as af   sd se sf     df     fe fw fs fa
 
                       vd vw vs va
 
-          oi oj
+    io      oi oj
 
-  ji jl j; jo   lk li lj lm    ;l ;j
+  ji jl j; jo   kj   lk li lj lm    ;l ;j
 
-  mk ml m; mo
+  mk ml m; mo mi ?l
 ";
 
 pub const BAD_STARTERS_LIST: &'static str = "
