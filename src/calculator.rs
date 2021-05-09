@@ -4,18 +4,16 @@ use std::collections::HashMap;
 use crate::config::*;
 use crate::keyboard::*;
 
-type Coordinate = (usize, usize); // row, pos
-type CoordinatePair = (Coordinate, Coordinate);
+type CoordinatePair = (Coordinates, Coordinates);
 type CoordinatePairs = Vec<CoordinatePair>;
 
-type FingerUsageMap = HashMap<usize, usize>;
-type UsageMap = HashMap<usize, FingerUsageMap>;
+type UsageMap = HashMap<Coordinates, usize>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
   previous_key: Cell<&'a Key>,
-  bad_starters: Vec<Coordinate>,
+  bad_starters: Vec<Coordinates>,
   comfies_map: CoordinatePairs
 }
 
@@ -39,14 +37,14 @@ impl fmt::Display for Summary {
   }
 }
 
-fn calculate_bad_startes() -> Vec<Coordinate> {
+fn calculate_bad_startes() -> Vec<Coordinates> {
   let querty = Keyboard::querty();
   let mut coordinates = vec![];
 
   for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
     let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
 
-    coordinates.push((key.row, key.pos));
+    coordinates.push(key.coords);
   }
 
   coordinates
@@ -65,39 +63,27 @@ fn calculate_comfies() -> CoordinatePairs {
     let first_key = querty.key_for(&first_letter).unwrap();
     let second_key = querty.key_for(&second_letter).unwrap();
 
-    pairs.push(((first_key.row, first_key.pos), (second_key.row, second_key.pos)));
+    pairs.push((first_key.coords, second_key.coords));
   }
 
   pairs
 }
 
-fn same_hand(last_key: &Key, next_key: &Key) -> bool {
-  last_key.hand == next_key.hand
-}
-
-fn same_finger(last_key: &Key, next_key: &Key) -> bool {
-  last_key.finger == next_key.finger
-}
-
-fn same_place(coordinate: &Coordinate, key: &Key) -> bool {
-  let (row, pos) = coordinate;
-
-  key.row == *row && key.pos == *pos
-}
-
 fn row_distance(last_key: &Key, next_key: &Key) -> usize {
-  if last_key.row == 0 {
+  let last_row = last_key.coords.0;
+  let next_row = next_key.coords.0;
+
+  if last_row == 0 {
     0 // last key was space
-  } else if last_key.row > next_key.row { 
-    last_key.row - next_key.row 
+  } else if last_row > next_row { 
+    last_row - next_row 
   } else { 
-    next_key.row - last_key.row 
+    next_row - last_row 
   }
 }
 
 fn record_usage_map(usage: &mut UsageMap, key: &Key) {
-  let rows = usage.entry(key.row).or_insert(FingerUsageMap::new());
-  let count = rows.entry(key.pos).or_insert(0);
+  let count = usage.entry(key.coords).or_insert(0);
 
   *count += 1;
 }
@@ -162,13 +148,13 @@ impl Calculator<'_> {
 
   fn get_penalties(self: &Self, last_key: &Key, next_key: &Key, is_a_comfy: bool) -> (usize, usize) {
     let same_key = last_key == next_key;
-    let changed_row = last_key.row != 0;
+    let changed_row = last_key.coords.0 != 0;
     let is_row_jumping = !same_key && changed_row;
 
     let mut same_hand_penalties = 0;
     let mut awkwardness_penalty = 0;
 
-    if is_row_jumping && same_hand(last_key, next_key) {
+    if is_row_jumping && last_key.hand == next_key.hand {
       same_hand_penalties = self.same_hand_penalties(last_key, next_key, is_a_comfy);
       awkwardness_penalty = self.awkward_penalty(last_key, next_key);
     }
@@ -179,7 +165,7 @@ impl Calculator<'_> {
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, is_a_comfy: bool) -> usize {
     let mut penalties = SAME_HAND_PENALTY;
 
-    if same_finger(last_key, next_key) {
+    if last_key.finger == next_key.finger {
       penalties += SAME_FINGER_PENALTY;
     }
     
@@ -202,7 +188,7 @@ impl Calculator<'_> {
     let mut penalties = 0;
 
     for coordinate in self.bad_starters.iter() {
-      if same_place(coordinate, last_key) {
+      if *coordinate == last_key.coords {
         penalties += BAD_STARTER_PENALTY;
         break;
       }
@@ -212,10 +198,7 @@ impl Calculator<'_> {
   }
 
   fn comfy_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    let pair: CoordinatePair = (
-      (last_key.row, last_key.pos),
-      (next_key.row, next_key.pos)
-    );
+    let pair: CoordinatePair = (last_key.coords, next_key.coords);
 
     self.comfies_map.contains(&pair)
   }
@@ -253,16 +236,14 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        3 => map!{
-          0 => 1,
-          1 => 1,
-          2 => 1,
-          3 => 1,
-          6 => 1,
-          7 => 1,
-          8 => 1,
-          9 => 1
-        }
+        (3, 0) => 1,
+        (3, 1) => 1,
+        (3, 2) => 1,
+        (3, 3) => 1,
+        (3, 6) => 1,
+        (3, 7) => 1,
+        (3, 8) => 1,
+        (3, 9) => 1
       }
     })
   }
@@ -278,8 +259,8 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        2 => map! { 3 => 1 },
-        3 => map! { 3 => 1 }
+        (2, 3) => 1,
+        (3, 3) => 1
       }
     })
   }
@@ -293,7 +274,7 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        2 => map! { 3 => 2 }
+        (2, 3) => 2
       }
     })
   }
@@ -309,8 +290,8 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        2 => map!{ 0 => 1 },
-        3 => map!{ 4 => 1 }
+        (2, 0) => 1,
+        (3, 4) => 1
       }
     })
   }
@@ -326,8 +307,8 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        1 => map! { 3 => 1 },
-        3 => map! { 0 => 1 }
+        (1, 3) => 1,
+        (3, 0) => 1
       }
     })
   }
@@ -343,7 +324,8 @@ mod test {
       awkwardness: BAD_STARTER_PENALTY,
       comfiness: 0,
       usage: map! {
-        3 => map!{ 0 => 1, 1 => 1 }
+        (3, 0) => 1,
+        (3, 1) => 1
       }
     });
   }
@@ -357,7 +339,8 @@ mod test {
       awkwardness: 0,
       comfiness: 0,
       usage: map! {
-        3 => map! { 0 => 1, 7 => 1 }
+        (3, 0) => 1,
+        (3, 7) => 1
       }
     });
   }
@@ -373,8 +356,8 @@ mod test {
       awkwardness: BAD_STARTER_PENALTY,
       comfiness: 0,
       usage: map! {
-        3 => map! { 0 => 1 },
-        2 => map! { 1 => 1 }
+        (3, 0) => 1,
+        (2, 1) => 1
       }
     });
   }
@@ -390,8 +373,8 @@ mod test {
       awkwardness: BAD_STARTER_PENALTY,
       comfiness: 0,
       usage: map! {
-        3 => map! { 0 => 1 },
-        1 => map! { 3 => 1 }
+        (3, 0) => 1,
+        (1, 3) => 1
       }
     });
   }
@@ -407,8 +390,8 @@ mod test {
       awkwardness: BAD_STARTER_PENALTY,
       comfiness: 0,
       usage: map! {
-        3 => map! { 0 => 1 },
-        1 => map! { 0 => 1 }
+        (3, 0) => 1,
+        (1, 0) => 1
       }
     });
   }
@@ -424,8 +407,10 @@ mod test {
       awkwardness: 0,
       comfiness: 2,
       usage: map! {
-        2 => map! { 8 => 1, 3 => 1 },
-        3 => map! { 7 => 1, 1 => 1 }
+        (2, 8) => 1,
+        (2, 3) => 1,
+        (3, 7) => 1,
+        (3, 1) => 1
       }
     });
   }
