@@ -3,10 +3,11 @@ mod config;
 mod layout;
 mod keyboard;
 mod calculator;
+mod layouts;
 
 use crate::keyboard::*;
 use crate::calculator::*;
-use crate::layout::{QUERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
+use crate::layouts::{QUERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
 
 fn main() -> Result<(), std::io::Error> {
   let data = source::load(String::from("text"))?;

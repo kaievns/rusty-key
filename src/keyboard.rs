@@ -1,6 +1,7 @@
 use std::fmt;
-use crate::layout::*;
 use crate::config::*;
+use crate::layout::*;
+use crate::layouts::{QUERTY};
 use std::collections::HashMap;
 
 #[derive(Debug)]
