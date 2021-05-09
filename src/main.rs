@@ -12,10 +12,16 @@ fn main() -> Result<(), std::io::Error> {
   println!("Loaded text: {:}", data.len());
 
   let querty = Keyboard::querty();
-  println!("QUERTY: {:?}", querty);
+  println!("QUERTY: \n{}", querty);
+  
 
-  let calculator = Calculator::from(&querty);
-  println!("Score: {:?}", calculator.run(&"Hello world!".to_string()));
+  let calculator_querty = Calculator::from(&querty);
+  println!("Score:\n{}\n", calculator_querty.run(&data.to_string()));
+
+  let halmak_21 = Keyboard::halmak_21();
+  println!("HALMAK 2.1: \n{}", halmak_21);
+  let calculator_halmak_21 = Calculator::from(&halmak_21);
+  println!("Score:\n{}", calculator_halmak_21.run(&data.to_string()));
 
   Ok(())
 }

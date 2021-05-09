@@ -1,3 +1,4 @@
+use std::fmt;
 use crate::layout::*;
 use crate::config::*;
 use std::collections::HashMap;
@@ -25,6 +26,10 @@ pub type KeyMap = HashMap<char, Key>;
 impl Keyboard {
   pub fn querty() -> Keyboard {
     Self::parse(QUERTY)
+  }
+
+  pub fn halmak_21() -> Keyboard {
+    Self::parse(HALMAK_21)
   }
 
   pub fn parse(layout: &str) -> Keyboard {
@@ -101,6 +106,12 @@ impl Keyboard {
     });
 
     map
+  }
+}
+
+impl fmt::Display for Keyboard {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", print(&self.layout))
   }
 }
 

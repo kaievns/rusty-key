@@ -19,6 +19,17 @@ pub const QUERTY: &'static str = "
       z x c v b n m , . /
 ";
 
+pub const HALMAK_21: &'static str = "
+  ~ ! @ # $ % ^ & * < > _ +
+  ` 1 2 3 4 5 6 7 8 9 0 - =
+    W L R B Z : Q U D J { } |
+    w l r b z ; q u d j [ ] \\
+    S H N T ( ) A E O I \"
+    s h n t , . a e o i '
+      F M V C ? G P X K Y
+      f m v c / g p x k y
+";
+
 pub fn parse(layout: String) -> Layout {
   let mut keys: Layout = vec![];
 
@@ -45,7 +56,7 @@ pub fn parse(layout: String) -> Layout {
   keys
 }
 
-pub fn print(layout: Layout) -> String {
+pub fn print(layout: &Layout) -> String {
   let mut string = "".to_string();
 
   for (i, key) in layout.iter().enumerate() {
@@ -61,17 +72,6 @@ pub fn print(layout: Layout) -> String {
 
   string
 }
-
-// pub trait Printable {
-//   // fn parse(layout: String) -> Layout;
-//   fn print(&self) -> String;
-// }
-
-// impl Printable for Layout {
-//   fn print(&self) -> String {
-//     print(*self)
-//   }
-// }
 
 #[cfg(test)]
 mod test {
@@ -106,7 +106,7 @@ mod test {
   #[test]
   fn it_prints() {
     let layout = parse(QUERTY.to_string());
-    let result = print(layout);
+    let result = print(&layout);
 
     println!("{}", result);
 

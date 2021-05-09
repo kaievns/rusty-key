@@ -1,3 +1,4 @@
+use std::fmt;
 use std::cell::Cell;
 use std::collections::HashMap;
 use crate::config::*;
@@ -27,6 +28,15 @@ pub struct Summary {
   pub overheads: usize,
   pub awkwardness: usize,
   pub comfiness: usize
+}
+
+impl fmt::Display for Summary {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, 
+      "effort: {}\ndistance: {}\noverheads: {}\nawkwardness: {}\ncomfiness: {}", 
+      self.effort, self.distance, self.overheads, self.awkwardness, self.comfiness
+    )
+  }
 }
 
 fn calculate_bad_startes() -> Vec<Coordinate> {
@@ -102,6 +112,11 @@ impl Calculator<'_> {
   }
 
   pub fn run(self: &Self, text: &String) -> Summary {
+    let really_big_limit = 99999999999999;
+    self.run_to_limit(text, really_big_limit)
+  }
+
+  pub fn run_to_limit(self: &Self, text: &String, effort_limit: usize) -> Summary {
     let mut effort: usize = 0;
     let mut distance: usize = 0;
     let mut overheads: usize = 0;
@@ -133,6 +148,10 @@ impl Calculator<'_> {
           awkwardness += awkwardness_penalty;
 
           self.previous_key.set(key);
+
+          if effort > effort_limit {
+            break;
+          }
         },
         None => {},
       }
