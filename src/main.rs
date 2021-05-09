@@ -6,22 +6,26 @@ mod calculator;
 
 use crate::keyboard::*;
 use crate::calculator::*;
+use crate::layout::{QUERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
 
 fn main() -> Result<(), std::io::Error> {
   let data = source::load(String::from("text"))?;
   println!("Loaded text: {:}", data.len());
 
-  let querty = Keyboard::querty();
-  println!("QUERTY: \n{}", querty);
-  
+  let layouts = [
+    ("QUERTY", Keyboard::parse(QUERTY)),
+    ("DVORAK", Keyboard::parse(DVORAK)),
+    ("COLEMAK", Keyboard::parse(COLEMAK)),
+    ("WORKMAN", Keyboard::parse(WORKMAN)),
+    ("THE-1", Keyboard::parse(THE_1)),
+    ("HALMAK 2.1", Keyboard::parse(HALMAK_21))
+  ];
 
-  let calculator_querty = Calculator::from(&querty);
-  println!("Score:\n{}\n", calculator_querty.run(&data.to_string()));
-
-  let halmak_21 = Keyboard::halmak_21();
-  println!("HALMAK 2.1: \n{}", halmak_21);
-  let calculator_halmak_21 = Calculator::from(&halmak_21);
-  println!("Score:\n{}", calculator_halmak_21.run(&data.to_string()));
+  for (name, layout) in layouts.iter() {
+    println!("{}: \n{}", name, layout);
+    let calculator = Calculator::from(&layout);
+    println!("Score:\n{}\n", calculator.run(&data.to_string()));
+  }
 
   Ok(())
 }

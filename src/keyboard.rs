@@ -28,10 +28,6 @@ impl Keyboard {
     Self::parse(QUERTY)
   }
 
-  pub fn halmak_21() -> Keyboard {
-    Self::parse(HALMAK_21)
-  }
-
   pub fn parse(layout: &str) -> Keyboard {
     Self::from(parse(layout.to_string()))
   }
