@@ -25,6 +25,12 @@ pub struct Key {
 
 pub type KeyMap = HashMap<char, Key>;
 
+impl fmt::Display for Keyboard {
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    write!(f, "{}", print(&self.layout))
+  }
+}
+
 impl Keyboard {
   pub fn querty() -> Keyboard {
     Self::parse(QUERTY)
@@ -100,12 +106,6 @@ impl Keyboard {
     });
 
     map
-  }
-}
-
-impl fmt::Display for Keyboard {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", print(&self.layout))
   }
 }
 

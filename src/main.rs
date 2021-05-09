@@ -3,6 +3,7 @@ mod config;
 mod layout;
 mod keyboard;
 mod calculator;
+mod summary;
 mod layouts;
 
 use crate::keyboard::*;

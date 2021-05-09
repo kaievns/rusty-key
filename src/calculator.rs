@@ -1,13 +1,10 @@
-use std::fmt;
 use std::cell::Cell;
-use std::collections::HashMap;
 use crate::config::*;
 use crate::keyboard::*;
+use crate::summary::*;
 
 type CoordinatePair = (Coordinates, Coordinates);
 type CoordinatePairs = Vec<CoordinatePair>;
-
-type UsageMap = HashMap<Coordinates, usize>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
@@ -15,26 +12,6 @@ pub struct Calculator<'a> {
   previous_key: Cell<&'a Key>,
   bad_starters: Vec<Coordinates>,
   comfies_map: CoordinatePairs
-}
-
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub struct Summary {
-  pub usage: UsageMap,
-  pub effort: usize,
-  pub distance: usize,
-  pub overheads: usize,
-  pub awkwardness: usize,
-  pub comfiness: usize
-}
-
-impl fmt::Display for Summary {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, 
-      "effort: {}\ndistance: {}\noverheads: {}\nawkwardness: {}\ncomfiness: {}", 
-      self.effort, self.distance, self.overheads, self.awkwardness, self.comfiness
-    )
-  }
 }
 
 fn calculate_bad_startes() -> Vec<Coordinates> {
