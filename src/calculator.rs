@@ -2,23 +2,25 @@ use crate::config::*;
 use crate::keyboard::*;
 use crate::summary::*;
 
-type CoordinatePairs = Vec<(Coordinates, Coordinates)>;
+use std::collections::BTreeSet;
+
+type CoordinatePairs = BTreeSet<(Coordinates, Coordinates)>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
-  bad_starters: Vec<Coordinates>,
+  bad_starters: BTreeSet<Coordinates>,
   rolling_pairs_map: CoordinatePairs
 }
 
-fn calculate_bad_startes() -> Vec<Coordinates> {
+fn calculate_bad_startes() -> BTreeSet<Coordinates> {
   let querty = Keyboard::querty();
-  let mut coordinates = vec![];
+  let mut coordinates = BTreeSet::new();
 
   for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
     let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
 
-    coordinates.push(key.coords);
+    coordinates.insert(key.coords);
   }
 
   coordinates
@@ -26,7 +28,7 @@ fn calculate_bad_startes() -> Vec<Coordinates> {
 
 fn calculate_rolling_pairs() -> CoordinatePairs {
   let querty = Keyboard::querty();
-  let mut pairs = vec![];
+  let mut pairs = BTreeSet::new();
 
   for pair in ROLLING_PAIRS.trim().split_whitespace() {
     let mut chars = pair.chars();
@@ -37,7 +39,7 @@ fn calculate_rolling_pairs() -> CoordinatePairs {
     let first_key = querty.key_for(&first_letter).unwrap();
     let second_key = querty.key_for(&second_letter).unwrap();
 
-    pairs.push((first_key.coords, second_key.coords));
+    pairs.insert((first_key.coords, second_key.coords));
   }
 
   pairs
@@ -54,12 +56,6 @@ fn row_distance(last_key: &Key, next_key: &Key) -> usize {
   } else { 
     next_row - last_row 
   }
-}
-
-fn record_usage_map(usage: &mut UsageMap, key: &Key) {
-  let count = usage.entry(key.coords).or_insert(0);
-
-  *count += 1;
 }
 
 impl Calculator<'_> {
@@ -96,7 +92,7 @@ impl Calculator<'_> {
           effort += key.effort;
 
           if key.coords.0 != 0 { // not a space
-            record_usage_map(&mut usage, key);
+            *usage.entry(key.coords).or_insert(0) += 1;
 
             if previous_key.coords.0 != 0 { // not a space either
               let rolling = self.is_rolling_combo(previous_key, key);
