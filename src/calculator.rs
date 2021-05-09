@@ -94,19 +94,21 @@ impl Calculator<'_> {
           if key.coords.0 != 0 { // not a space
             *usage.entry(key.coords).or_insert(0) += 1;
 
-            if previous_key.coords.0 != 0 { // not a space either
-              let rolling = self.is_rolling_combo(previous_key, key);
+            if key != previous_key && previous_key.coords.0 != 0 { // not a space eithe
+              if previous_key.hand == key.hand {
+                let rolling = self.is_rolling_combo(previous_key, key);
           
-              if rolling {
-                rollingness += 1;
+                if rolling {
+                  rollingness += 1;
+                }
+
+                let same_hand_penalties = self.same_hand_penalties(previous_key, key, rolling);
+                let awkwardness_penalty = self.awkward_penalty(previous_key, key, rolling);
+
+                effort += same_hand_penalties + awkwardness_penalty;
+                overheads += same_hand_penalties + awkwardness_penalty;
+                awkwardness += awkwardness_penalty;
               }
-
-              let (same_hand_penalties, awkwardness_penalty) = self.get_penalties(previous_key, key, rolling);
-              let total_penalties = same_hand_penalties + awkwardness_penalty;
-
-              effort += total_penalties;
-              overheads += total_penalties;
-              awkwardness += awkwardness_penalty;
             }
           }
 
@@ -121,22 +123,6 @@ impl Calculator<'_> {
     }
 
     Summary { effort, distance, overheads, awkwardness, rollingness, usage }
-  }
-
-  fn get_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> (usize, usize) {
-    let same_key = last_key == next_key;
-    let changed_row = last_key.coords.0 != 0;
-    let is_row_jumping = !same_key && changed_row;
-
-    let mut same_hand_penalties = 0;
-    let mut awkwardness_penalty = 0;
-
-    if is_row_jumping && last_key.hand == next_key.hand {
-      same_hand_penalties = self.same_hand_penalties(last_key, next_key, rolling);
-      awkwardness_penalty = self.awkward_penalty(last_key, next_key);
-    }
-
-    (same_hand_penalties, awkwardness_penalty)
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> usize {
@@ -161,8 +147,8 @@ impl Calculator<'_> {
     penalties
   }
 
-  fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key) -> usize {
-    if self.bad_starters.contains(&last_key.coords) {
+  fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key, rolling: bool) -> usize {
+    if !rolling && self.bad_starters.contains(&last_key.coords) {
       BAD_STARTER_PENALTY
     } else {
       0

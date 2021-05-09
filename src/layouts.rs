@@ -48,12 +48,12 @@ pub const WORKMAN: &'static str = "
 
 #[allow(dead_code)]
 pub const THE_1: &'static str = "
-  ~ / @ # $ % ^ & * ( ) _ +
+  ~ | @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
-    K M L U ! V D R ' Q { } |
-    k m l u ? v d r \" q [ ] \\
-    A T H E : C S N O I >
-    a t h e . c s n o i <
+    K M L U ! V D R \" Q { } <
+    k m l u ? v d r ' q [ ] >
+    A T H E : C S N O I \\
+    a t h e . c s n o i /
       Z P F J ; B G W X Y
       z p f j , b g w x y 
 ";
