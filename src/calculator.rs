@@ -1,36 +1,37 @@
 use crate::config::*;
+use crate::geometry::*;
 use crate::keyboard::*;
 use crate::summary::*;
 
 use hashbrown::HashSet;
 
-type CoordinatePairs = HashSet<(Coordinates, Coordinates)>;
+type LocationPairs = HashSet<(Location, Location)>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
-  bad_starters: HashSet<Coordinates>,
-  rolling_pairs_map: CoordinatePairs
+  bad_starters: HashSet<Location>,
+  rolling_pairs_map: LocationPairs
 }
 
-fn calculate_bad_startes() -> HashSet<Coordinates> {
+fn calculate_bad_startes() -> HashSet<Location> {
   let querty = Keyboard::querty();
   let mut coordinates = HashSet::new();
 
-  for symbol in BAD_STARTERS_LIST.trim().split_whitespace() {
+  for symbol in querty.geometry.bad_starters.trim().split_whitespace() {
     let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
 
-    coordinates.insert(key.coords);
+    coordinates.insert(key.location);
   }
 
   coordinates
 }
 
-fn calculate_rolling_pairs() -> CoordinatePairs {
+fn calculate_rolling_pairs() -> LocationPairs {
   let querty = Keyboard::querty();
   let mut pairs = HashSet::new();
 
-  for pair in ROLLING_PAIRS.trim().split_whitespace() {
+  for pair in querty.geometry.rolling_pairs.trim().split_whitespace() {
     let mut chars = pair.chars();
 
     let first_letter = chars.next().unwrap();
@@ -39,22 +40,22 @@ fn calculate_rolling_pairs() -> CoordinatePairs {
     let first_key = querty.key_for(&first_letter).unwrap();
     let second_key = querty.key_for(&second_letter).unwrap();
 
-    pairs.insert((first_key.coords, second_key.coords));
+    pairs.insert((first_key.location, second_key.location));
   }
 
   pairs
 }
 
 fn row_distance(last_key: &Key, next_key: &Key) -> usize {
-  let last_row = last_key.coords.0;
-  let next_row = next_key.coords.0;
+  let last_row = last_key.location.0;
+  let next_row = next_key.location.0;
 
   if last_row == 0 {
     0 // last key was space
   } else if last_row > next_row { 
     last_row - next_row 
   } else { 
-    next_row - last_row 
+    next_row - last_row
   }
 }
 
@@ -91,10 +92,10 @@ impl Calculator<'_> {
           distance += 1;
           effort += key.effort;
 
-          if key.coords.0 != 0 { // not a space
-            *usage.entry(key.coords).or_insert(0) += 1;
+          if key.location.0 != 0 { // not a space
+            *usage.entry(key.location).or_insert(0) += 1;
 
-            if key != previous_key && previous_key.coords.0 != 0 { // not a space eithe
+            if key != previous_key && previous_key.location.0 != 0 { // not a space eithe
               if previous_key.hand == key.hand {
                 let rolling = self.is_rolling_combo(previous_key, key);
           
@@ -148,7 +149,7 @@ impl Calculator<'_> {
   }
 
   fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key, rolling: bool) -> usize {
-    if !rolling && self.bad_starters.contains(&last_key.coords) {
+    if !rolling && self.bad_starters.contains(&last_key.location) {
       BAD_STARTER_PENALTY
     } else {
       0
@@ -156,7 +157,7 @@ impl Calculator<'_> {
   }
 
   fn is_rolling_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    let pair = (last_key.coords, next_key.coords);
+    let pair = (last_key.location, next_key.location);
 
     self.rolling_pairs_map.contains(&pair)
   }
@@ -188,7 +189,7 @@ mod test {
   #[test]
   fn calculates_basic() {
     assert_eq!(run_text("QUwiEOrp"), Summary {
-      effort: 65,
+      effort: 67,
       distance: 8,
       overheads: 0,
       awkwardness: 0,

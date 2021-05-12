@@ -1,8 +1,8 @@
 use std::fmt;
 use hashbrown::HashMap;
-use crate::keyboard::{Coordinates};
+use crate::geometry::{Location};
 
-pub type UsageMap = HashMap<Coordinates, usize>;
+pub type UsageMap = HashMap<Location, usize>;
 
 #[derive(Debug)]
 #[derive(PartialEq)]

@@ -1,6 +1,7 @@
 mod source;
 mod config;
 mod layout;
+mod geometry;
 mod keyboard;
 mod calculator;
 mod summary;
@@ -26,7 +27,10 @@ fn main() -> Result<(), std::io::Error> {
   for (name, layout) in layouts.iter() {
     println!("{}: \n{}", name, layout);
     let calculator = Calculator::from(&layout);
-    println!("Score:\n{}\n", calculator.run(&data.to_string()));
+    let summary = calculator.run(&data.to_string());
+    println!("Score:\neffort: {}\nawkwardness: {}\nrollingness: {}\n", 
+      summary.effort, summary.awkwardness, summary.rollingness
+    );
   }
 
   Ok(())
