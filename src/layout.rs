@@ -1,9 +1,10 @@
+use crate::geometry::{Location};
+
 #[derive(Debug)]
 pub struct Entry {
   pub normal: String,
   pub shifted: String,
-  pub row: usize,
-  pub pos: usize
+  pub location: Location
 }
 
 pub type Layout = Vec<Entry>;
@@ -24,7 +25,7 @@ pub fn parse(layout: String) -> Layout {
       let row = 4 - (i - 1) / 2; // as in keyboard row
 
       for (pos, (up, low)) in ups.zip(lows).enumerate() {
-        let key = Entry { normal: low.to_string(), shifted: up.to_string(), row, pos };
+        let key = Entry { normal: low.to_string(), shifted: up.to_string(), location: (row, pos) };
 
         keys.push(key);
       }
@@ -63,22 +64,19 @@ mod test {
     assert_eq!(format!("{:?}", layout[13]), format!("{:?}", Entry {
       normal: "q".to_string(),
       shifted: "Q".to_string(),
-      row: 3,
-      pos: 0
+      location: (3, 0)
     }));
 
     assert_eq!(format!("{:?}", layout[27]), format!("{:?}", Entry {
       normal: "s".to_string(),
       shifted: "S".to_string(),
-      row: 2,
-      pos: 1
+      location: (2, 1)
     }));
 
     assert_eq!(format!("{:?}", layout[39]), format!("{:?}", Entry {
       normal: "c".to_string(),
       shifted: "C".to_string(),
-      row: 1,
-      pos: 2
+      location: (1, 2)
     }));
   }
 

@@ -64,7 +64,7 @@ impl Keyboard {
     let mut map = KeyMap::new();
 
     for key in layout {
-      let location = (key.row, key.pos);
+      let location = key.location;
 
       map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
         shifted: false,
