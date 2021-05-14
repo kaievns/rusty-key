@@ -4,8 +4,8 @@ pub struct Geometry {
   fingers: &'static str,
   hands: &'static str,
   efforts: &'static str,
-  rolling_pairs: &'static str,
-  bad_starters: &'static str
+  pub rolling_pairs: &'static str,
+  pub bad_starters: &'static str
 }
 
 pub const US_PC_KEYBOARD: Geometry = Geometry {
@@ -157,7 +157,6 @@ pub struct Info {
   pub hand: Hand,
   pub finger: Finger,
   pub effort: usize,
-  pub shifted_effort: usize
 }
 
 // fn find_in_mapping(mapping: Mapping, position: Position) -> usize {
@@ -169,6 +168,10 @@ pub struct Info {
 // }
 
 impl Geometry {
+  pub fn info_for(self: &Self, position: Position, shifted: bool) -> Option<Info> {
+    None
+  }
+
   pub fn effort_for(self: &Self, position: Position, shifted: bool) -> usize {
     0
     // let mut effort = find_in_mapping(self.efforts, position);
@@ -212,13 +215,12 @@ mod test {
 
   #[test]
   fn finds_engtries_correctly() {
-    assert_eq!(GEO.info_for((1, 0)), Some(
+    assert_eq!(GEO.info_for((1, 0), false), Some(
       Info {
         position: (4,5),
         hand: Hand::Left,
         finger: Finger::Middle,
-        effort: 12,
-        shifted_effort: 23
+        effort: 12
       }
     ))
   }

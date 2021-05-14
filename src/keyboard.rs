@@ -87,21 +87,21 @@ impl Keyboard {
       position: (0, 0),
       hand: Hand::Left,
       finger: Finger::Thumb,
-      effort: geometry.space_effort
+      effort: 0 //geometry.space_effort
     });
     map.insert('\n', Key {
       shifted: false,
       position: (2, 0),
       hand: Hand::Right,
       finger: Finger::Pinky,
-      effort: geometry.enter_effort
+      effort: 0 // geometry.enter_effort
     });
     map.insert('\t', Key {
       shifted: false,
       position: (3, 0),
       hand: Hand::Left,
       finger: Finger::Pinky,
-      effort: geometry.tab_effort
+      effort: 0 //geometry.tab_effort
     });
 
     map
