@@ -1,8 +1,8 @@
 use std::fmt;
 use hashbrown::HashMap;
-use crate::geometry::{Location};
+use crate::geometry::{Position};
 
-pub type UsageMap = HashMap<Location, usize>;
+pub type UsageMap = HashMap<Position, usize>;
 
 #[derive(Debug)]
 #[derive(PartialEq)]

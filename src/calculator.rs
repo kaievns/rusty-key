@@ -5,29 +5,29 @@ use crate::summary::*;
 
 use hashbrown::HashSet;
 
-type LocationPairs = HashSet<(Location, Location)>;
+type PositionPairs = HashSet<(Position, Position)>;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
-  bad_starters: HashSet<Location>,
-  rolling_pairs_map: LocationPairs
+  bad_starters: HashSet<Position>,
+  rolling_pairs_map: PositionPairs
 }
 
-fn calculate_bad_startes() -> HashSet<Location> {
+fn calculate_bad_startes() -> HashSet<Position> {
   let querty = Keyboard::querty();
   let mut coordinates = HashSet::new();
 
   for symbol in querty.geometry.bad_starters.trim().split_whitespace() {
     let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
 
-    coordinates.insert(key.location);
+    coordinates.insert(key.position);
   }
 
   coordinates
 }
 
-fn calculate_rolling_pairs() -> LocationPairs {
+fn calculate_rolling_pairs() -> PositionPairs {
   let querty = Keyboard::querty();
   let mut pairs = HashSet::new();
 
@@ -40,15 +40,15 @@ fn calculate_rolling_pairs() -> LocationPairs {
     let first_key = querty.key_for(&first_letter).unwrap();
     let second_key = querty.key_for(&second_letter).unwrap();
 
-    pairs.insert((first_key.location, second_key.location));
+    pairs.insert((first_key.position, second_key.position));
   }
 
   pairs
 }
 
 fn row_distance(last_key: &Key, next_key: &Key) -> usize {
-  let last_row = last_key.location.0;
-  let next_row = next_key.location.0;
+  let last_row = last_key.position.0;
+  let next_row = next_key.position.0;
 
   if last_row == 0 {
     0 // last key was space
@@ -92,10 +92,10 @@ impl Calculator<'_> {
           distance += 1;
           effort += key.effort;
 
-          if key.location.0 != 0 { // not a space
-            *usage.entry(key.location).or_insert(0) += 1;
+          if key.position.0 != 0 { // not a space
+            *usage.entry(key.position).or_insert(0) += 1;
 
-            if key != previous_key && previous_key.location.0 != 0 { // not a space eithe
+            if key != previous_key && previous_key.position.0 != 0 { // not a space eithe
               if previous_key.hand == key.hand {
                 let rolling = self.is_rolling_combo(previous_key, key);
           
@@ -149,7 +149,7 @@ impl Calculator<'_> {
   }
 
   fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key, rolling: bool) -> usize {
-    if !rolling && self.bad_starters.contains(&last_key.location) {
+    if !rolling && self.bad_starters.contains(&last_key.position) {
       BAD_STARTER_PENALTY
     } else {
       0
@@ -157,7 +157,7 @@ impl Calculator<'_> {
   }
 
   fn is_rolling_combo(self: &Self, last_key: &Key, next_key: &Key) -> bool {
-    let pair = (last_key.location, next_key.location);
+    let pair = (last_key.position, next_key.position);
 
     self.rolling_pairs_map.contains(&pair)
   }

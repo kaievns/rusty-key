@@ -24,7 +24,7 @@ pub struct Key {
   pub finger: Finger,
   pub shifted: bool,
   pub effort: usize,
-  pub location: Location
+  pub position: Position
 }
 
 impl fmt::Display for Keyboard {
@@ -64,41 +64,41 @@ impl Keyboard {
     let mut map = KeyMap::new();
 
     for key in layout {
-      let location = key.location;
+      let position = key.position;
 
       map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
         shifted: false,
-        location,
-        hand: geometry.hand_for(location),
-        finger: geometry.finger_for(location),
-        effort: geometry.effort_for(location, false)
+        position,
+        hand: geometry.hand_for(position),
+        finger: geometry.finger_for(position),
+        effort: geometry.effort_for(position, false)
       });
       map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
         shifted: true,
-        location,
-        hand: geometry.hand_for(location),
-        finger: geometry.finger_for(location),
-        effort: geometry.effort_for(location, true)
+        position,
+        hand: geometry.hand_for(position),
+        finger: geometry.finger_for(position),
+        effort: geometry.effort_for(position, true)
       });
     }
 
     map.insert(' ', Key {
       shifted: false,
-      location: (0, 0),
+      position: (0, 0),
       hand: Hand::LEFT,
       finger: Finger::THUMB,
       effort: geometry.space_effort
     });
     map.insert('\n', Key {
       shifted: false,
-      location: (2, 0),
+      position: (2, 0),
       hand: Hand::RIGHT,
       finger: Finger::PINKY,
       effort: geometry.enter_effort
     });
     map.insert('\t', Key {
       shifted: false,
-      location: (3, 0),
+      position: (3, 0),
       hand: Hand::LEFT,
       finger: Finger::PINKY,
       effort: geometry.tab_effort
@@ -133,25 +133,25 @@ mod test {
   fn builds_correct_key_mapping() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { location: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { location: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
-    assert_eq!(keyboard.key_map.get(&'c'), Some(&Key { location: (1, 2), hand: Hand::LEFT, finger: Finger::MIDDLE, shifted: false, effort: 10 }));
-    assert_eq!(keyboard.key_map.get(&'F'), Some(&Key { location: (2, 3), hand: Hand::LEFT, finger: Finger::POINTY, shifted: true, effort: 12 }));
-    assert_eq!(keyboard.key_map.get(&'t'), Some(&Key { location: (3, 4), hand: Hand::LEFT, finger: Finger::POINTY, shifted: false, effort: 11 }));
-    assert_eq!(keyboard.key_map.get(&'^'), Some(&Key { location: (4, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 28 }));
-    assert_eq!(keyboard.key_map.get(&'y'), Some(&Key { location: (3, 5), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: false, effort: 14 }));
-    assert_eq!(keyboard.key_map.get(&'J'), Some(&Key { location: (2, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 5 }));
-    assert_eq!(keyboard.key_map.get(&'M'), Some(&Key { location: (1, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 7 }));
-    assert_eq!(keyboard.key_map.get(&' '), Some(&Key { location: (0, 0), hand: Hand::LEFT, finger: Finger::THUMB, shifted: false, effort: 0 }));
-    assert_eq!(keyboard.key_map.get(&'\n'), Some(&Key { location: (2, 0), hand: Hand::RIGHT, finger: Finger::PINKY, shifted: false, effort: 11 }));
-    assert_eq!(keyboard.key_map.get(&'\t'), Some(&Key { location: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 15 }));
+    assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { position: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_map.get(&'c'), Some(&Key { position: (1, 2), hand: Hand::LEFT, finger: Finger::MIDDLE, shifted: false, effort: 10 }));
+    assert_eq!(keyboard.key_map.get(&'F'), Some(&Key { position: (2, 3), hand: Hand::LEFT, finger: Finger::POINTY, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_map.get(&'t'), Some(&Key { position: (3, 4), hand: Hand::LEFT, finger: Finger::POINTY, shifted: false, effort: 11 }));
+    assert_eq!(keyboard.key_map.get(&'^'), Some(&Key { position: (4, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 28 }));
+    assert_eq!(keyboard.key_map.get(&'y'), Some(&Key { position: (3, 5), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: false, effort: 14 }));
+    assert_eq!(keyboard.key_map.get(&'J'), Some(&Key { position: (2, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 5 }));
+    assert_eq!(keyboard.key_map.get(&'M'), Some(&Key { position: (1, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 7 }));
+    assert_eq!(keyboard.key_map.get(&' '), Some(&Key { position: (0, 0), hand: Hand::LEFT, finger: Finger::THUMB, shifted: false, effort: 0 }));
+    assert_eq!(keyboard.key_map.get(&'\n'), Some(&Key { position: (2, 0), hand: Hand::RIGHT, finger: Finger::PINKY, shifted: false, effort: 11 }));
+    assert_eq!(keyboard.key_map.get(&'\t'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 15 }));
   }
 
   #[test]
   fn gives_access_to_keys() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_for(&'q'), Some(&Key { location: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_for(&'S'), Some(&Key { location: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_for(&'S'), Some(&Key { position: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
   }
 }
