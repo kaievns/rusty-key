@@ -85,22 +85,22 @@ impl Keyboard {
     map.insert(' ', Key {
       shifted: false,
       position: (0, 0),
-      hand: Hand::LEFT,
-      finger: Finger::THUMB,
+      hand: Hand::Left,
+      finger: Finger::Thumb,
       effort: geometry.space_effort
     });
     map.insert('\n', Key {
       shifted: false,
       position: (2, 0),
-      hand: Hand::RIGHT,
-      finger: Finger::PINKY,
+      hand: Hand::Right,
+      finger: Finger::Pinky,
       effort: geometry.enter_effort
     });
     map.insert('\t', Key {
       shifted: false,
       position: (3, 0),
-      hand: Hand::LEFT,
-      finger: Finger::PINKY,
+      hand: Hand::Left,
+      finger: Finger::Pinky,
       effort: geometry.tab_effort
     });
 
@@ -133,25 +133,25 @@ mod test {
   fn builds_correct_key_mapping() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { position: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
-    assert_eq!(keyboard.key_map.get(&'c'), Some(&Key { position: (1, 2), hand: Hand::LEFT, finger: Finger::MIDDLE, shifted: false, effort: 10 }));
-    assert_eq!(keyboard.key_map.get(&'F'), Some(&Key { position: (2, 3), hand: Hand::LEFT, finger: Finger::POINTY, shifted: true, effort: 12 }));
-    assert_eq!(keyboard.key_map.get(&'t'), Some(&Key { position: (3, 4), hand: Hand::LEFT, finger: Finger::POINTY, shifted: false, effort: 11 }));
-    assert_eq!(keyboard.key_map.get(&'^'), Some(&Key { position: (4, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 28 }));
-    assert_eq!(keyboard.key_map.get(&'y'), Some(&Key { position: (3, 5), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: false, effort: 14 }));
-    assert_eq!(keyboard.key_map.get(&'J'), Some(&Key { position: (2, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 5 }));
-    assert_eq!(keyboard.key_map.get(&'M'), Some(&Key { position: (1, 6), hand: Hand::RIGHT, finger: Finger::POINTY, shifted: true, effort: 7 }));
-    assert_eq!(keyboard.key_map.get(&' '), Some(&Key { position: (0, 0), hand: Hand::LEFT, finger: Finger::THUMB, shifted: false, effort: 0 }));
-    assert_eq!(keyboard.key_map.get(&'\n'), Some(&Key { position: (2, 0), hand: Hand::RIGHT, finger: Finger::PINKY, shifted: false, effort: 11 }));
-    assert_eq!(keyboard.key_map.get(&'\t'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 15 }));
+    assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (3, 0), hand: Hand::Left, finger: Finger::Pinky, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_map.get(&'c'), Some(&Key { position: (1, 2), hand: Hand::Left, finger: Finger::Middle, shifted: false, effort: 10 }));
+    assert_eq!(keyboard.key_map.get(&'F'), Some(&Key { position: (2, 3), hand: Hand::Left, finger: Finger::Pointy, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_map.get(&'t'), Some(&Key { position: (3, 4), hand: Hand::Left, finger: Finger::Pointy, shifted: false, effort: 11 }));
+    assert_eq!(keyboard.key_map.get(&'^'), Some(&Key { position: (4, 6), hand: Hand::Right, finger: Finger::Pointy, shifted: true, effort: 28 }));
+    assert_eq!(keyboard.key_map.get(&'y'), Some(&Key { position: (3, 5), hand: Hand::Right, finger: Finger::Pointy, shifted: false, effort: 14 }));
+    assert_eq!(keyboard.key_map.get(&'J'), Some(&Key { position: (2, 6), hand: Hand::Right, finger: Finger::Pointy, shifted: true, effort: 5 }));
+    assert_eq!(keyboard.key_map.get(&'M'), Some(&Key { position: (1, 6), hand: Hand::Right, finger: Finger::Pointy, shifted: true, effort: 7 }));
+    assert_eq!(keyboard.key_map.get(&' '), Some(&Key { position: (0, 0), hand: Hand::Left, finger: Finger::Thumb, shifted: false, effort: 0 }));
+    assert_eq!(keyboard.key_map.get(&'\n'), Some(&Key { position: (2, 0), hand: Hand::Right, finger: Finger::Pinky, shifted: false, effort: 11 }));
+    assert_eq!(keyboard.key_map.get(&'\t'), Some(&Key { position: (3, 0), hand: Hand::Left, finger: Finger::Pinky, shifted: false, effort: 15 }));
   }
 
   #[test]
   fn gives_access_to_keys() {
     let keyboard = Keyboard::querty();
 
-    assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (3, 0), hand: Hand::LEFT, finger: Finger::PINKY, shifted: false, effort: 6 }));
-    assert_eq!(keyboard.key_for(&'S'), Some(&Key { position: (2, 1), hand: Hand::LEFT, finger: Finger::RING, shifted: true, effort: 12 }));
+    assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (3, 0), hand: Hand::Left, finger: Finger::Pinky, shifted: false, effort: 6 }));
+    assert_eq!(keyboard.key_for(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, shifted: true, effort: 12 }));
   }
 }

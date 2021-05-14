@@ -1,41 +1,3 @@
-pub type Position = (usize, usize);
-
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Key {
-  TAB,
-  SPACE,
-  RETURN,
-  LEFT_SHIFT,
-  RIGHT_SHIFT
-}
-
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Finger {
-  PINKY,
-  RING,
-  MIDDLE,
-  POINTY,
-  THUMB
-}
-
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Hand {
-  LEFT,
-  RIGHT
-}
-
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Info {
-  pub position: Position
-  pub hand: Hand
-  pub finger: Finger
-  pub effort: usize
-}
-
 #[derive(Debug)]
 pub struct Geometry {
   template: &'static str,
@@ -118,13 +80,13 @@ pub const FULL_ORTHO: Geometry = Geometry {
   rolling_pairs: "
     we wr wf er ew oi ou oj iu io
     as af ;l ;j sd se sf df li lk lj kj fe fw fs fa j;
-  "
+  ",
   bad_starters: "
     q     r t   y u     p [ ]
         d   g   h   k     ' \\
     z x c   b   n   , . / 
   "
-}
+};
 
 pub const COMPACT_ORTHO: Geometry = Geometry {
   template: "
@@ -150,53 +112,95 @@ pub const COMPACT_ORTHO: Geometry = Geometry {
     01 00 00 00 07   07 00 00 00 01
     07 08 10 04 08   08 04 10 08 07
             00 00     00 00
-  "
+  ",
   rolling_pairs: FULL_ORTHO.rolling_pairs,
   bad_starters: "
     q     r t   y u     p
         d   g   h   k    
     z x c   b   n   , . / 
   "
+};
+
+pub type Position = (usize, usize);
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Symbol {
+  Tab,
+  Space,
+  Return,
+  LeftShift,
+  RightShift
 }
 
-fn find_in_mapping(mapping: Mapping, position: Position) -> usize {
-  let (row, pos) = position;
-  let y = if row < 4 { 4 - row } else { 0 };
-  let x = if pos < 13 { pos } else { 12 };
-
-  mapping[y][x]
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Finger {
+  Pinky,
+  Ring,
+  Middle,
+  Pointy,
+  Thumb
 }
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Hand {
+  Left,
+  Right
+}
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub struct Info {
+  pub position: Position,
+  pub hand: Hand,
+  pub finger: Finger,
+  pub effort: usize,
+  pub shifted_effort: usize
+}
+
+// fn find_in_mapping(mapping: Mapping, position: Position) -> usize {
+//   let (row, pos) = position;
+//   let y = if row < 4 { 4 - row } else { 0 };
+//   let x = if pos < 13 { pos } else { 12 };
+
+//   mapping[y][x]
+// }
 
 impl Geometry {
   pub fn effort_for(self: &Self, position: Position, shifted: bool) -> usize {
-    let mut effort = find_in_mapping(self.efforts, position);
+    0
+    // let mut effort = find_in_mapping(self.efforts, position);
 
-    if shifted {
-      let hand = self.hand_for(position);
+    // if shifted {
+    //   let hand = self.hand_for(position);
   
-      effort += if hand == Hand::LEFT { self.right_shift_effort } else { self.left_shift_effort };
-    }
+    //   effort += if hand == Hand::Left { self.right_shift_effort } else { self.left_shift_effort };
+    // }
 
-    effort
+    // effort
   }
 
   pub fn finger_for(self: &Self, position: Position) -> Finger {
-    match find_in_mapping(self.fingers, position) {
-      1 => Finger::PINKY,
-      2 => Finger::RING,
-      3 => Finger::MIDDLE,
-      4 => Finger::POINTY,
-      5 => Finger::THUMB,
-      _ => panic!("Unkown finger code")
-    }
+    Finger::Pinky
+    // match find_in_mapping(self.fingers, position) {
+    //   1 => Finger::Pinky,
+    //   2 => Finger::Ring,
+    //   3 => Finger::Middle,
+    //   4 => Finger::Pointy,
+    //   5 => Finger::Thumb,
+    //   _ => panic!("Unkown finger code")
+    // }
   }
 
   pub fn hand_for(self: &Self, position: Position) -> Hand {
-    match find_in_mapping(self.hands, position) {
-      0 => Hand::LEFT,
-      1 => Hand::RIGHT,
-      _ => panic!("Unknown hand code")
-    }
+    Hand::Left
+    // match find_in_mapping(self.hands, position) {
+    //   0 => Hand::Left,
+    //   1 => Hand::Right,
+    //   _ => panic!("Unknown hand code")
+    // }
   }
 }
 
@@ -206,32 +210,45 @@ mod test {
 
   const GEO: Geometry = US_PC_KEYBOARD;
 
+  #[test]
+  fn finds_engtries_correctly() {
+    assert_eq!(GEO.info_for((1, 0)), Some(
+      Info {
+        position: (4,5),
+        hand: Hand::Left,
+        finger: Finger::Middle,
+        effort: 12,
+        shifted_effort: 23
+      }
+    ))
+  }
+
   // #[test]
   // fn finds_hands_correctly() {
-  //   assert_eq!(GEO.hand_for((1, 0)), Hand::LEFT);
-  //   assert_eq!(GEO.hand_for((1, 1)), Hand::LEFT);
-  //   assert_eq!(GEO.hand_for((1, 2)), Hand::LEFT);
-  //   assert_eq!(GEO.hand_for((1, 3)), Hand::LEFT);
-  //   assert_eq!(GEO.hand_for((1, 4)), Hand::LEFT);
-  //   assert_eq!(GEO.hand_for((1, 5)), Hand::RIGHT);
-  //   assert_eq!(GEO.hand_for((1, 6)), Hand::RIGHT);
-  //   assert_eq!(GEO.hand_for((1, 7)), Hand::RIGHT);
-  //   assert_eq!(GEO.hand_for((1, 8)), Hand::RIGHT);
-  //   assert_eq!(GEO.hand_for((1, 9)), Hand::RIGHT);
+  //   assert_eq!(GEO.hand_for((1, 0)), Hand::Left);
+  //   assert_eq!(GEO.hand_for((1, 1)), Hand::Left);
+  //   assert_eq!(GEO.hand_for((1, 2)), Hand::Left);
+  //   assert_eq!(GEO.hand_for((1, 3)), Hand::Left);
+  //   assert_eq!(GEO.hand_for((1, 4)), Hand::Left);
+  //   assert_eq!(GEO.hand_for((1, 5)), Hand::Right);
+  //   assert_eq!(GEO.hand_for((1, 6)), Hand::Right);
+  //   assert_eq!(GEO.hand_for((1, 7)), Hand::Right);
+  //   assert_eq!(GEO.hand_for((1, 8)), Hand::Right);
+  //   assert_eq!(GEO.hand_for((1, 9)), Hand::Right);
   // }
 
   // #[test]
   // fn finds_fingers_correctly() {
-  //   assert_eq!(GEO.finger_for((1, 0)), Finger::PINKY);
-  //   assert_eq!(GEO.finger_for((1, 1)), Finger::RING);
-  //   assert_eq!(GEO.finger_for((1, 2)), Finger::MIDDLE);
-  //   assert_eq!(GEO.finger_for((1, 3)), Finger::POINTY);
-  //   assert_eq!(GEO.finger_for((1, 4)), Finger::POINTY);
-  //   assert_eq!(GEO.finger_for((1, 5)), Finger::POINTY);
-  //   assert_eq!(GEO.finger_for((1, 6)), Finger::POINTY);
-  //   assert_eq!(GEO.finger_for((1, 7)), Finger::MIDDLE);
-  //   assert_eq!(GEO.finger_for((1, 8)), Finger::RING);
-  //   assert_eq!(GEO.finger_for((1, 9)), Finger::PINKY);
+  //   assert_eq!(GEO.finger_for((1, 0)), Finger::Pinky);
+  //   assert_eq!(GEO.finger_for((1, 1)), Finger::Ring);
+  //   assert_eq!(GEO.finger_for((1, 2)), Finger::Middle);
+  //   assert_eq!(GEO.finger_for((1, 3)), Finger::Pointy);
+  //   assert_eq!(GEO.finger_for((1, 4)), Finger::Pointy);
+  //   assert_eq!(GEO.finger_for((1, 5)), Finger::Pointy);
+  //   assert_eq!(GEO.finger_for((1, 6)), Finger::Pointy);
+  //   assert_eq!(GEO.finger_for((1, 7)), Finger::Middle);
+  //   assert_eq!(GEO.finger_for((1, 8)), Finger::Ring);
+  //   assert_eq!(GEO.finger_for((1, 9)), Finger::Pinky);
   // }
 
   // #[test]
