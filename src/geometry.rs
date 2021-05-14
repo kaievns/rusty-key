@@ -1,5 +1,14 @@
 pub type Location = (usize, usize);
-type Mapping = [[usize; 13]; 4];
+
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Key {
+  TAB,
+  SPACE,
+  RETURN,
+  LEFT_SHIFT,
+  RIGHT_SHIFT
+}
 
 #[derive(Debug)]
 #[derive(PartialEq)]
@@ -19,56 +28,136 @@ pub enum Hand {
 }
 
 #[derive(Debug)]
+#[derive(PartialEq)]
+pub enum Info {
+  pub location: Location
+  pub hand: Hand
+  pub finger: Finger
+  pub effort: usize
+}
+
+#[derive(Debug)]
 pub struct Geometry {
-  fingers: Mapping,
-  hands: Mapping,
-  efforts: Mapping,
-  pub rolling_pairs: &'static str,
-  pub bad_starters: &'static str,
-  pub tab_effort: usize,
-  pub space_effort: usize,
-  pub enter_effort: usize,
-  left_shift_effort: usize,
-  right_shift_effort: usize
+  template: &'static str,
+  fingers: &'static str,
+  hands: &'static str,
+  efforts: &'static str,
+  rolling_pairs: &'static str,
+  bad_starters: &'static str
 }
 
 pub const US_PC_KEYBOARD: Geometry = Geometry {
-  tab_effort: 15,
-  space_effort: 0,
-  enter_effort: 11,
-  left_shift_effort: 5,
-  right_shift_effort: 12,
-  fingers: [
-    [1, 1, 2, 3, 4, 4, 4, 4, 3, 2, 2, 1, 1],
-       [1, 2, 3, 4, 4, 4, 4, 3, 2, 1, 1, 1, 1],
-       [1, 2, 3, 4, 4, 4, 4, 3, 2, 1, 1, 0, 0],
-        [1, 2, 3, 4, 4, 4, 4, 3, 2, 1, 0, 0, 0]
-  ],
-  hands: [
-    [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1],
-       [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-       [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1]
-  ],
-  efforts: [
-    [17, 14, 08, 08, 13, 16, 23, 19, 09, 08, 07, 15, 17],
-      [06, 02, 01, 06, 11, 14, 09, 01, 01, 07, 09, 13, 18],
-      [01, 00, 00, 00, 07, 07, 00, 00, 00, 01, 05, 0, 0],
-        [07, 08, 10, 06, 10, 04, 02, 05, 05, 03, 0, 0, 0]
-  ],
+  template: "
+    ` 1 2 3 4 5 6 7 8 9 0 - =
+    ⇥ q w e r t y u i o p [ ] \\
+      a s d f g h j k l ; ' ↵
+    ⇪  z x c v b n m , . /  ⇪
+              ︺  
+  ",
+  hands: "
+    l l l l l l r r r r r r r
+    l l l l l l r r r r r r r r
+      l l l l l r r r r r r r
+    l  l l l l l r r r r r  r
+                r
+  ",
+  fingers: "
+    1 1 2 3 4 4 4 4 3 2 2 1 1
+    1 1 2 3 4 4 4 4 3 2 1 1 1 1
+      1 2 3 4 4 4 4 3 2 1 1 1
+    1  1 2 3 4 4 4 4 3 2 1  1
+                5
+  ",
+  efforts: "
+    17 14 08 08 13 16 23 19 09 08 07 15 17
+    15 06 02 01 06 11 14 09 01 01 07 09 13 18
+       01 00 00 00 07 07 00 00 00 01 05 11
+    05  07 08 10 06 10 04 02 05 05 03   12
+  ",
   rolling_pairs: "
-    we wf     er ew   re
-    as af   sd se sf     df     fe fw fs fa
-    vd vw vs va    io    oi oj
-    ji jl j; jo   kj   lk li lj lm    ;l ;j
-    mk ml m; mo mi ?l
+    we wf   er ew   re   io    oi oj
+    as af   sd se sf  df  fe fw fs fa   ji jl j; jo   kj  lk li lj lm  ;l ;j
+    vd vw vs va    mk ml m; mo mi ?l
   ",
   bad_starters: "
-    q      t y u     p [ ] \\
-        d   g h   k    '
-      z x c  b n   , . / 
+    q    r t y u     p [ ] \\
+       d   g h   k    '
+     z x c  b n   , . / 
   "
 };
+
+pub const FULL_ORTHO: Geometry = Geometry {
+  template: "
+    1 2 3 4 5   6 7 8 9 0 - =
+    q w e r t   y u i o p [ ]
+    a s d f g   h j k l ; ' \\
+    z x c v b   n m , . /
+       ` ⇪ ︺    ↵ ⇪ ⇥
+  ",
+  hands: "
+    l l l l l   r r r r r r r
+    l l l l l   r r r r r r r
+    l l l l l   r r r r r r r
+    l l l l l   r r r r r
+       l l l     r r r
+  ",
+  fingers: "
+    1 2 3 4 4   4 4 3 2 1 1 1
+    1 2 3 4 4   4 4 3 2 1 1 1
+    1 2 3 4 4   4 4 3 2 1 1 1
+    1 2 3 4 4   4 4 3 2 1
+       5 5 5     5 5 5
+  ",
+  efforts: "
+    14 08 07 13 16   16 13 07 08 14 15 17
+    07 02 01 06 12   12 06 01 01 07 09 13
+    01 00 00 00 07   07 00 00 00 01 05 11
+    07 08 10 04 08   08 04 10 08 07
+         00 00 00     00 00 00
+  ",
+  rolling_pairs: "
+    we wr wf er ew oi ou oj iu io
+    as af ;l ;j sd se sf df li lk lj kj fe fw fs fa j;
+  "
+  bad_starters: "
+    q     r t   y u     p [ ]
+        d   g   h   k     ' \\
+    z x c   b   n   , . / 
+  "
+}
+
+pub const COMPACT_ORTHO: Geometry = Geometry {
+  template: "
+    q w e r t   y u i o p
+    a s d f g   h j k l ;
+    z x c v b   n m , . /
+         ⇪ ⇥     ↵ ︺
+  ",
+  hands: "
+    l l l l l   r r r r r
+    l l l l l   r r r r r
+    l l l l l   r r r r r
+         l l     r r
+  ",
+  fingers: "
+    1 2 3 4 4   4 4 3 2 1
+    1 2 3 4 4   4 4 3 2 1
+    1 2 3 4 4   4 4 3 2 1
+         5 5     5 5
+  ",
+  efforts: "
+    07 02 01 06 12   12 06 01 01 07
+    01 00 00 00 07   07 00 00 00 01
+    07 08 10 04 08   08 04 10 08 07
+            00 00     00 00
+  "
+  rolling_pairs: FULL_ORTHO.rolling_pairs,
+  bad_starters: "
+    q     r t   y u     p
+        d   g   h   k    
+    z x c   b   n   , . / 
+  "
+}
 
 fn find_in_mapping(mapping: Mapping, location: Location) -> usize {
   let (row, pos) = location;
