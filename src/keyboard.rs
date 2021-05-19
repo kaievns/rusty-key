@@ -66,7 +66,7 @@ impl Keyboard {
     let specials = geometry.specials_info();
 
     for key in layout {
-      match geometry.info_for(key.position) {
+      match geometry.info_for_layout(key.position) {
         Some(info) => {
           map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
             shifted: false, position: info.position, hand: info.hand, finger: info.finger, effort: info.effort
@@ -101,8 +101,7 @@ impl Keyboard {
   fn shift_effort(hand: Hand, specials: &SpecialsMapping) -> usize {
     match hand {
       Hand::Left => specials.get(&SpecialSymbol::RightShift).unwrap().effort,
-      Hand::Right => specials.get(&SpecialSymbol::LeftShift).unwrap().effort,
-      _ => 0
+      Hand::Right => specials.get(&SpecialSymbol::LeftShift).unwrap().effort
     }
   }
 }

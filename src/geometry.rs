@@ -25,7 +25,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
     l l l l l l r r r r r r r r
       l l l l l r r r r r r r
     l  l l l l l r r r r r  r
-                t
+                r
   ",
   fingers: "
     1 1 2 3 4 4 4 4 3 2 2 1 1
@@ -66,7 +66,7 @@ pub const FULL_ORTHO: Geometry = Geometry {
     l l l l l   r r r r r r r
     l l l l l   r r r r r r r
     l l l l l   r r r r r
-       t t t     t t t
+       l l l     r r r
   ",
   fingers: "
     1 2 3 4 4   4 4 3 2 1 1 1
@@ -104,7 +104,7 @@ pub const COMPACT_ORTHO: Geometry = Geometry {
     l l l l l   r r r r r
     l l l l l   r r r r r
     l l l l l   r r r r r
-         t t     t t
+         l l     r r
   ",
   fingers: "
     1 2 3 4 4   4 4 3 2 1
@@ -154,8 +154,7 @@ pub enum Finger {
 #[derive(Debug, PartialEq)]
 pub enum Hand {
   Left,
-  Right,
-  Thumb // don't treat thumbs as hands so they wouldn't penalised for the same hand actions
+  Right
 }
 
 #[derive(Debug)]
@@ -170,17 +169,19 @@ pub struct Info {
 pub type SpecialsMapping = HashMap<SpecialSymbol, Info>;
 
 impl Geometry {
-  pub fn info_for(self: &Self, position: Position) -> Option<Info> {
-    match self.position_in_geometry(position) {
-      Some(position) => {
-        let hand = self.hand_for(position);
-        let finger = self.finger_for(position);
-        let effort = self.effort_for(position);
-
-        Some(Info { hand, finger, effort, position })
-      },
+  pub fn info_for_layout(self: &Self, position: Position) -> Option<Info> {
+    match self.layout_to_geometry(position) {
+      Some(position) => Some(self.info_for_geometry(position)),
       _ => None
     }
+  }
+
+  pub fn info_for_geometry(self: &Self, position: Position) -> Info {
+    let hand = self.hand_for(position);
+    let finger = self.finger_for(position);
+    let effort = self.effort_for(position);
+
+    Info { hand, finger, effort, position }
   }
 
   pub fn specials_info(self: &Self) -> SpecialsMapping {
@@ -200,7 +201,7 @@ impl Geometry {
 
   fn special_info(self: &Self, symbol: SpecialSymbol) -> Option<Info> {
     match parser::position_for(self.template, self.special_symbol_to_string(symbol)) {
-      Some(position) => self.info_for(position),
+      Some(position) => Some(self.info_for_geometry(position)),
       _ => None
     }
   }
@@ -211,22 +212,14 @@ impl Geometry {
       SpecialSymbol::Space => "︺",
       SpecialSymbol::Return => "↵",
       SpecialSymbol::LeftShift => "⇧",
-      SpecialSymbol::RightShift => "⇪",
-      _ => "Noop"
+      SpecialSymbol::RightShift => "⇪"
     };
 
     str.to_string()
   }
 
   // remaps a standard QUERTY layout position to the geometry template position
-  fn position_in_geometry(self: &Self, position_in_querty: Position) -> Option<Position> {
-    match self.letter_in_querty(position_in_querty) {
-      Some(letter) => parser::position_for(self.template, letter),
-      _ => None
-    }
-  }
-
-  fn letter_in_querty(self: &Self, position_in_querty: Position) -> Option<String> {
+  fn layout_to_geometry(self: &Self, position_in_querty: Position) -> Option<Position> {
     let querty = "
       ` 1 2 3 4 5 6 7 8 9 0 - =
         q w e r t y u i o p [ ] \\
@@ -234,7 +227,10 @@ impl Geometry {
          z x c v b n m , . /
     ";
 
-    parser::value_for(querty, position_in_querty)
+    match parser::value_for(querty, position_in_querty) {
+      Some(letter) => parser::position_for(self.template, letter),
+      _ => None
+    }
   }
 
   fn effort_for(self: &Self, position: Position) -> usize {
@@ -259,7 +255,6 @@ impl Geometry {
     match parser::value_for(self.hands, position).as_ref().map(String::as_str) {
       Some("l") => Hand::Left,
       Some("r") => Hand::Right,
-      Some("t") => Hand::Thumb,
       _ => panic!("Unknown hand code")
     }
   }
@@ -269,71 +264,71 @@ impl Geometry {
 mod test {
   use super::*;
 
+  macro_rules! map(
+    { $($key:expr => $value:expr),+ } => {
+        {
+            let mut m = ::hashbrown::HashMap::new();
+            $(
+                m.insert($key, $value);
+            )+
+            m
+        }
+     };
+  );
+
   const GEO: Geometry = US_PC_KEYBOARD;
 
   #[test]
-  fn finds_engtries_correctly() {
-    assert_eq!(GEO.info_for((4, 2)), Some(
-      Info {
-        position: (4,5),
-        hand: Hand::Left,
-        finger: Finger::Middle,
-        effort: 12
-      }
-    ))
+  fn finds_entries_correctly() {
+    assert_eq!(GEO.info_for_layout((0, 1)), Some(Info {
+      position: (0, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 14
+    }));
+    assert_eq!(GEO.info_for_layout((1, 2)), Some(Info {
+      position: (1, 3), hand: Hand::Left, finger: Finger::Middle, effort: 1
+    }));
+    assert_eq!(GEO.info_for_layout((2, 5)), Some(Info {
+      position: (2, 5), hand: Hand::Right, finger: Finger::Pointy, effort: 7
+    }));
+    assert_eq!(GEO.info_for_layout((3, 7)), Some(Info {
+      position: (3, 8), hand: Hand::Right, finger: Finger::Middle, effort: 5
+    }));
   }
 
-  // #[test]
-  // fn finds_hands_correctly() {
-  //   assert_eq!(GEO.hand_for((1, 0)), Hand::Left);
-  //   assert_eq!(GEO.hand_for((1, 1)), Hand::Left);
-  //   assert_eq!(GEO.hand_for((1, 2)), Hand::Left);
-  //   assert_eq!(GEO.hand_for((1, 3)), Hand::Left);
-  //   assert_eq!(GEO.hand_for((1, 4)), Hand::Left);
-  //   assert_eq!(GEO.hand_for((1, 5)), Hand::Right);
-  //   assert_eq!(GEO.hand_for((1, 6)), Hand::Right);
-  //   assert_eq!(GEO.hand_for((1, 7)), Hand::Right);
-  //   assert_eq!(GEO.hand_for((1, 8)), Hand::Right);
-  //   assert_eq!(GEO.hand_for((1, 9)), Hand::Right);
-  // }
+  #[test]
+  fn returns_none_if_not_found() {
+    assert_eq!(GEO.info_for_layout((9,9)), None);
+  }
 
-  // #[test]
-  // fn finds_fingers_correctly() {
-  //   assert_eq!(GEO.finger_for((1, 0)), Finger::Pinky);
-  //   assert_eq!(GEO.finger_for((1, 1)), Finger::Ring);
-  //   assert_eq!(GEO.finger_for((1, 2)), Finger::Middle);
-  //   assert_eq!(GEO.finger_for((1, 3)), Finger::Pointy);
-  //   assert_eq!(GEO.finger_for((1, 4)), Finger::Pointy);
-  //   assert_eq!(GEO.finger_for((1, 5)), Finger::Pointy);
-  //   assert_eq!(GEO.finger_for((1, 6)), Finger::Pointy);
-  //   assert_eq!(GEO.finger_for((1, 7)), Finger::Middle);
-  //   assert_eq!(GEO.finger_for((1, 8)), Finger::Ring);
-  //   assert_eq!(GEO.finger_for((1, 9)), Finger::Pinky);
-  // }
+  #[test]
+  fn specials_info_check() {
+    assert_eq!(GEO.specials_info(), map! {
+      SpecialSymbol::Tab        => Info { position: (1, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 15 }, 
+      SpecialSymbol::Space      => Info { position: (4, 0),  hand: Hand::Right, finger: Finger::Thumb, effort: 0  },
+      SpecialSymbol::Return     => Info { position: (2, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 11 }, 
+      SpecialSymbol::LeftShift  => Info { position: (3, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 5  }, 
+      SpecialSymbol::RightShift => Info { position: (3, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 12 }
+    });
+  }
 
-  // #[test]
-  // fn calculates_normal_efforts_correctly() {
-  //   assert_eq!(GEO.effort_for((1, 0), false), 7);
-  //   assert_eq!(GEO.effort_for((2, 1), false), 0);
-  //   assert_eq!(GEO.effort_for((3, 2), false), 1);
-  //   assert_eq!(GEO.effort_for((4, 3), false), 8);
-  //   assert_eq!(GEO.effort_for((3, 4), false), 11);
-  //   assert_eq!(GEO.effort_for((2, 5), false), 7);
-  //   assert_eq!(GEO.effort_for((1, 6), false), 2);
-  //   assert_eq!(GEO.effort_for((2, 7), false), 0);
-  //   assert_eq!(GEO.effort_for((3, 8), false), 1);
-  // }
+  #[test]
+  fn specials_info_on_full_ortho() {
+    assert_eq!(FULL_ORTHO.specials_info(), map! {
+      SpecialSymbol::Tab        => Info { position: (4, 5), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::Space      => Info { position: (4, 2), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 },
+      SpecialSymbol::Return     => Info { position: (4, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::LeftShift  => Info { position: (4, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::RightShift => Info { position: (4, 4), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }
+    });
+  }
 
-  // #[test]
-  // fn calculates_shifted_efforts_correctly() {
-  //   assert_eq!(GEO.effort_for((1, 0), true), 7 + GEO.right_shift_effort);
-  //   assert_eq!(GEO.effort_for((2, 1), true), 0 + GEO.right_shift_effort);
-  //   assert_eq!(GEO.effort_for((3, 2), true), 1 + GEO.right_shift_effort);
-  //   assert_eq!(GEO.effort_for((4, 3), true), 8 + GEO.right_shift_effort);
-  //   assert_eq!(GEO.effort_for((3, 4), true), 11 + GEO.right_shift_effort);
-  //   assert_eq!(GEO.effort_for((2, 5), true), 7 + GEO.left_shift_effort);
-  //   assert_eq!(GEO.effort_for((1, 6), true), 2 + GEO.left_shift_effort);
-  //   assert_eq!(GEO.effort_for((2, 7), true), 0 + GEO.left_shift_effort);
-  //   assert_eq!(GEO.effort_for((3, 8), true), 1 + GEO.left_shift_effort);
-  // }
+  #[test]
+  fn specials_info_on_compact_ortho() {
+    assert_eq!(COMPACT_ORTHO.specials_info(), map! {
+      SpecialSymbol::Tab        => Info { position: (3, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::Space      => Info { position: (3, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 },
+      SpecialSymbol::Return     => Info { position: (3, 2), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::LeftShift  => Info { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::RightShift => Info { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }
+    });
+  }
 }
