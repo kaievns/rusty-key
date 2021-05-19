@@ -1,6 +1,6 @@
 use std::fmt;
 use hashbrown::HashMap;
-use crate::geometry::{Position};
+use crate::parser::{Position};
 
 pub type UsageMap = HashMap<Position, usize>;
 

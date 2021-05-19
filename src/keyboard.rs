@@ -3,6 +3,7 @@ use std::fmt;
 use hashbrown::HashMap;
 
 use crate::config::*;
+use crate::parser::{Position};
 use crate::layout::*;
 use crate::layouts::{QUERTY};
 use crate::geometry::*;

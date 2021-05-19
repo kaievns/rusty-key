@@ -1,3 +1,5 @@
+use crate::parser::*;
+
 #[derive(Debug)]
 pub struct Geometry {
   template: &'static str,
@@ -121,8 +123,6 @@ pub const COMPACT_ORTHO: Geometry = Geometry {
   "
 };
 
-pub type Position = (usize, usize);
-
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub enum Symbol {
@@ -159,51 +159,68 @@ pub struct Info {
   pub effort: usize,
 }
 
-// fn find_in_mapping(mapping: Mapping, position: Position) -> usize {
-//   let (row, pos) = position;
-//   let y = if row < 4 { 4 - row } else { 0 };
-//   let x = if pos < 13 { pos } else { 12 };
-
-//   mapping[y][x]
-// }
-
 impl Geometry {
   pub fn info_for(self: &Self, position: Position, shifted: bool) -> Option<Info> {
-    None
+    match self.position_in_geometry(position) {
+      Some(position) => {
+        let hand = self.hand_for(position);
+        let finger = self.finger_for(position);
+        let effort = self.effort_for(position, shifted);
+
+        Some(Info { hand, finger, effort, position })
+      },
+      _ => None
+    }
+  }
+
+  // remaps a standard QUERTY layout position to the geometry template position
+  fn position_in_geometry(self: &Self, position_in_querty: Position) -> Option<Position> {
+    match self.letter_in_querty(position_in_querty) {
+      Some(letter) => TEMPLATES_MAPPER.position_for(self.template, letter),
+      _ => None
+    }
+  }
+
+  fn letter_in_querty(self: &Self, position_in_querty: Position) -> Option<String> {
+    let querty = "
+      ` 1 2 3 4 5 6 7 8 9 0 - =
+        q w e r t y u i o p [ ] \\
+        a s d f g h j k l ; '
+         z x c v b n m , . /
+    ";
+
+    TEMPLATES_MAPPER.value_for(querty, position_in_querty)
   }
 
   pub fn effort_for(self: &Self, position: Position, shifted: bool) -> usize {
-    0
-    // let mut effort = find_in_mapping(self.efforts, position);
+    let mut effort: usize = TEMPLATES_MAPPER.value_for(self.efforts, position).unwrap().parse().unwrap();
 
-    // if shifted {
-    //   let hand = self.hand_for(position);
-  
-    //   effort += if hand == Hand::Left { self.right_shift_effort } else { self.left_shift_effort };
-    // }
+    if shifted {
+      let hand = self.hand_for(position);
+      effort += if hand == Hand::Left { 1 } else { 2 };
+      //effort += if hand == Hand::Left { self.right_shift_effort } else { self.left_shift_effort };
+    }
 
-    // effort
+    effort
   }
 
   pub fn finger_for(self: &Self, position: Position) -> Finger {
-    Finger::Pinky
-    // match find_in_mapping(self.fingers, position) {
-    //   1 => Finger::Pinky,
-    //   2 => Finger::Ring,
-    //   3 => Finger::Middle,
-    //   4 => Finger::Pointy,
-    //   5 => Finger::Thumb,
-    //   _ => panic!("Unkown finger code")
-    // }
+    match TEMPLATES_MAPPER.value_for(self.fingers, position).as_ref().map(String::as_str) {
+      Some("1") => Finger::Pinky,
+      Some("2") => Finger::Ring,
+      Some("3") => Finger::Middle,
+      Some("4") => Finger::Pointy,
+      Some("5") => Finger::Thumb,
+      _ => panic!("Unkown finger code")
+    }
   }
 
   pub fn hand_for(self: &Self, position: Position) -> Hand {
-    Hand::Left
-    // match find_in_mapping(self.hands, position) {
-    //   0 => Hand::Left,
-    //   1 => Hand::Right,
-    //   _ => panic!("Unknown hand code")
-    // }
+    match TEMPLATES_MAPPER.value_for(self.hands, position).as_ref().map(String::as_str) {
+      Some("l") => Hand::Left,
+      Some("r") => Hand::Right,
+      _ => panic!("Unknown hand code")
+    }
   }
 }
 

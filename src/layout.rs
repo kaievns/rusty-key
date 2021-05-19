@@ -1,4 +1,4 @@
-use crate::geometry::{Position};
+use crate::parser::{Position};
 
 #[derive(Debug)]
 pub struct Entry {

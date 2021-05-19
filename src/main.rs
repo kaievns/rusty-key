@@ -1,5 +1,6 @@
 mod source;
 mod config;
+mod parser;
 mod layout;
 mod geometry;
 mod keyboard;
