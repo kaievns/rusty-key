@@ -1,4 +1,5 @@
-use crate::parser::*;
+use crate::parser;
+use crate::parser::{Position};
 
 #[derive(Debug)]
 pub struct Geometry {
@@ -176,7 +177,7 @@ impl Geometry {
   // remaps a standard QUERTY layout position to the geometry template position
   fn position_in_geometry(self: &Self, position_in_querty: Position) -> Option<Position> {
     match self.letter_in_querty(position_in_querty) {
-      Some(letter) => TEMPLATES_MAPPER.position_for(self.template, letter),
+      Some(letter) => parser::position_for(self.template, letter),
       _ => None
     }
   }
@@ -189,11 +190,11 @@ impl Geometry {
          z x c v b n m , . /
     ";
 
-    TEMPLATES_MAPPER.value_for(querty, position_in_querty)
+    parser::value_for(querty, position_in_querty)
   }
 
   pub fn effort_for(self: &Self, position: Position, shifted: bool) -> usize {
-    let mut effort: usize = TEMPLATES_MAPPER.value_for(self.efforts, position).unwrap().parse().unwrap();
+    let mut effort: usize = parser::value_for(self.efforts, position).unwrap().parse().unwrap();
 
     if shifted {
       let hand = self.hand_for(position);
@@ -205,7 +206,7 @@ impl Geometry {
   }
 
   pub fn finger_for(self: &Self, position: Position) -> Finger {
-    match TEMPLATES_MAPPER.value_for(self.fingers, position).as_ref().map(String::as_str) {
+    match parser::value_for(self.fingers, position).as_ref().map(String::as_str) {
       Some("1") => Finger::Pinky,
       Some("2") => Finger::Ring,
       Some("3") => Finger::Middle,
@@ -216,7 +217,7 @@ impl Geometry {
   }
 
   pub fn hand_for(self: &Self, position: Position) -> Hand {
-    match TEMPLATES_MAPPER.value_for(self.hands, position).as_ref().map(String::as_str) {
+    match parser::value_for(self.hands, position).as_ref().map(String::as_str) {
       Some("l") => Hand::Left,
       Some("r") => Hand::Right,
       _ => panic!("Unknown hand code")
