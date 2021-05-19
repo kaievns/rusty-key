@@ -63,49 +63,47 @@ impl Keyboard {
 
   fn keys_from(layout: &Layout, geometry: &Geometry) -> KeyMap {
     let mut map = KeyMap::new();
+    let specials = geometry.specials_info();
 
     for key in layout {
-      let position = key.position;
-
-      map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
-        shifted: false,
-        position,
-        hand: geometry.hand_for(position),
-        finger: geometry.finger_for(position),
-        effort: geometry.effort_for(position, false)
-      });
-      map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
-        shifted: true,
-        position,
-        hand: geometry.hand_for(position),
-        finger: geometry.finger_for(position),
-        effort: geometry.effort_for(position, true)
-      });
+      match geometry.info_for(key.position) {
+        Some(info) => {
+          map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
+            shifted: false, position: info.position, hand: info.hand, finger: info.finger, effort: info.effort
+          });
+          map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
+            shifted: true, position: info.position, hand: info.hand, finger: info.finger, 
+            effort: info.effort + Keyboard::shift_effort(info.hand, &specials)
+          });
+        },
+        _ => ()
+      }
     }
 
-    map.insert(' ', Key {
-      shifted: false,
-      position: (0, 0),
-      hand: Hand::Left,
-      finger: Finger::Thumb,
-      effort: 0 //geometry.space_effort
-    });
-    map.insert('\n', Key {
-      shifted: false,
-      position: (2, 0),
-      hand: Hand::Right,
-      finger: Finger::Pinky,
-      effort: 0 // geometry.enter_effort
-    });
-    map.insert('\t', Key {
-      shifted: false,
-      position: (3, 0),
-      hand: Hand::Left,
-      finger: Finger::Pinky,
-      effort: 0 //geometry.tab_effort
-    });
+    for (key, info) in specials.iter() {
+      match key {
+        SpecialSymbol::Tab => map.insert('\t', Key {
+          shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
+        }),
+        SpecialSymbol::Space => map.insert(' ', Key {
+          shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
+        }),
+        SpecialSymbol::Return => map.insert('\n', Key {
+          shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
+        }),
+        _ => None
+      };
+    }
 
     map
+  }
+
+  fn shift_effort(hand: Hand, specials: &SpecialsMapping) -> usize {
+    match hand {
+      Hand::Left => specials.get(&SpecialSymbol::RightShift).unwrap().effort,
+      Hand::Right => specials.get(&SpecialSymbol::LeftShift).unwrap().effort,
+      _ => 0
+    }
   }
 }
 

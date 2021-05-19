@@ -1,5 +1,6 @@
 use crate::parser;
 use crate::parser::{Position};
+use hashbrown::HashMap;
 
 #[derive(Debug)]
 pub struct Geometry {
@@ -16,7 +17,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
     ` 1 2 3 4 5 6 7 8 9 0 - =
     ⇥ q w e r t y u i o p [ ] \\
       a s d f g h j k l ; ' ↵
-    ⇪  z x c v b n m , . /  ⇪
+    ⇧  z x c v b n m , . /  ⇪
               ︺  
   ",
   hands: "
@@ -24,7 +25,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
     l l l l l l r r r r r r r r
       l l l l l r r r r r r r
     l  l l l l l r r r r r  r
-                r
+                t
   ",
   fingers: "
     1 1 2 3 4 4 4 4 3 2 2 1 1
@@ -38,6 +39,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
     15 06 02 01 06 11 14 09 01 01 07 09 13 18
        01 00 00 00 07 07 00 00 00 01 05 11
     05  07 08 10 06 10 04 02 05 05 03   12
+                    00
   ",
   rolling_pairs: "
     we wf   er ew   re   io    oi oj
@@ -57,14 +59,14 @@ pub const FULL_ORTHO: Geometry = Geometry {
     q w e r t   y u i o p [ ]
     a s d f g   h j k l ; ' \\
     z x c v b   n m , . /
-       ` ⇪ ︺    ↵ ⇪ ⇥
+       ` ⇧ ︺    ↵ ⇪ ⇥
   ",
   hands: "
     l l l l l   r r r r r r r
     l l l l l   r r r r r r r
     l l l l l   r r r r r r r
     l l l l l   r r r r r
-       l l l     r r r
+       t t t     t t t
   ",
   fingers: "
     1 2 3 4 4   4 4 3 2 1 1 1
@@ -96,13 +98,13 @@ pub const COMPACT_ORTHO: Geometry = Geometry {
     q w e r t   y u i o p
     a s d f g   h j k l ;
     z x c v b   n m , . /
-         ⇪ ⇥     ↵ ︺
+         ⇧ ⇥     ↵ ︺
   ",
   hands: "
     l l l l l   r r r r r
     l l l l l   r r r r r
     l l l l l   r r r r r
-         l l     r r
+         t t     t t
   ",
   fingers: "
     1 2 3 4 4   4 4 3 2 1
@@ -124,9 +126,13 @@ pub const COMPACT_ORTHO: Geometry = Geometry {
   "
 };
 
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub enum Symbol {
+use strum::IntoEnumIterator; // 0.17.1
+use strum_macros::EnumIter; // 0.17.1
+
+#[derive(EnumIter)]
+#[derive(Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum SpecialSymbol {
   Tab,
   Space,
   Return,
@@ -134,8 +140,8 @@ pub enum Symbol {
   RightShift
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Copy, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum Finger {
   Pinky,
   Ring,
@@ -144,11 +150,12 @@ pub enum Finger {
   Thumb
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Copy, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum Hand {
   Left,
-  Right
+  Right,
+  Thumb // don't treat thumbs as hands so they wouldn't penalised for the same hand actions
 }
 
 #[derive(Debug)]
@@ -160,18 +167,55 @@ pub struct Info {
   pub effort: usize,
 }
 
+pub type SpecialsMapping = HashMap<SpecialSymbol, Info>;
+
 impl Geometry {
-  pub fn info_for(self: &Self, position: Position, shifted: bool) -> Option<Info> {
+  pub fn info_for(self: &Self, position: Position) -> Option<Info> {
     match self.position_in_geometry(position) {
       Some(position) => {
         let hand = self.hand_for(position);
         let finger = self.finger_for(position);
-        let effort = self.effort_for(position, shifted);
+        let effort = self.effort_for(position);
 
         Some(Info { hand, finger, effort, position })
       },
       _ => None
     }
+  }
+
+  pub fn specials_info(self: &Self) -> SpecialsMapping {
+    let mut specials: SpecialsMapping = SpecialsMapping::new();
+
+    for symbol in SpecialSymbol::iter() {
+      match self.special_info(symbol) {
+        Some(info) => specials.insert(symbol, info),
+        None if symbol == SpecialSymbol::RightShift =>
+          specials.insert(symbol, self.special_info(SpecialSymbol::LeftShift).unwrap()),
+        _ => None
+      };
+    }
+
+    specials
+  }
+
+  fn special_info(self: &Self, symbol: SpecialSymbol) -> Option<Info> {
+    match parser::position_for(self.template, self.special_symbol_to_string(symbol)) {
+      Some(position) => self.info_for(position),
+      _ => None
+    }
+  }
+
+  fn special_symbol_to_string(self: &Self, symbol: SpecialSymbol) -> String {
+    let str = match symbol {
+      SpecialSymbol::Tab => "⇥",
+      SpecialSymbol::Space => "︺",
+      SpecialSymbol::Return => "↵",
+      SpecialSymbol::LeftShift => "⇧",
+      SpecialSymbol::RightShift => "⇪",
+      _ => "Noop"
+    };
+
+    str.to_string()
   }
 
   // remaps a standard QUERTY layout position to the geometry template position
@@ -193,19 +237,14 @@ impl Geometry {
     parser::value_for(querty, position_in_querty)
   }
 
-  pub fn effort_for(self: &Self, position: Position, shifted: bool) -> usize {
-    let mut effort: usize = parser::value_for(self.efforts, position).unwrap().parse().unwrap();
-
-    if shifted {
-      let hand = self.hand_for(position);
-      effort += if hand == Hand::Left { 1 } else { 2 };
-      //effort += if hand == Hand::Left { self.right_shift_effort } else { self.left_shift_effort };
+  fn effort_for(self: &Self, position: Position) -> usize {
+    match parser::value_for(self.efforts, position) {
+      Some(value) => value.parse().unwrap(),
+      _ => panic!("Cannot find the effort mapping")
     }
-
-    effort
   }
 
-  pub fn finger_for(self: &Self, position: Position) -> Finger {
+  fn finger_for(self: &Self, position: Position) -> Finger {
     match parser::value_for(self.fingers, position).as_ref().map(String::as_str) {
       Some("1") => Finger::Pinky,
       Some("2") => Finger::Ring,
@@ -216,10 +255,11 @@ impl Geometry {
     }
   }
 
-  pub fn hand_for(self: &Self, position: Position) -> Hand {
+  fn hand_for(self: &Self, position: Position) -> Hand {
     match parser::value_for(self.hands, position).as_ref().map(String::as_str) {
       Some("l") => Hand::Left,
       Some("r") => Hand::Right,
+      Some("t") => Hand::Thumb,
       _ => panic!("Unknown hand code")
     }
   }
@@ -233,7 +273,7 @@ mod test {
 
   #[test]
   fn finds_engtries_correctly() {
-    assert_eq!(GEO.info_for((1, 0), false), Some(
+    assert_eq!(GEO.info_for((4, 2)), Some(
       Info {
         position: (4,5),
         hand: Hand::Left,

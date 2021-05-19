@@ -19,16 +19,6 @@ pub fn position_for(template: &'static str, value: String) -> Option<Position> {
   mapping.iter().find_map(|(key, val)| if *val == value { Some(*key) } else { None })
 }
 
-pub fn all_positions_for(template: &'static str, value: String) -> Vec<Position> {
-  let mut list: Vec<Position> = mapping_for(template).iter()
-    .filter(|(key, val)| **val == value)
-    .map(|(key,val)| *key)
-    .collect();
-  
-  list.sort();
-  list
-}
-
 #[cached]
 fn mapping_for(template: &'static str) -> Mapping {
   let mut mapping = Mapping::new();
@@ -79,18 +69,5 @@ mod test {
   #[test]
   fn it_returns_none_when_a_value_doesnt_exists() {
     assert_eq!(position_for(TEMPLATE, String::from("shnt")), None);
-  }
-
-  #[test]
-  fn it_returns_all_known_positions_for_a_value() {
-    let template = "
-     a b c 
-       b a
-    ";
-
-    assert_eq!(all_positions_for(template, String::from("a")), vec![(1, 2), (2, 1)]);
-    assert_eq!(all_positions_for(template, String::from("b")), vec![(1, 1), (2, 2)]);
-    assert_eq!(all_positions_for(template, String::from("c")), vec![(2,3)]);
-    assert_eq!(all_positions_for(template, String::from("d")), vec![]);
   }
 }
