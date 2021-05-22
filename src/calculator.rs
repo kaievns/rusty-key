@@ -1,69 +1,22 @@
 use crate::config::*;
-use crate::parser::{Position};
-use crate::geometry::{Key};
+use crate::parser::Position;
+use crate::geometry::{Key, Finger};
 use crate::keyboard::*;
 use crate::summary::*;
 
 use hashbrown::HashSet;
 
-type PositionPairs = HashSet<(Position, Position)>;
-
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard,
   bad_starters: HashSet<Position>,
-  rolling_pairs_map: PositionPairs
-}
-
-fn calculate_bad_startes() -> HashSet<Position> {
-  let qwerty = Keyboard::qwerty();
-  let mut coordinates = HashSet::new();
-
-  for symbol in qwerty.geometry.bad_starters.trim().split_whitespace() {
-    let key = qwerty.key_for(&symbol.chars().next().unwrap()).unwrap();
-
-    coordinates.insert(key.position);
-  }
-
-  coordinates
-}
-
-fn calculate_rolling_pairs() -> PositionPairs {
-  let qwerty = Keyboard::qwerty();
-  let mut pairs = HashSet::new();
-
-  for pair in qwerty.geometry.rolling_pairs.trim().split_whitespace() {
-    let mut chars = pair.chars();
-
-    let first_letter = chars.next().unwrap();
-    let second_letter = chars.next().unwrap();
-
-    let first_key = qwerty.key_for(&first_letter).unwrap();
-    let second_key = qwerty.key_for(&second_letter).unwrap();
-
-    pairs.insert((first_key.position, second_key.position));
-  }
-
-  pairs
-}
-
-fn row_distance(last_key: &Key, next_key: &Key) -> usize {
-  let last_row = last_key.position.0;
-  let next_row = next_key.position.0;
-
-  if last_row == 0 {
-    0 // last key was space
-  } else if last_row > next_row { 
-    last_row - next_row 
-  } else { 
-    next_row - last_row
-  }
+  rolling_pairs_map: HashSet<(Position, Position)>
 }
 
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
-    let bad_starters = calculate_bad_startes();
-    let rolling_pairs_map = calculate_rolling_pairs();
+    let bad_starters = keyboard.geometry.bad_starting_positions();
+    let rolling_pairs_map = keyboard.geometry.rolling_position_pairs();
     
     Calculator { keyboard, bad_starters, rolling_pairs_map }
   }
@@ -93,10 +46,10 @@ impl Calculator<'_> {
           distance += 1;
           effort += key.effort;
 
-          if key.position.0 != 0 { // not a space
+          if key.finger != Finger::Thumb { // skip thumbs
             *usage.entry(key.position).or_insert(0) += 1;
 
-            if key != previous_key && previous_key.position.0 != 0 { // not a space eithe
+            if key != previous_key && previous_key.finger != Finger::Thumb { // skip thumbs
               if previous_key.hand == key.hand {
                 let rolling = self.is_rolling_combo(previous_key, key);
           
@@ -135,7 +88,7 @@ impl Calculator<'_> {
     }
     
     if !rolling {
-      match row_distance(last_key, next_key) {
+      match self.row_distance(last_key, next_key) {
         2 => {
           penalties += ROW_SKIP_PENALTY;
         },
@@ -148,6 +101,17 @@ impl Calculator<'_> {
 
     penalties
   }
+
+  fn row_distance(self: &Self, last_key: &Key, next_key: &Key) -> usize {
+    let last_row = last_key.position.0;
+    let next_row = next_key.position.0;
+  
+    if last_row > next_row { 
+      last_row - next_row 
+    } else { 
+      next_row - last_row
+    }
+  }  
 
   fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key, rolling: bool) -> usize {
     if !rolling && self.bad_starters.contains(&last_key.position) {

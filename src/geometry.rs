@@ -1,6 +1,6 @@
 use crate::parser;
 use crate::parser::{Position};
-use hashbrown::HashMap;
+use hashbrown::{HashMap,HashSet};
 
 #[derive(Debug)]
 pub struct Geometry {
@@ -8,8 +8,8 @@ pub struct Geometry {
   fingers: &'static str,
   hands: &'static str,
   efforts: &'static str,
-  pub rolling_pairs: &'static str,
-  pub bad_starters: &'static str
+  rolling_pairs: &'static str,
+  bad_starters: &'static str
 }
 
 pub const US_PC_KEYBOARD: Geometry = Geometry {
@@ -44,7 +44,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
   rolling_pairs: "
     we wf   er ew   re   io    oi oj
     as af   sd se sf  df  fe fw fs fa   ji jl j; jo   kj  lk li lj lm  ;l ;j
-    vd vw vs va    mk ml m; mo mi ?l
+    vd vw vs va    mk ml m; mo mi //l
   ",
   bad_starters: "
     q    r t y u     p [ ] \\
@@ -162,7 +162,7 @@ pub struct Key {
   pub position: Position,
   pub hand: Hand,
   pub finger: Finger,
-  pub effort: usize,
+  pub effort: usize
 }
 
 pub type SpecialsMapping = HashMap<SpecialSymbol, Key>;
@@ -203,6 +203,35 @@ impl Geometry {
       Hand::Left => self.special_effort(&SpecialSymbol::RightShift),
       Hand::Right => self.special_effort(&SpecialSymbol::LeftShift)
     }
+  }
+
+  pub fn bad_starting_positions(self: &Self) -> HashSet<Position> {
+    let mut positions = HashSet::new();
+
+    for symbol in self.bad_starters.trim().split_whitespace() {
+      let char = symbol.chars().next().unwrap();
+      positions.insert(parser::position_for(self.template, char.to_string()).unwrap());
+    }
+
+    positions
+  }
+
+  pub fn rolling_position_pairs(self: &Self) -> HashSet<(Position, Position)> {
+    let mut pairs = HashSet::new();
+
+    for pair in self.rolling_pairs.trim().split_whitespace() {
+      let mut chars = pair.chars();
+
+      let first_letter = chars.next().unwrap();
+      let second_letter = chars.next().unwrap();
+
+      let first_position = parser::position_for(self.template, first_letter.to_string()).unwrap();
+      let second_position = parser::position_for(self.template, second_letter.to_string()).unwrap();
+
+      pairs.insert((first_position, second_position));
+    }
+
+    pairs
   }
 
   fn special_key(self: &Self, symbol: SpecialSymbol) -> Option<Key> {
@@ -286,6 +315,19 @@ mod test {
      };
   );
 
+  macro_rules! set {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_set = HashSet::new();
+            $(
+                temp_set.insert($x);
+            )*
+            temp_set
+        }
+    };
+}
+
+
   const GEO: Geometry = US_PC_KEYBOARD;
 
   #[test]
@@ -340,5 +382,78 @@ mod test {
       SpecialSymbol::LeftShift  => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
       SpecialSymbol::RightShift => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }
     });
+  }
+
+  #[test]
+  fn calculate_bad_startes() {
+    assert_eq!(US_PC_KEYBOARD.bad_starting_positions(), set! [
+      (1, 1), 
+      (1, 4), 
+      (1, 5), 
+      (1, 6), 
+      (1, 7), 
+      (1, 10), 
+      (1, 11), 
+      (1, 12), 
+      (1, 13), 
+      (2, 2), 
+      (2, 4), 
+      (2, 5), 
+      (2, 7), 
+      (2, 10),
+      (3, 1), 
+      (3, 2), 
+      (3, 3), 
+      (3, 5), 
+      (3, 6), 
+      (3, 8), 
+      (3, 9), 
+      (3, 10)
+    ]);
+  }
+
+  #[test]
+  fn calculate_rolling_pairs() {
+    assert_eq!(US_PC_KEYBOARD.rolling_position_pairs(), set! [
+      ((2, 6), (2, 9)), 
+      ((2, 0), (2, 3)), 
+      ((2, 3), (1, 2)), 
+      ((2, 0), (2, 1)), 
+      ((3, 10), (3, 10)), 
+      ((2, 1), (2, 2)), 
+      ((2, 2), (2, 3)), 
+      ((2, 9), (2, 8)), 
+      ((2, 6), (1, 9)), 
+      ((1, 2), (1, 3)), 
+      ((2, 8), (3, 7)), 
+      ((3, 7), (1, 8)), 
+      ((1, 8), (1, 9)), 
+      ((3, 7), (2, 8)), 
+      ((3, 4), (2, 0)), 
+      ((2, 8), (2, 6)), 
+      ((2, 8), (2, 7)), 
+      ((3, 7), (1, 9)), 
+      ((1, 9), (1, 8)), 
+      ((2, 3), (1, 3)), 
+      ((2, 1), (2, 3)), 
+      ((1, 2), (2, 3)), 
+      ((1, 9), (2, 6)), 
+      ((3, 7), (2, 9)), 
+      ((3, 4), (2, 1)), 
+      ((2, 9), (2, 6)), 
+      ((1, 3), (1, 2)), 
+      ((3, 4), (2, 2)), 
+      ((2, 7), (2, 6)), 
+      ((3, 4), (1, 2)), 
+      ((2, 8), (1, 8)), 
+      ((2, 1), (1, 3)), 
+      ((2, 6), (2, 8)), 
+      ((2, 3), (2, 1)), 
+      ((1, 3), (1, 4)), 
+      ((2, 3), (2, 0)), 
+      ((2, 6), (1, 8)), 
+      ((3, 7), (2, 7)), 
+      ((1, 4), (1, 3))
+    ]);
   }
 }

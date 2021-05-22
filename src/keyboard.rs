@@ -2,7 +2,6 @@ use std::fmt;
 
 use hashbrown::HashMap;
 
-use crate::config::*;
 use crate::layout::*;
 use crate::geometry::*;
 
@@ -23,10 +22,6 @@ impl fmt::Display for Keyboard {
 }
 
 impl Keyboard {
-  pub fn qwerty() -> Keyboard {
-    Self::from(QWERTY, DEFAULT_GEOMETRY)
-  }
-
   pub fn from(layout: Layout, geometry: Geometry) -> Keyboard {
     let name = layout.name();
     let keys = Self::keys_from(&layout, &geometry);
