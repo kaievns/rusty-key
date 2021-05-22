@@ -15,11 +15,11 @@ pub struct Calculator<'a> {
 }
 
 fn calculate_bad_startes() -> HashSet<Position> {
-  let querty = Keyboard::querty();
+  let qwerty = Keyboard::qwerty();
   let mut coordinates = HashSet::new();
 
-  for symbol in querty.geometry.bad_starters.trim().split_whitespace() {
-    let key = querty.key_for(&symbol.chars().next().unwrap()).unwrap();
+  for symbol in qwerty.geometry.bad_starters.trim().split_whitespace() {
+    let key = qwerty.key_for(&symbol.chars().next().unwrap()).unwrap();
 
     coordinates.insert(key.position);
   }
@@ -28,17 +28,17 @@ fn calculate_bad_startes() -> HashSet<Position> {
 }
 
 fn calculate_rolling_pairs() -> PositionPairs {
-  let querty = Keyboard::querty();
+  let qwerty = Keyboard::qwerty();
   let mut pairs = HashSet::new();
 
-  for pair in querty.geometry.rolling_pairs.trim().split_whitespace() {
+  for pair in qwerty.geometry.rolling_pairs.trim().split_whitespace() {
     let mut chars = pair.chars();
 
     let first_letter = chars.next().unwrap();
     let second_letter = chars.next().unwrap();
 
-    let first_key = querty.key_for(&first_letter).unwrap();
-    let second_key = querty.key_for(&second_letter).unwrap();
+    let first_key = qwerty.key_for(&first_letter).unwrap();
+    let second_key = qwerty.key_for(&second_letter).unwrap();
 
     pairs.insert((first_key.position, second_key.position));
   }
@@ -180,7 +180,7 @@ mod test {
   );
 
   fn run_text(text: &'static str) -> Summary {
-    let keyboard = Keyboard::querty();
+    let keyboard = Keyboard::qwerty();
     let calculator = Calculator::from(&keyboard);
   
     calculator.run(&text.to_string())

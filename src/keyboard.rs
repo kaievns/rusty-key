@@ -5,7 +5,6 @@ use hashbrown::HashMap;
 use crate::config::*;
 use crate::parser::{Position};
 use crate::layout::*;
-use crate::layouts::{QUERTY};
 use crate::geometry::*;
 
 pub type KeyMap = HashMap<char, Key>;
@@ -30,21 +29,17 @@ pub struct Key {
 
 impl fmt::Display for Keyboard {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", print(&self.layout))
+    write!(f, "{}", self.layout)
   }
 }
 
 impl Keyboard {
-  pub fn querty() -> Keyboard {
-    Self::parse(QUERTY)
-  }
-
-  pub fn parse(layout: &str) -> Keyboard {
-    Self::from(parse(layout.to_string()), DEFAULT_GEOMETRY)
+  pub fn qwerty() -> Keyboard {
+    Self::from(QWERTY, DEFAULT_GEOMETRY)
   }
 
   pub fn from(layout: Layout, geometry: Geometry) -> Keyboard {
-    let name = Self::name_from(&layout);
+    let name = layout.name();
     let keys = Self::keys_from(&layout, &geometry);
     
     Keyboard { name, layout, geometry, key_map: keys }
@@ -54,24 +49,17 @@ impl Keyboard {
     self.key_map.get(symbol)
   }
 
-  fn name_from(layout: &Layout) -> String {
-    let first6 = &layout[13..19];
-    let name = first6.iter().fold(String::new(), |name, key| format!("{}{}", name, key.normal));
-
-    name.to_uppercase()
-  }
-
   fn keys_from(layout: &Layout, geometry: &Geometry) -> KeyMap {
     let mut map = KeyMap::new();
     let specials = geometry.specials_info();
 
-    for key in layout {
+    for key in layout.entries() {
       match geometry.info_for_layout(key.position) {
         Some(info) => {
-          map.insert(key.normal.to_lowercase().chars().next().unwrap(), Key {
+          map.insert(key.normal.chars().next().unwrap(), Key {
             shifted: false, position: info.position, hand: info.hand, finger: info.finger, effort: info.effort
           });
-          map.insert(key.shifted.to_uppercase().chars().next().unwrap(), Key {
+          map.insert(key.shifted.chars().next().unwrap(), Key {
             shifted: true, position: info.position, hand: info.hand, finger: info.finger, 
             effort: info.effort + Keyboard::shift_effort(info.hand, &specials)
           });
@@ -81,14 +69,8 @@ impl Keyboard {
     }
 
     for (key, info) in specials.iter() {
-      match key {
-        SpecialSymbol::Tab => map.insert('\t', Key {
-          shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
-        }),
-        SpecialSymbol::Space => map.insert(' ', Key {
-          shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
-        }),
-        SpecialSymbol::Return => map.insert('\n', Key {
+      match Keyboard::special_to_char(key) {
+        Some(char) => map.insert(char, Key {
           shifted: false, hand: info.hand, finger: info.finger, effort: info.effort, position: info.position
         }),
         _ => None
@@ -96,6 +78,15 @@ impl Keyboard {
     }
 
     map
+  }
+
+  fn special_to_char(special: &SpecialSymbol) -> Option<char> {
+    match special {
+      SpecialSymbol::Tab => Some('\t'),
+      SpecialSymbol::Space => Some(' '),
+      SpecialSymbol::Return => Some('\n'),
+      _ => None
+    }
   }
 
   fn shift_effort(hand: Hand, specials: &SpecialsMapping) -> usize {
@@ -112,16 +103,16 @@ mod test {
 
   #[test]
   fn gets_the_right_name() {
-    let keyboard = Keyboard::querty();
+    let keyboard = Keyboard::qwerty();
 
     assert_eq!(keyboard.name, "QWERTY".to_string());
   }
 
   #[test]
   fn has_correct_keys_layout() {
-    let keyboard = Keyboard::querty();
+    let keyboard = Keyboard::qwerty();
 
-    let first_row = &keyboard.layout[13..23];
+    let first_row = &keyboard.layout.entries()[13..23];
     let letters = first_row.iter().fold(String::new(), |name, key| format!("{}{}", name, key.normal));
 
     assert_eq!(letters, "qwertyuiop");
@@ -129,7 +120,7 @@ mod test {
 
   #[test]
   fn builds_correct_key_mapping() {
-    let keyboard = Keyboard::querty();
+    let keyboard = Keyboard::qwerty();
 
     assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (3, 0), hand: Hand::Left, finger: Finger::Pinky, shifted: false, effort: 6 }));
     assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, shifted: true, effort: 12 }));
@@ -147,7 +138,7 @@ mod test {
 
   #[test]
   fn gives_access_to_keys() {
-    let keyboard = Keyboard::querty();
+    let keyboard = Keyboard::qwerty();
 
     assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (3, 0), hand: Hand::Left, finger: Finger::Pinky, shifted: false, effort: 6 }));
     assert_eq!(keyboard.key_for(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, shifted: true, effort: 12 }));

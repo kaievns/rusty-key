@@ -3,6 +3,7 @@ use cached::proc_macro::cached;
 
 pub type Position = (usize, usize);
 pub type Mapping = HashMap<Position, String>;
+pub type TwoLayerMapping = HashMap<Position, (String, String)>;
 
 pub fn value_for(template: &'static str, position: Position) -> Option<String> {
   match mapping_for(template).get(&position) {
@@ -18,7 +19,7 @@ pub fn position_for(template: &'static str, value: String) -> Option<Position> {
 }
 
 #[cached]
-fn mapping_for(template: &'static str) -> Mapping {
+pub fn mapping_for(template: &'static str) -> Mapping {
   let mut mapping = Mapping::new();
 
   for (row, line) in template.trim().lines().enumerate() {
@@ -33,9 +34,49 @@ fn mapping_for(template: &'static str) -> Mapping {
   mapping
 }
 
+pub fn two_layer_mapping_for(template: &'static str) -> TwoLayerMapping {
+  let mut mapping = TwoLayerMapping::new();
+  let lines: Vec<&str> = template.trim().lines().collect();
+  
+  for (row, lines) in lines.chunks(2).enumerate() {
+    match lines {
+      [shifted_line, normals_line] => {
+        let normals = line_to_symbols(normals_line);
+        let shifted = line_to_symbols(shifted_line);
+
+        for (pos, (up, low)) in shifted.iter().zip(normals).enumerate() {
+          mapping.insert((row, pos), (up.to_string(), low.to_string()));
+        }
+      },
+      _ => panic!("unbalanced template lines")
+    }
+  }
+
+  mapping
+}
+
+fn line_to_symbols(line: &str) -> Vec<String> {
+  let trimmed = line.trim().to_string();
+  let chunks = trimmed.split_whitespace();
+
+  chunks.map(String::from).collect()
+}
+
 #[cfg(test)]
 mod test {
   use super::*;
+
+  macro_rules! map(
+    { $($key:expr => $value:expr),+ } => {
+        {
+            let mut m = ::hashbrown::HashMap::new();
+            $(
+                m.insert($key, $value);
+            )+
+            m
+        }
+     };
+  );
 
   const TEMPLATE: &'static str = "
     1   2 3  
@@ -65,5 +106,29 @@ mod test {
   #[test]
   fn it_returns_none_when_a_value_doesnt_exists() {
     assert_eq!(position_for(TEMPLATE, String::from("shnt")), None);
+  }
+
+  #[test]
+  fn it_builds_to_layer_mappings_correctly() {
+    let template = "
+      W L R B Z :
+      w l r b z ;
+        S H N T (
+        s h n t ,
+    ";
+
+    assert_eq!(two_layer_mapping_for(template), map! {
+      (0, 0) => ("W".to_string(), "w".to_string()), 
+      (0, 1) => ("L".to_string(), "l".to_string()), 
+      (0, 2) => ("R".to_string(), "r".to_string()), 
+      (0, 3) => ("B".to_string(), "b".to_string()),
+      (0, 4) => ("Z".to_string(), "z".to_string()), 
+      (0, 5) => (":".to_string(), ";".to_string()), 
+      (1, 0) => ("S".to_string(), "s".to_string()), 
+      (1, 1) => ("H".to_string(), "h".to_string()), 
+      (1, 2) => ("N".to_string(), "n".to_string()), 
+      (1, 3) => ("T".to_string(), "t".to_string()), 
+      (1, 4) => ("(".to_string(), ",".to_string()) 
+    });
   }
 }

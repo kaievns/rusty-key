@@ -6,23 +6,23 @@ mod geometry;
 mod keyboard;
 mod calculator;
 mod summary;
-mod layouts;
 
 use crate::keyboard::*;
 use crate::calculator::*;
-use crate::layouts::{QUERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
+use crate::config::{DEFAULT_GEOMETRY};
+use crate::layout::{QWERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
 
 fn main() -> Result<(), std::io::Error> {
   let data = source::load(String::from("text"))?;
   println!("Loaded text: {:}", data.len());
 
   let layouts = [
-    ("QUERTY", Keyboard::parse(QUERTY)),
-    ("DVORAK", Keyboard::parse(DVORAK)),
-    ("COLEMAK", Keyboard::parse(COLEMAK)),
-    ("WORKMAN", Keyboard::parse(WORKMAN)),
-    ("THE-1", Keyboard::parse(THE_1)),
-    ("HALMAK 2.1", Keyboard::parse(HALMAK_21))
+    ("QWERTY", Keyboard::from(QWERTY, DEFAULT_GEOMETRY)),
+    ("DVORAK", Keyboard::from(DVORAK, DEFAULT_GEOMETRY)),
+    ("COLEMAK", Keyboard::from(COLEMAK, DEFAULT_GEOMETRY)),
+    ("WORKMAN", Keyboard::from(WORKMAN, DEFAULT_GEOMETRY)),
+    ("THE-1", Keyboard::from(THE_1, DEFAULT_GEOMETRY)),
+    ("HALMAK 2.1", Keyboard::from(HALMAK_21, DEFAULT_GEOMETRY))
   ];
 
   for (name, layout) in layouts.iter() {
