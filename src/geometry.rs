@@ -12,6 +12,7 @@ pub struct Geometry {
   bad_starters: &'static str
 }
 
+#[allow(dead_code)]
 pub const US_PC_KEYBOARD: Geometry = Geometry {
   template: "
     ` 1 2 3 4 5 6 7 8 9 0 - =
@@ -53,6 +54,7 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
   "
 };
 
+#[allow(dead_code)]
 pub const FULL_ORTHO: Geometry = Geometry {
   template: "
     1 2 3 4 5   6 7 8 9 0 - =
@@ -93,6 +95,7 @@ pub const FULL_ORTHO: Geometry = Geometry {
   "
 };
 
+#[allow(dead_code)]
 pub const COMPACT_ORTHO: Geometry = Geometry {
   template: "
     q w e r t   y u i o p

@@ -32,7 +32,6 @@ impl Calculator<'_> {
     let mut overheads: usize = 0;
     let mut awkwardness: usize = 0;
     let mut rollingness: usize = 0;
-    let mut usage = UsageMap::new();
     
     let space_key = self.keyboard.key_for(&' ').unwrap();
 
@@ -47,7 +46,6 @@ impl Calculator<'_> {
           effort += key.effort;
 
           if key.finger != Finger::Thumb { // skip thumbs
-            *usage.entry(key.position).or_insert(0) += 1;
 
             if key != previous_key && previous_key.finger != Finger::Thumb { // skip thumbs
               if previous_key.hand == key.hand {
@@ -77,7 +75,7 @@ impl Calculator<'_> {
       }
     }
 
-    Summary { effort, distance, overheads, awkwardness, rollingness, usage }
+    Summary { effort, distance, overheads, awkwardness, rollingness }
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> usize {
@@ -131,21 +129,11 @@ impl Calculator<'_> {
 #[cfg(test)]
 mod test {
   use super::*;
-
-  macro_rules! map(
-    { $($key:expr => $value:expr),+ } => {
-        {
-            let mut m = ::hashbrown::HashMap::new();
-            $(
-                m.insert($key, $value);
-            )+
-            m
-        }
-     };
-  );
+  use crate::layout::QWERTY;
+  use crate::geometry::US_PC_KEYBOARD;
 
   fn run_text(text: &'static str) -> Summary {
-    let keyboard = Keyboard::qwerty();
+    let keyboard = Keyboard::from(QWERTY, US_PC_KEYBOARD);
     let calculator = Calculator::from(&keyboard);
   
     calculator.run(&text.to_string())
@@ -158,17 +146,7 @@ mod test {
       distance: 8,
       overheads: 0,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (3, 1) => 1,
-        (3, 2) => 1,
-        (3, 3) => 1,
-        (3, 6) => 1,
-        (3, 7) => 1,
-        (3, 8) => 1,
-        (3, 9) => 1
-      }
+      rollingness: 0
     })
   }
 
@@ -181,11 +159,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (2, 3) => 1,
-        (3, 3) => 1
-      }
+      rollingness: 0
     })
   }
 
@@ -196,10 +170,7 @@ mod test {
       distance: 2,
       overheads: 0,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (2, 3) => 2
-      }
+      rollingness: 0
     })
   }
 
@@ -212,11 +183,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (2, 0) => 1,
-        (3, 4) => 1
-      }
+      rollingness: 0
     })
   }
 
@@ -229,11 +196,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (1, 3) => 1,
-        (3, 0) => 1
-      }
+      rollingness: 0
     })
   }
 
@@ -246,11 +209,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (3, 1) => 1
-      }
+      rollingness: 0
     });
   }
 
@@ -261,11 +220,7 @@ mod test {
       distance: 2,
       overheads: 0,
       awkwardness: 0,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (3, 7) => 1
-      }
+      rollingness: 0
     });
   }
 
@@ -278,11 +233,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (2, 1) => 1
-      }
+      rollingness: 0
     });
   }
 
@@ -295,11 +246,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (1, 3) => 1
-      }
+      rollingness: 0
     });
   }
 
@@ -312,11 +259,7 @@ mod test {
       distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0,
-      usage: map! {
-        (3, 0) => 1,
-        (1, 0) => 1
-      }
+      rollingness: 0
     });
   }
 
@@ -329,13 +272,7 @@ mod test {
       distance: 4,
       overheads: penalty,
       awkwardness: 0,
-      rollingness: 2,
-      usage: map! {
-        (2, 8) => 1,
-        (2, 3) => 1,
-        (3, 7) => 1,
-        (3, 1) => 1
-      }
+      rollingness: 2
     });
   } 
 }

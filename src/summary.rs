@@ -1,13 +1,8 @@
 use std::fmt;
-use hashbrown::HashMap;
-use crate::parser::{Position};
-
-pub type UsageMap = HashMap<Position, usize>;
 
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct Summary {
-  pub usage: UsageMap,
   pub effort: usize,
   pub distance: usize,
   pub overheads: usize,

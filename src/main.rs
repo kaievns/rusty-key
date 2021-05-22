@@ -5,6 +5,7 @@ mod layout;
 mod geometry;
 mod keyboard;
 mod calculator;
+mod frequency;
 mod summary;
 
 use crate::keyboard::*;
