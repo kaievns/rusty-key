@@ -157,41 +157,40 @@ pub enum Hand {
   Right
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
-pub struct Info {
+#[derive(Copy,Clone,Debug,PartialEq)]
+pub struct Key {
   pub position: Position,
   pub hand: Hand,
   pub finger: Finger,
   pub effort: usize,
 }
 
-pub type SpecialsMapping = HashMap<SpecialSymbol, Info>;
+pub type SpecialsMapping = HashMap<SpecialSymbol, Key>;
 
 impl Geometry {
-  pub fn info_for_layout(self: &Self, position: Position) -> Option<Info> {
+  pub fn key_for_layout(self: &Self, position: Position) -> Option<Key> {
     match self.layout_to_geometry(position) {
-      Some(position) => Some(self.info_for_geometry(position)),
+      Some(position) => Some(self.key_for_geometry(position)),
       _ => None
     }
   }
 
-  pub fn info_for_geometry(self: &Self, position: Position) -> Info {
+  pub fn key_for_geometry(self: &Self, position: Position) -> Key {
     let hand = self.hand_for(position);
     let finger = self.finger_for(position);
     let effort = self.effort_for(position);
 
-    Info { hand, finger, effort, position }
+    Key { hand, finger, effort, position }
   }
 
-  pub fn specials_info(self: &Self) -> SpecialsMapping {
+  pub fn special_keys(self: &Self) -> SpecialsMapping {
     let mut specials: SpecialsMapping = SpecialsMapping::new();
 
     for symbol in SpecialSymbol::iter() {
-      match self.special_info(symbol) {
-        Some(info) => specials.insert(symbol, info),
+      match self.special_key(symbol) {
+        Some(key) => specials.insert(symbol, key),
         None if symbol == SpecialSymbol::RightShift =>
-          specials.insert(symbol, self.special_info(SpecialSymbol::LeftShift).unwrap()),
+          specials.insert(symbol, self.special_key(SpecialSymbol::LeftShift).unwrap()),
         _ => None
       };
     }
@@ -199,11 +198,22 @@ impl Geometry {
     specials
   }
 
-  fn special_info(self: &Self, symbol: SpecialSymbol) -> Option<Info> {
+  pub fn shift_effort_for(self: &Self, key: &Key) -> usize {
+    match key.hand {
+      Hand::Left => self.special_effort(&SpecialSymbol::RightShift),
+      Hand::Right => self.special_effort(&SpecialSymbol::LeftShift)
+    }
+  }
+
+  fn special_key(self: &Self, symbol: SpecialSymbol) -> Option<Key> {
     match parser::position_for(self.template, self.special_symbol_to_string(symbol)) {
-      Some(position) => Some(self.info_for_geometry(position)),
+      Some(position) => Some(self.key_for_geometry(position)),
       _ => None
     }
+  }
+
+  fn special_effort(self: &Self, symbol: &SpecialSymbol) -> usize {
+    self.special_key(*symbol).unwrap().effort
   }
 
   fn special_symbol_to_string(self: &Self, symbol: SpecialSymbol) -> String {
@@ -280,55 +290,55 @@ mod test {
 
   #[test]
   fn finds_entries_correctly() {
-    assert_eq!(GEO.info_for_layout((0, 1)), Some(Info {
+    assert_eq!(GEO.key_for_layout((0, 1)), Some(Key {
       position: (0, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 14
     }));
-    assert_eq!(GEO.info_for_layout((1, 2)), Some(Info {
+    assert_eq!(GEO.key_for_layout((1, 2)), Some(Key {
       position: (1, 3), hand: Hand::Left, finger: Finger::Middle, effort: 1
     }));
-    assert_eq!(GEO.info_for_layout((2, 5)), Some(Info {
+    assert_eq!(GEO.key_for_layout((2, 5)), Some(Key {
       position: (2, 5), hand: Hand::Right, finger: Finger::Pointy, effort: 7
     }));
-    assert_eq!(GEO.info_for_layout((3, 7)), Some(Info {
+    assert_eq!(GEO.key_for_layout((3, 7)), Some(Key {
       position: (3, 8), hand: Hand::Right, finger: Finger::Middle, effort: 5
     }));
   }
 
   #[test]
   fn returns_none_if_not_found() {
-    assert_eq!(GEO.info_for_layout((9,9)), None);
+    assert_eq!(GEO.key_for_layout((9,9)), None);
   }
 
   #[test]
-  fn specials_info_check() {
-    assert_eq!(GEO.specials_info(), map! {
-      SpecialSymbol::Tab        => Info { position: (1, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 15 }, 
-      SpecialSymbol::Space      => Info { position: (4, 0),  hand: Hand::Right, finger: Finger::Thumb, effort: 0  },
-      SpecialSymbol::Return     => Info { position: (2, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 11 }, 
-      SpecialSymbol::LeftShift  => Info { position: (3, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 5  }, 
-      SpecialSymbol::RightShift => Info { position: (3, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 12 }
+  fn special_keys_check() {
+    assert_eq!(GEO.special_keys(), map! {
+      SpecialSymbol::Tab        => Key { position: (1, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 15 }, 
+      SpecialSymbol::Space      => Key { position: (4, 0),  hand: Hand::Right, finger: Finger::Thumb, effort: 0  },
+      SpecialSymbol::Return     => Key { position: (2, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 11 }, 
+      SpecialSymbol::LeftShift  => Key { position: (3, 0),  hand: Hand::Left,  finger: Finger::Pinky, effort: 5  }, 
+      SpecialSymbol::RightShift => Key { position: (3, 11), hand: Hand::Right, finger: Finger::Pinky, effort: 12 }
     });
   }
 
   #[test]
-  fn specials_info_on_full_ortho() {
-    assert_eq!(FULL_ORTHO.specials_info(), map! {
-      SpecialSymbol::Tab        => Info { position: (4, 5), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::Space      => Info { position: (4, 2), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 },
-      SpecialSymbol::Return     => Info { position: (4, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::LeftShift  => Info { position: (4, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::RightShift => Info { position: (4, 4), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }
+  fn special_keys_on_full_ortho() {
+    assert_eq!(FULL_ORTHO.special_keys(), map! {
+      SpecialSymbol::Tab        => Key { position: (4, 5), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::Space      => Key { position: (4, 2), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 },
+      SpecialSymbol::Return     => Key { position: (4, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::LeftShift  => Key { position: (4, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::RightShift => Key { position: (4, 4), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }
     });
   }
 
   #[test]
-  fn specials_info_on_compact_ortho() {
-    assert_eq!(COMPACT_ORTHO.specials_info(), map! {
-      SpecialSymbol::Tab        => Info { position: (3, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::Space      => Info { position: (3, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 },
-      SpecialSymbol::Return     => Info { position: (3, 2), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::LeftShift  => Info { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::RightShift => Info { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }
+  fn special_keys_on_compact_ortho() {
+    assert_eq!(COMPACT_ORTHO.special_keys(), map! {
+      SpecialSymbol::Tab        => Key { position: (3, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::Space      => Key { position: (3, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 },
+      SpecialSymbol::Return     => Key { position: (3, 2), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::LeftShift  => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
+      SpecialSymbol::RightShift => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }
     });
   }
 }

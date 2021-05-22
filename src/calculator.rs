@@ -1,5 +1,6 @@
 use crate::config::*;
 use crate::parser::{Position};
+use crate::geometry::{Key};
 use crate::keyboard::*;
 use crate::summary::*;
 
