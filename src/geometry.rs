@@ -2,7 +2,7 @@ use crate::parser;
 use crate::parser::{Position};
 use hashbrown::{HashMap,HashSet};
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq,Eq)]
 pub struct Geometry {
   template: &'static str,
   fingers: &'static str,

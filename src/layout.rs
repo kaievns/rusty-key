@@ -100,7 +100,7 @@ impl Layout {
       .collect() 
   }
 
-  pub fn to_string(self: &Self) -> String {
+  pub fn to_string(self: &Self, us_pc: bool) -> String {
     let mut string = "".to_string();
   
     for (i, key) in self.entries().iter().enumerate() {
@@ -109,7 +109,13 @@ impl Layout {
       match i {
         12 => string = format!("{}\n  ", string),
         25 => string = format!("{}\n  ", string),
-        36 => string = format!("{}\n   ", string),
+        36 if us_pc => string = format!("{}\n   ", string),
+        36 if !us_pc => string = format!("{}\n  ", string),
+
+        5 if !us_pc => string = format!("{}  ", string),
+        17 if !us_pc => string = format!("{}  ", string),
+        30 if !us_pc => string = format!("{}  ", string),
+        41 if !us_pc => string = format!("{}  ", string),
         _ => {}
       }
     }
@@ -120,7 +126,7 @@ impl Layout {
 
 impl fmt::Display for Layout {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", self.to_string())
+    write!(f, "{}", self.to_string(true))
   }
 }
 
