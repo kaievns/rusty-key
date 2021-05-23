@@ -22,13 +22,7 @@ impl Calculator<'_> {
   }
 
   pub fn run(self: &Self, text: &String) -> Summary {
-    let really_big_limit = 99999999999999;
-    self.run_to_limit(text, really_big_limit)
-  }
-
-  pub fn run_to_limit(self: &Self, text: &String, effort_limit: usize) -> Summary {
     let mut effort: usize = 0;
-    let mut distance: usize = 0;
     let mut overheads: usize = 0;
     let mut awkwardness: usize = 0;
     let mut rollingness: usize = 0;
@@ -42,40 +36,35 @@ impl Calculator<'_> {
 
       match key {
         Some(key) => {
-          distance += 1;
           effort += key.effort;
 
-          if key.finger != Finger::Thumb { // skip thumbs
-
-            if key != previous_key && previous_key.finger != Finger::Thumb { // skip thumbs
-              if previous_key.hand == key.hand {
-                let rolling = self.is_rolling_combo(previous_key, key);
+          if 
+            previous_key.hand == key.hand &&       // same hand
+            key != previous_key &&                 // different key
+            key.finger != Finger::Thumb &&         // not space
+            previous_key.finger != Finger::Thumb   // not from space
+          {
+            let rolling = self.is_rolling_combo(previous_key, key);
           
-                if rolling {
-                  rollingness += 1;
-                }
-
-                let same_hand_penalties = self.same_hand_penalties(previous_key, key, rolling);
-                let awkwardness_penalty = self.awkward_penalty(previous_key, key, rolling);
-
-                effort += same_hand_penalties + awkwardness_penalty;
-                overheads += same_hand_penalties + awkwardness_penalty;
-                awkwardness += awkwardness_penalty;
-              }
+            if rolling {
+              rollingness += 1;
             }
+
+            let same_hand_penalties = self.same_hand_penalties(previous_key, key, rolling);
+            let awkwardness_penalty = self.awkward_penalty(previous_key, key, rolling);
+
+            effort += same_hand_penalties + awkwardness_penalty;
+            overheads += same_hand_penalties + awkwardness_penalty;
+            awkwardness += awkwardness_penalty;
           }
 
           previous_key = key;
-
-          if effort > effort_limit {
-            break;
-          }
         },
         None => {},
       }
     }
 
-    Summary { effort, distance, overheads, awkwardness, rollingness }
+    Summary { effort, overheads, awkwardness, rollingness }
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> usize {
@@ -143,7 +132,6 @@ mod test {
   fn calculates_basic() {
     assert_eq!(run_text("QUwiEOrp"), Summary {
       effort: 67,
-      distance: 8,
       overheads: 0,
       awkwardness: 0,
       rollingness: 0
@@ -156,7 +144,6 @@ mod test {
 
     assert_eq!(run_text("fr"), Summary {
       effort: penalty + 6,
-      distance: 2,
       overheads: penalty,
       awkwardness: 0,
       rollingness: 0
@@ -167,7 +154,6 @@ mod test {
   fn does_not_penalise_same_key_usage() {
     assert_eq!(run_text("ff"), Summary {
       effort: 0,
-      distance: 2,
       overheads: 0,
       awkwardness: 0,
       rollingness: 0
@@ -180,7 +166,6 @@ mod test {
 
     assert_eq!(run_text("at"), Summary {
       effort: penalty + 1 + 11,
-      distance: 2,
       overheads: penalty,
       awkwardness: 0,
       rollingness: 0
@@ -193,7 +178,6 @@ mod test {
 
     assert_eq!(run_text("vq"), Summary {
       effort: penalty + 6 + 6,
-      distance: 2,
       overheads: penalty,
       awkwardness: 0,
       rollingness: 0
@@ -206,7 +190,6 @@ mod test {
 
     assert_eq!(run_text("qw"), Summary {
       effort: penalty + 6 + 2,
-      distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
       rollingness: 0
@@ -217,7 +200,6 @@ mod test {
   fn doesnt_penalise_bad_starter_on_hand_switch() {
     assert_eq!(run_text("qi"), Summary {
       effort: 6 + 1,
-      distance: 2,
       overheads: 0,
       awkwardness: 0,
       rollingness: 0
@@ -230,7 +212,6 @@ mod test {
 
     assert_eq!(run_text("qs"), Summary {
       effort: penalty + 6 + 0,
-      distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
       rollingness: 0
@@ -243,7 +224,6 @@ mod test {
 
     assert_eq!(run_text("qv"), Summary {
       effort: penalty + 6 + 6,
-      distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
       rollingness: 0
@@ -256,7 +236,6 @@ mod test {
 
     assert_eq!(run_text("qz"), Summary {
       effort: penalty + 6 + 7,
-      distance: 2,
       overheads: penalty,
       awkwardness: BAD_STARTER_PENALTY,
       rollingness: 0
@@ -269,7 +248,6 @@ mod test {
 
     assert_eq!(run_text("wfli"), Summary {
       effort: penalty + 3,
-      distance: 4,
       overheads: penalty,
       awkwardness: 0,
       rollingness: 2

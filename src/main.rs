@@ -30,9 +30,7 @@ fn main() -> Result<(), std::io::Error> {
     println!("{}: \n{}", name, layout);
     let calculator = Calculator::from(&layout);
     let summary = calculator.run(&data.to_string());
-    println!("Score:\neffort: {}\nawkwardness: {}\nrollingness: {}\n", 
-      summary.effort, summary.awkwardness, summary.rollingness
-    );
+    println!("\n{}\n", summary);
   }
 
   Ok(())
