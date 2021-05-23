@@ -1,5 +1,4 @@
 use hashbrown::HashMap;
-use cached::proc_macro::cached;
 
 pub type Position = (usize, usize);
 pub type Mapping = HashMap<Position, String>;
@@ -18,7 +17,6 @@ pub fn position_for(template: &'static str, value: String) -> Option<Position> {
   mapping.iter().find_map(|(key, val)| if *val == value { Some(*key) } else { None })
 }
 
-#[cached]
 pub fn mapping_for(template: &'static str) -> Mapping {
   let mut mapping = Mapping::new();
 
