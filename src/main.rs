@@ -2,6 +2,7 @@ mod source;
 mod config;
 mod parser;
 mod layout;
+mod mutator;
 mod geometry;
 mod keyboard;
 mod calculator;
@@ -11,19 +12,19 @@ mod summary;
 use crate::keyboard::*;
 use crate::calculator::*;
 use crate::config::{DEFAULT_GEOMETRY};
-use crate::layout::{QWERTY, DVORAK, COLEMAK, WORKMAN, THE_1, HALMAK_21};
+use crate::layout::*;
 
 fn main() -> Result<(), std::io::Error> {
   let data = source::load(String::from("text"))?;
   println!("Loaded text: {:}", data.len());
 
   let layouts = [
-    ("QWERTY", Keyboard::from(QWERTY, DEFAULT_GEOMETRY)),
-    ("DVORAK", Keyboard::from(DVORAK, DEFAULT_GEOMETRY)),
-    ("COLEMAK", Keyboard::from(COLEMAK, DEFAULT_GEOMETRY)),
-    ("WORKMAN", Keyboard::from(WORKMAN, DEFAULT_GEOMETRY)),
-    ("THE-1", Keyboard::from(THE_1, DEFAULT_GEOMETRY)),
-    ("HALMAK 2.1", Keyboard::from(HALMAK_21, DEFAULT_GEOMETRY))
+    ("QWERTY", Keyboard::from(Layout { template: QWERTY.to_string() }, DEFAULT_GEOMETRY)),
+    ("DVORAK", Keyboard::from(Layout { template: DVORAK.to_string() }, DEFAULT_GEOMETRY)),
+    ("COLEMAK", Keyboard::from(Layout { template: COLEMAK.to_string() }, DEFAULT_GEOMETRY)),
+    ("WORKMAN", Keyboard::from(Layout { template: WORKMAN.to_string() }, DEFAULT_GEOMETRY)),
+    ("THE-1", Keyboard::from(Layout { template: THE_1.to_string() }, DEFAULT_GEOMETRY)),
+    ("HALMAK 2.1", Keyboard::from(Layout { template: HALMAK_21.to_string() }, DEFAULT_GEOMETRY))
   ];
 
   for (name, layout) in layouts.iter() {

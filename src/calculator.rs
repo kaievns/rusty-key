@@ -118,11 +118,12 @@ impl Calculator<'_> {
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::layout::QWERTY;
+  use crate::layout::{ Layout, QWERTY };
   use crate::geometry::US_PC_KEYBOARD;
 
   fn run_text(text: &'static str) -> Summary {
-    let keyboard = Keyboard::from(QWERTY, US_PC_KEYBOARD);
+    let layout = Layout { template: QWERTY.to_string() };
+    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
     let calculator = Calculator::from(&keyboard);
   
     calculator.run(&text.to_string())

@@ -1,7 +1,7 @@
 use std::fmt;
 use crate::parser::*;
 
-pub const QWERTY: Layout = Layout { template: "
+pub const QWERTY: &'static str = "
   ~ ! @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
     Q W E R T Y U I O P { } |
@@ -10,9 +10,9 @@ pub const QWERTY: Layout = Layout { template: "
     a s d f g h j k l ; '
       Z X C V B N M < > ?
       z x c v b n m , . /
-" };
+";
 
-pub const DVORAK: Layout = Layout { template: "
+pub const DVORAK: &'static str = "
   ~ ! @ # $ % ^ & * ( ) { } 
   ` 1 2 3 4 5 6 7 8 9 0 [ ]
    \" < > P Y F G C R L ? + |
@@ -21,9 +21,9 @@ pub const DVORAK: Layout = Layout { template: "
     a o e u i d h t n s -
       : Q J K X B M W V Z
       ; q j k x b m w v z
-"};
+";
 
-pub const COLEMAK: Layout = Layout { template: "
+pub const COLEMAK: &'static str = "
   ~ ! @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
     Q W F P G J L U Y : { } |
@@ -32,9 +32,9 @@ pub const COLEMAK: Layout = Layout { template: "
     a r s t d h n e i o '
       Z X C V B K M < > ?
       z x c v b k m , . /
-"};
+";
 
-pub const WORKMAN: Layout = Layout { template: "
+pub const WORKMAN: &'static str = "
   ~ ! @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
     Q D R W B J F U P : { } |
@@ -43,9 +43,9 @@ pub const WORKMAN: Layout = Layout { template: "
     a s h t g y n e o i '
       Z X M C V K L < > ?
       z x m c v k l , . /
-"};
+";
 
-pub const THE_1: Layout = Layout { template: "
+pub const THE_1: &'static str = "
   ~ | @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
     K M L U ! V D R \" Q { } <
@@ -54,9 +54,9 @@ pub const THE_1: Layout = Layout { template: "
     a t h e . c s n o i /
       Z P F J ; B G W X Y
       z p f j , b g w x y 
-"};
+";
 
-pub const HALMAK_21: Layout = Layout { template: "
+pub const HALMAK_21: &'static str = "
   ~ ! @ # $ % ^ & * < > _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
     W L R B Z : Q U D J { } |
@@ -65,11 +65,11 @@ pub const HALMAK_21: Layout = Layout { template: "
     s h n t , . a e o i '
       F M V C ? G P X K Y
       f m v c / g p x k y
-"};
+";
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 pub struct Layout {
-  pub template: &'static str
+  pub template: String
 }
 
 #[derive(Debug,PartialEq)]
@@ -88,7 +88,7 @@ impl Layout {
   }
 
   pub fn entries(self: &Self) -> Vec<Entry> {
-    let mapping = two_layer_mapping_for(self.template);
+    let mapping = two_layer_mapping_for(&self.template);
     let mut entries: Vec<_> = mapping.into_iter().collect();
 
     entries.sort_by_key(|a| a.0);
@@ -136,26 +136,26 @@ mod test {
 
   #[test]
   fn formats_name() {
-    assert_eq!(QWERTY.name(), "QWERTY");
-    assert_eq!(COLEMAK.name(), "QWFPGJ");
-    assert_eq!(DVORAK.name(), "',.PYF");
+    assert_eq!((Layout { template: QWERTY.to_string() }).name(), "QWERTY");
+    assert_eq!((Layout { template: COLEMAK.to_string() }).name(), "QWFPGJ");
+    assert_eq!((Layout { template: DVORAK.to_string() }).name(), "',.PYF");
   }
 
   #[test]
   fn creates_entries() {
-    assert_eq!(QWERTY.entries()[13], Entry {
+    assert_eq!((Layout { template: QWERTY.to_string() }).entries()[13], Entry {
       normal: "q".to_string(),
       shifted: "Q".to_string(),
       position: (1, 0)
     });
 
-    assert_eq!(QWERTY.entries()[27], Entry {
+    assert_eq!((Layout { template: QWERTY.to_string() }).entries()[27], Entry {
       normal: "s".to_string(),
       shifted: "S".to_string(),
       position: (2, 1)
     });
 
-    assert_eq!(QWERTY.entries()[39], Entry {
+    assert_eq!((Layout { template: QWERTY.to_string() }).entries()[39], Entry {
       normal: "c".to_string(),
       shifted: "C".to_string(),
       position: (3, 2)
@@ -164,7 +164,7 @@ mod test {
 
   #[test]
   fn it_prints() {
-    let result = format!("{}", QWERTY);
+    let result = format!("{}", Layout { template: QWERTY.to_string() });
 
     assert_eq!(result, " ` 1 2 3 4 5 6 7 8 9 0 - =\n   q w e r t y u i o p [ ] \\\n   a s d f g h j k l ; \'\n    z x c v b n m , . /")
   }

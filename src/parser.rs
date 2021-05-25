@@ -32,7 +32,7 @@ pub fn mapping_for(template: &'static str) -> Mapping {
   mapping
 }
 
-pub fn two_layer_mapping_for(template: &'static str) -> TwoLayerMapping {
+pub fn two_layer_mapping_for(template: &String) -> TwoLayerMapping {
   let mut mapping = TwoLayerMapping::new();
   let lines: Vec<&str> = template.trim().lines().collect();
   
@@ -113,9 +113,9 @@ mod test {
       w l r b z ;
         S H N T (
         s h n t ,
-    ";
+    ".to_string();
 
-    assert_eq!(two_layer_mapping_for(template), map! {
+    assert_eq!(two_layer_mapping_for(&template), map! {
       (0, 0) => ("W".to_string(), "w".to_string()), 
       (0, 1) => ("L".to_string(), "l".to_string()), 
       (0, 2) => ("R".to_string(), "r".to_string()), 
