@@ -107,15 +107,10 @@ impl Layout {
       string = format!("{} {}", string, key.normal);
   
       match i {
-        12 => string = format!("{}\n  ", string),
-        25 => string = format!("{}\n  ", string),
+        12 | 25 => string = format!("{}\n  ", string),
         36 if us_pc => string = format!("{}\n   ", string),
-        36 if !us_pc => string = format!("{}\n  ", string),
 
-        5 if !us_pc => string = format!("{}  ", string),
-        17 if !us_pc => string = format!("{}  ", string),
-        30 if !us_pc => string = format!("{}  ", string),
-        41 if !us_pc => string = format!("{}  ", string),
+        5 | 17 | 30 | 36 | 41 if !us_pc => string = format!("{}  ", string),
         _ => {}
       }
     }
