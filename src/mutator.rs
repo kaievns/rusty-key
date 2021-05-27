@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use hashbrown::HashSet;
 
 use crate::layout::*;
@@ -57,6 +59,27 @@ impl Mutator {
 
     Layout { template: format!("\n{}\n", template) }
   }
+
+  fn swap_random_keys(self: &Self, original: &DNA) -> DNA {
+    let mut rng = rand::thread_rng();
+
+    let first_pos = rng.gen_range(0..original.len());
+    let mut second_pos = first_pos;
+
+    while first_pos == second_pos {
+      second_pos = rng.gen_range(0..original.len());
+    }
+
+    self.swap_keys(original, first_pos, second_pos)
+  }
+
+  fn swap_keys(self: &Self, original: &DNA, pos1: usize, pos2: usize) -> DNA {
+    let mut new_dna = original.clone();
+
+    new_dna.swap(pos1, pos2);
+
+    new_dna
+  }
 }
 
 #[cfg(test)]
@@ -86,6 +109,41 @@ mod test {
     let layout = Layout { template: QWERTY.to_string() };
 
     assert_eq!(mutator.from_dna(&qwerty_dna()), layout);
+  }
+
+  #[test]
+  fn test_random_keys_swap() {
+    let mutator = Mutator::new("");
+    let original = qwerty_dna();
+    let new_dna1 = mutator.swap_random_keys(&original);
+    let new_dna2 = mutator.swap_random_keys(&original);
+    let new_dna3 = mutator.swap_random_keys(&original);
+    let new_dna4 = mutator.swap_random_keys(&original);
+
+    assert_eq!(original, qwerty_dna());
+    assert_ne!(new_dna1, original);
+    assert_ne!(new_dna2, new_dna1);
+    assert_ne!(new_dna3, new_dna2);
+    assert_ne!(new_dna4, new_dna3);
+  }
+
+  #[test]
+  fn test_swapping_keys() {
+    let mutator = Mutator::new("");
+    let original = qwerty_dna();
+    let new_dna = mutator.swap_keys(&original, 2, 5);
+
+    assert_eq!(original, qwerty_dna()); // should not change
+    assert_eq!(new_dna, [
+      &original[0..2],
+      &[
+        ("%".to_string(), "5".to_string()),
+        ("#".to_string(), "3".to_string()), 
+        ("$".to_string(), "4".to_string()), 
+        ("@".to_string(), "2".to_string()) 
+      ],
+      &original[6..]
+    ].concat().to_vec())
   }
 
   fn qwerty_dna() -> DNA {
