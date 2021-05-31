@@ -10,7 +10,8 @@ pub struct Mutator {
   cache: HashSet<DNA>
 }
 
-type DNA = Vec<(String, String)>;
+type Pair = (String, String);
+type DNA = Vec<Pair>;
 
 impl Mutator {
   pub fn new(preserve: &'static str) -> Mutator {
@@ -61,24 +62,68 @@ impl Mutator {
   }
 
   fn swap_random_keys(self: &Self, original: &DNA) -> DNA {
-    let mut rng = rand::thread_rng();
-
-    let first_pos = rng.gen_range(0..original.len());
-    let mut second_pos = first_pos;
-
-    while first_pos == second_pos {
-      second_pos = rng.gen_range(0..original.len());
-    }
+    let (first_pos, second_pos) = self.two_random_positions(&original);
 
     self.swap_keys(original, first_pos, second_pos)
   }
 
   fn swap_keys(self: &Self, original: &DNA, pos1: usize, pos2: usize) -> DNA {
+    let shifts_swapped = self.swap_symbols(&original, (pos1, 0), (pos2, 0));
+    
+    self.swap_symbols(&shifts_swapped, (pos1, 1), (pos2, 1))
+  }
+  
+  fn swap_random_symbols(self: &Self, original: &DNA) -> DNA {
+    let (first_pos, second_pos) = self.two_random_positions(&original);
+
+    let random_layer1 = self.random_number(1);
+    let random_layer2 = self.random_number(1);
+
+    self.swap_symbols(&original, (first_pos, random_layer1), (second_pos, random_layer2))
+  }
+
+  fn swap_symbols(self: &Self, original: &DNA, pos1: Position, pos2: Position) -> DNA {
     let mut new_dna = original.clone();
 
-    new_dna.swap(pos1, pos2);
+    let entry1 = new_dna.get(pos1.0).unwrap();
+    let entry2 = new_dna.get(pos2.0).unwrap();
 
+    let new_entry1 = if pos1.1 == 0 {
+      if pos2.1 == 0 { (entry2.0.clone(), entry1.1.clone()) } else { (entry2.1.clone(), entry1.1.clone()) }
+    } else {
+      if pos2.1 == 0 { (entry1.0.clone(), entry2.0.clone()) } else { (entry1.0.clone(), entry2.1.clone()) }
+    };
+    let new_entry2 = if pos2.1 == 0 {
+      if pos1.1 == 0 { (entry1.0.clone(), entry2.1.clone()) } else { (entry1.1.clone(), entry2.1.clone()) }
+    } else {
+      if pos1.1 == 0 { (entry2.0.clone(), entry1.0.clone()) } else { (entry2.0.clone(), entry1.1.clone()) }
+    };
+
+    if let Some(entry) = new_dna.get_mut(pos1.0) {
+      *entry = new_entry1;
+    }
+
+    if let Some(entry) = new_dna.get_mut(pos2.0) {
+      *entry = new_entry2;
+    }
+    
     new_dna
+  }
+
+  fn two_random_positions(self: &Self, original: &DNA) -> (usize, usize) {
+    let first_pos = self.random_number(original.len());
+    let mut second_pos = first_pos;
+
+    while first_pos == second_pos {
+      second_pos = self.random_number(original.len());
+    }
+
+    (first_pos, second_pos)
+  }
+
+  fn random_number(self: &Self, size: usize) -> usize {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(0..size)
   }
 }
 
@@ -144,6 +189,70 @@ mod test {
       ],
       &original[6..]
     ].concat().to_vec())
+  }
+
+  #[test]
+  fn swapping_random_symbols() {
+    let mutator = Mutator::new("");
+    let original = qwerty_dna();
+    let new_dna1 = mutator.swap_random_symbols(&original);
+    let new_dna2 = mutator.swap_random_symbols(&original);
+    let new_dna3 = mutator.swap_random_symbols(&original);
+    let new_dna4 = mutator.swap_random_symbols(&original);
+
+    assert_eq!(original, qwerty_dna());
+    assert_ne!(new_dna1, original);
+    assert_ne!(new_dna2, new_dna1);
+    assert_ne!(new_dna3, new_dna2);
+    assert_ne!(new_dna4, new_dna3);
+  }
+
+  #[test]
+  fn swapping_symbols() {
+    let mutator = Mutator::new("");
+    let original = qwerty_dna();
+    let new_dna1 = mutator.swap_symbols(&original, (2,0), (3,0));
+    let new_dna2 = mutator.swap_symbols(&original, (2,0), (3,1));
+    let new_dna3 = mutator.swap_symbols(&original, (2,1), (3,0));
+    let new_dna4 = mutator.swap_symbols(&original, (2,1), (3,1));
+
+    assert_eq!(original, qwerty_dna()); // should not change
+
+    assert_eq!(new_dna1, [
+      &original[0..2],
+      &[
+        ("#".to_string(), "2".to_string()), 
+        ("@".to_string(), "3".to_string()),
+      ],
+      &original[4..]
+    ].concat().to_vec());
+
+    assert_eq!(new_dna2, [
+      &original[0..2],
+      &[
+        ("3".to_string(), "2".to_string()), 
+        ("#".to_string(), "@".to_string()), 
+      ],
+      &original[4..]
+    ].concat().to_vec());
+
+    assert_eq!(new_dna3, [
+      &original[0..2],
+      &[
+        ("@".to_string(), "#".to_string()), 
+        ("2".to_string(), "3".to_string()), 
+      ],
+      &original[4..]
+    ].concat().to_vec());
+
+    assert_eq!(new_dna4, [
+      &original[0..2],
+      &[
+        ("@".to_string(), "3".to_string()), 
+        ("#".to_string(), "2".to_string()), 
+      ],
+      &original[4..]
+    ].concat().to_vec());
   }
 
   fn qwerty_dna() -> DNA {
