@@ -74,7 +74,7 @@ impl Mutator {
   }
   
   fn swap_random_symbols(self: &Self, original: &DNA) -> DNA {
-    let (first_pos, second_pos) = self.two_random_positions(&original);
+    let (first_pos, second_pos) = self.two_random_non_alpha_positions(&original);
 
     let random_layer1 = self.random_number(1);
     let random_layer2 = self.random_number(1);
@@ -110,12 +110,25 @@ impl Mutator {
     new_dna
   }
 
-  fn two_random_positions(self: &Self, original: &DNA) -> (usize, usize) {
-    let first_pos = self.random_number(original.len());
+  fn two_random_non_alpha_positions(self: &Self, sequence: &DNA) -> (usize, usize) {
+    let non_alpha_positions: Vec<_> = sequence.iter().enumerate()
+      .filter(|(index, pair)| pair.0.chars().all(|c| !c.is_ascii_alphabetic()))
+      .collect();
+
+    let (pos1, pos2) = self.two_random_positions(&non_alpha_positions);
+
+    let entry1 = non_alpha_positions.get(pos1).unwrap();
+    let entry2 = non_alpha_positions.get(pos2).unwrap();
+
+    (entry1.0, entry2.0)
+  }
+
+  fn two_random_positions<T>(self: &Self, sequence: &Vec<T>) -> (usize, usize) {
+    let first_pos = self.random_number(sequence.len());
     let mut second_pos = first_pos;
 
     while first_pos == second_pos {
-      second_pos = self.random_number(original.len());
+      second_pos = self.random_number(sequence.len());
     }
 
     (first_pos, second_pos)
@@ -160,6 +173,7 @@ mod test {
   fn test_random_keys_swap() {
     let mutator = Mutator::new("");
     let original = qwerty_dna();
+
     let new_dna1 = mutator.swap_random_keys(&original);
     let new_dna2 = mutator.swap_random_keys(&original);
     let new_dna3 = mutator.swap_random_keys(&original);
@@ -205,6 +219,25 @@ mod test {
     assert_ne!(new_dna2, new_dna1);
     assert_ne!(new_dna3, new_dna2);
     assert_ne!(new_dna4, new_dna3);
+  }
+
+  #[test]
+  fn getting_two_random_non_alpha_positions() {
+    let mutator = Mutator::new("");
+    let sequence = qwerty_dna();
+
+    for _ in 0..10 {
+      let (pos1, pos2) = mutator.two_random_non_alpha_positions(&sequence);
+      let entry1 = sequence.get(pos1).unwrap();
+      let entry2 = sequence.get(pos2).unwrap();
+
+      assert_ne!(pos1, pos2);
+
+      assert_eq!(true, entry1.0.chars().all(|c| !c.is_ascii_alphabetic()), "{:?}", entry1.0);
+      assert_eq!(true, entry1.1.chars().all(|c| !c.is_ascii_alphabetic()), "{:?}", entry1.1);
+      assert_eq!(true, entry2.0.chars().all(|c| !c.is_ascii_alphabetic()), "{:?}", entry2.0);
+      assert_eq!(true, entry2.1.chars().all(|c| !c.is_ascii_alphabetic()), "{:?}", entry2.1);
+    }
   }
 
   #[test]
