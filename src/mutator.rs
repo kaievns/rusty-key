@@ -7,7 +7,7 @@ use crate::parser::*;
 
 pub struct Mutator {
   preserve: &'static str,
-  cache: HashSet<DNA>
+  cache: HashSet<String>
 }
 
 type Pair = (String, String);
@@ -18,10 +18,18 @@ impl Mutator {
     Mutator { preserve, cache: HashSet::new() }
   }
 
-  pub fn mutate(self: &Self, layout: &Layout) -> Layout {
+  pub fn mutate_keys(self: &Self, layout: &Layout) -> Layout {
     let dna = self.to_dna(layout);
+    let new_dna = self.swap_random_keys(&dna);
 
-    self.from_dna(&dna)
+    self.from_dna(&new_dna)
+  }
+
+  pub fn mutate_symbols(self: &Self, layout: &Layout) -> Layout {
+    let dna = self.to_dna(layout);
+    let new_dna = self.swap_random_symbols(&dna);
+
+    self.from_dna(&new_dna)
   }
 
   fn to_dna(self: &Self, layout: &Layout) -> DNA {
@@ -145,12 +153,20 @@ mod test {
   use super::*;
 
   #[test]
-  fn it_mutates() {
+  fn it_mutates_keys() {
     let layout = Layout { template: QWERTY.to_string() };
     let mutator = Mutator::new("");
-    let new_layout = mutator.mutate(&layout);
+    let new_layout = mutator.mutate_keys(&layout);
 
-    assert_eq!(new_layout.template, layout.template);
+    assert_ne!(new_layout.template, layout.template);
+  }
+
+  fn it_mutates_symbols() {
+    let layout = Layout { template: QWERTY.to_string() };
+    let mutator = Mutator::new("");
+    let new_layout = mutator.mutate_symbols(&layout);
+
+    assert_ne!(new_layout.template, layout.template);
   }
 
   #[test]
