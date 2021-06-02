@@ -6,16 +6,36 @@ use crate::layout::*;
 use crate::parser::*;
 
 pub struct Mutator {
-  preserve: &'static str,
+  preserved_positions: HashSet<Position>,
   cache: HashSet<String>
 }
 
 type Pair = (String, String);
 type DNA = Vec<Pair>;
 
+fn parse_positions(template: &'static str) -> HashSet<Position> {
+  let tmp_layout = Layout { template: template.to_string() };
+  let mut preserved_positions: HashSet<Position> = HashSet::new();
+
+  for (position, entry) in tmp_layout.entries().iter().enumerate() {
+    let shifted_is_okay = entry.shifted.chars().all(|c|
+      c.is_ascii_punctuation() || c.is_ascii_alphanumeric()
+    );
+    let normal_is_okay = entry.normal.chars().all(|c|
+      c.is_ascii_punctuation() || c.is_ascii_alphanumeric()
+    );
+
+    if shifted_is_okay { preserved_positions.insert((position, 0)); }
+    if normal_is_okay { preserved_positions.insert((position, 1)); }
+  }
+
+  preserved_positions
+}
+
 impl Mutator {
   pub fn new(preserve: &'static str) -> Mutator {
-    Mutator { preserve, cache: HashSet::new() }
+    let preserved_positions = parse_positions(preserve);
+    Mutator { preserved_positions, cache: HashSet::new() }
   }
 
   pub fn mutate_keys(self: &Self, layout: &Layout) -> Layout {
@@ -70,26 +90,25 @@ impl Mutator {
   }
 
   fn swap_random_keys(self: &Self, original: &DNA) -> DNA {
-    let (first_pos, second_pos) = self.two_random_positions(&original);
+    let (first_pos, second_pos) = self.two_random_key_positions(&original);
 
     self.swap_keys(original, first_pos, second_pos)
   }
 
+  fn swap_random_symbols(self: &Self, original: &DNA) -> DNA {
+    let (first_pos, second_pos) = self.two_random_symbol_positions(&original);
+
+    self.swap_symbols(&original, first_pos, second_pos)
+  }
+
+  // NOTE: usafe, will swap regardless restrictions
   fn swap_keys(self: &Self, original: &DNA, pos1: usize, pos2: usize) -> DNA {
     let shifts_swapped = self.swap_symbols(&original, (pos1, 0), (pos2, 0));
     
     self.swap_symbols(&shifts_swapped, (pos1, 1), (pos2, 1))
   }
-  
-  fn swap_random_symbols(self: &Self, original: &DNA) -> DNA {
-    let (first_pos, second_pos) = self.two_random_non_alpha_positions(&original);
 
-    let random_layer1 = self.random_number(1);
-    let random_layer2 = self.random_number(1);
-
-    self.swap_symbols(&original, (first_pos, random_layer1), (second_pos, random_layer2))
-  }
-
+  // NOTE: usafe, will swap regardless restrictions
   fn swap_symbols(self: &Self, original: &DNA, pos1: Position, pos2: Position) -> DNA {
     let mut new_dna = original.clone();
 
@@ -118,28 +137,68 @@ impl Mutator {
     new_dna
   }
 
-  fn two_random_non_alpha_positions(self: &Self, sequence: &DNA) -> (usize, usize) {
-    let non_alpha_positions: Vec<_> = sequence.iter().enumerate()
-      .filter(|(index, pair)| pair.0.chars().all(|c| !c.is_ascii_alphabetic()))
-      .collect();
+  fn two_random_key_positions(self: &Self, sequence: &DNA) -> (usize, usize) {
+    let first_position = self.random_safe_key_position(sequence.len());
+    let mut second_position: usize;
 
-    let (pos1, pos2) = self.two_random_positions(&non_alpha_positions);
-
-    let entry1 = non_alpha_positions.get(pos1).unwrap();
-    let entry2 = non_alpha_positions.get(pos2).unwrap();
-
-    (entry1.0, entry2.0)
+    loop {
+      second_position = self.random_safe_key_position(sequence.len());
+      if second_position != first_position { break; }
+    }
+  
+    (first_position, second_position)
   }
 
-  fn two_random_positions<T>(self: &Self, sequence: &Vec<T>) -> (usize, usize) {
-    let first_pos = self.random_number(sequence.len());
-    let mut second_pos = first_pos;
+  fn random_safe_key_position(self: &Self, limit: usize) -> usize {
+    let mut position: usize;
 
-    while first_pos == second_pos {
-      second_pos = self.random_number(sequence.len());
+    loop {
+      position = self.random_number(limit);
+
+      let shifted_is_safe = self.is_safe_position((position, 0));
+      let normal_is_safe = self.is_safe_position((position, 1));
+
+      if shifted_is_safe && normal_is_safe { break; }
     }
 
-    (first_pos, second_pos)
+    position
+  }
+
+  fn two_random_symbol_positions(self: &Self, sequence: &DNA) -> (Position, Position) {
+    let non_alpha_positions = sequence.iter().enumerate()
+      .filter(|(_, pair)| pair.0.chars().all(|c| !c.is_ascii_alphabetic()))
+      .map(|entry| entry.0)
+      .collect::<Vec<usize>>();
+
+    let first_position = self.random_safe_symbol_position(&non_alpha_positions);
+    let mut second_position: Position;
+  
+    loop {
+      second_position = self.random_safe_symbol_position(&non_alpha_positions);
+      if second_position != first_position { break; }
+    }
+    
+    (first_position, second_position)
+  }
+
+  fn random_safe_symbol_position(self: &Self, positions: &Vec<usize>) -> Position {
+    let mut position: Position;
+
+    loop {
+      let index = self.random_number(positions.len());
+      let number = positions.get(index).unwrap();
+      let layer = self.random_number(2);
+
+      position = (*number, layer);
+
+      if self.is_safe_position(position) { break; }
+    }
+
+    position
+  }
+
+  fn is_safe_position(self: &Self, position: Position) -> bool {
+    !self.preserved_positions.contains(&position)
   }
 
   fn random_number(self: &Self, size: usize) -> usize {
@@ -152,6 +211,18 @@ impl Mutator {
 mod test {
   use super::*;
 
+  macro_rules! set {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_set = HashSet::new();
+            $(
+                temp_set.insert($x);
+            )*
+            temp_set
+        }
+    };
+  }
+
   #[test]
   fn it_mutates_keys() {
     let layout = Layout { template: QWERTY.to_string() };
@@ -160,13 +231,72 @@ mod test {
 
     assert_ne!(new_layout.template, layout.template);
   }
-
+  
+  #[test]
   fn it_mutates_symbols() {
     let layout = Layout { template: QWERTY.to_string() };
     let mutator = Mutator::new("");
     let new_layout = mutator.mutate_symbols(&layout);
 
     assert_ne!(new_layout.template, layout.template);
+  }
+
+  #[test]
+  fn parsing_preserved_positions() {
+    let list = parse_positions("
+      ∙ ! ∙ * ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+      ∙ 1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        Q ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        q ∙ r ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+          ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+          ∙ ∙ ∙ ∙ ∙ ∙ ∙ , . ∙ 
+    ");
+    assert_eq!(list, set! [
+      (1,0), (1,1),
+      (3,0),
+      (13, 0), (13, 1),
+      (15, 1),
+      (44, 1),
+      (45, 1)
+    ]);
+  }
+
+  #[test]
+  fn it_never_mutates_preserved_positions() {
+    let mutator = Mutator::new("
+      ∙ ! ∙ # ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+      ∙ 1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        Q ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        q ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+          ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+          ∙ ∙ ∙ ∙ ∙ ∙ ∙ , ∙ ∙ 
+    ");
+    let mut dna = qwerty_dna();
+
+    for _ in 0..2000 {
+      dna = mutator.swap_random_keys(&dna);
+      dna = mutator.swap_random_symbols(&dna);
+    }
+
+    println!("{:?}", dna[1]);
+    println!("{:?}", dna[3]);
+    println!("{:?}", dna[13]);
+    println!("{:?}", dna[15]);
+    println!("{:?}", dna[44]);
+
+    assert_eq!(("!".to_string(), "1".to_string()), dna[1]);
+    assert_eq!(("Q".to_string(), "q".to_string()), dna[13]);
+    assert_eq!("#".to_string(), dna[3].0);
+    assert_eq!(",".to_string(), dna[44].1);
+
+    assert_ne!("W".to_string(), dna[14].0);
+    assert_ne!("w".to_string(), dna[14].1);
+    assert_ne!("3".to_string(), dna[3].1);
+    assert_ne!("<".to_string(), dna[44].0);
   }
 
   #[test]
@@ -238,14 +368,14 @@ mod test {
   }
 
   #[test]
-  fn getting_two_random_non_alpha_positions() {
+  fn getting_two_random_symbol_positions() {
     let mutator = Mutator::new("");
     let sequence = qwerty_dna();
 
     for _ in 0..10 {
-      let (pos1, pos2) = mutator.two_random_non_alpha_positions(&sequence);
-      let entry1 = sequence.get(pos1).unwrap();
-      let entry2 = sequence.get(pos2).unwrap();
+      let (pos1, pos2) = mutator.two_random_symbol_positions(&sequence);
+      let entry1 = sequence.get(pos1.0).unwrap();
+      let entry2 = sequence.get(pos2.0).unwrap();
 
       assert_ne!(pos1, pos2);
 

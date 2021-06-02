@@ -35,6 +35,14 @@ pub const US_PC_KEYBOARD: Geometry = Geometry {
     1  1 2 3 4 4 4 4 3 2 1  1
                 5
   ",
+  // https://colemakmods.github.io/mod-dh/model.html
+  // efforts: "
+  // 55 46 40 34 29 29 35 29 29 30 35 42 51
+  // 42 30 25 21 23 26 34 22 20 24 30 36 47 56
+  //    16 13 11 10 29 29 10 11 13 16 34 48
+  // 46  27 24 18 22 37 22 18 24 27 33   46
+  //                 00
+  // ",
   efforts: "
     17 14 08 08 13 16 23 19 09 08 07 15 17
     15 06 02 01 06 11 14 09 01 01 07 09 13 18
@@ -328,7 +336,7 @@ mod test {
             temp_set
         }
     };
-}
+  }
 
 
   const GEO: Geometry = US_PC_KEYBOARD;
