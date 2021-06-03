@@ -45,6 +45,19 @@ pub const WORKMAN: &'static str = "
       z x m c v k l , . /
 ";
 
+// frivolously reinterpreted symbols
+// source https://deskthority.net/wiki/BEAKL
+pub const BEAKL_15: &'static str = "
+  ~ $ # ! @ % ^ < > & { }
+    1 2 3 4 5 6 7 8 9 0 - =
+    Q H O U X G C R F Z { } |
+    q h o u x g c r f z [ ] \\
+    Y I E A @ D S T N B \"
+    y i e a . d s t n b ;
+      J ? ! K ` W M L P V
+      j / , k ' w m l p v
+";
+
 pub const THE_1: &'static str = "
   ~ | @ # $ % ^ & * ( ) _ +
   ` 1 2 3 4 5 6 7 8 9 0 - =
