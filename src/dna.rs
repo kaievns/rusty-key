@@ -2,29 +2,29 @@ use crate::layout::*;
 use crate::parser::*;
 
 pub type Pair = (String, String);
-pub type Pairs = Vec<Pair>;
+pub type Sequence = Vec<Pair>;
 
 #[derive(Debug,PartialEq,Eq)]
 pub struct DNA {
-  pub pairs: Pairs
+  sequence: Sequence
 }
 
 impl DNA {
   pub fn from(layout: &Layout) -> DNA {
-    let mut pairs = Pairs::new();
+    let mut sequence = Sequence::new();
 
     for entry in layout.entries() {
-      pairs.push((entry.shifted.to_owned(), entry.normal.to_owned()));
+      sequence.push((entry.shifted.to_owned(), entry.normal.to_owned()));
     }
 
-    DNA { pairs }
+    DNA { sequence }
   }
 
   pub fn to_layout(self: &Self) -> Layout {
     let mut shifts = " ".to_string();
     let mut normals = " ".to_string();
     
-    for (i, (shifted, normal)) in self.pairs.iter().enumerate() {
+    for (i, (shifted, normal)) in self.sequence.iter().enumerate() {
       shifts = format!("{} {}", shifts, shifted);
       normals = format!("{} {}", normals, normal);
   
@@ -53,10 +53,10 @@ impl DNA {
   }
 
   pub fn swap_symbols(self: &Self, pos1: Position, pos2: Position) -> DNA {
-    let mut pairs = self.pairs.clone();
+    let mut sequence = self.sequence.clone();
 
-    let entry1 = pairs.get(pos1.0).unwrap();
-    let entry2 = pairs.get(pos2.0).unwrap();
+    let entry1 = sequence.get(pos1.0).unwrap();
+    let entry2 = sequence.get(pos2.0).unwrap();
 
     let new_entry1 = if pos1.1 == 0 {
       if pos2.1 == 0 { (entry2.0.clone(), entry1.1.clone()) } else { (entry2.1.clone(), entry1.1.clone()) }
@@ -69,15 +69,27 @@ impl DNA {
       if pos1.1 == 0 { (entry2.0.clone(), entry1.0.clone()) } else { (entry2.0.clone(), entry1.1.clone()) }
     };
 
-    if let Some(entry) = pairs.get_mut(pos1.0) {
+    if let Some(entry) = sequence.get_mut(pos1.0) {
       *entry = new_entry1;
     }
 
-    if let Some(entry) = pairs.get_mut(pos2.0) {
+    if let Some(entry) = sequence.get_mut(pos2.0) {
       *entry = new_entry2;
     }
     
-    DNA { pairs }
+    DNA { sequence }
+  }
+
+  pub fn len(self: &Self) -> usize {
+    self.sequence.len()
+  }
+
+  pub fn iter(self: &Self) -> std::slice::Iter<Pair> {
+    self.sequence.iter()
+  }
+
+  pub fn pair_at(self: &Self, i: usize) -> Pair {
+    self.sequence[i].clone()
   }
 }
 
@@ -90,83 +102,83 @@ mod test {
     let layout = Layout { template: QWERTY.to_string() };
     let dna = DNA::from(&layout);
     
-    assert_eq!(dna.pairs, qwerty_pairs());
+    assert_eq!(dna.sequence, qwerty_sequence());
   }
 
   #[test]
   fn test_to_layout() {
     let layout = Layout { template: QWERTY.to_string() };
-    let dna = DNA { pairs: qwerty_pairs() };
+    let dna = DNA { sequence: qwerty_sequence() };
 
     assert_eq!(dna.to_layout(), layout);
   }
 
   #[test]
   fn test_swapping_keys() {
-    let original = DNA { pairs: qwerty_pairs() };
+    let original = DNA { sequence: qwerty_sequence() };
     let new_dna = original.swap_keys(2, 5);
 
-    assert_eq!(original.pairs, qwerty_pairs()); // should not change
-    assert_eq!(new_dna.pairs, [
-      &original.pairs[0..2],
+    assert_eq!(original.sequence, qwerty_sequence()); // should not change
+    assert_eq!(new_dna.sequence, [
+      &original.sequence[0..2],
       &[
         ("%".to_string(), "5".to_string()),
         ("#".to_string(), "3".to_string()), 
         ("$".to_string(), "4".to_string()), 
         ("@".to_string(), "2".to_string()) 
       ],
-      &original.pairs[6..]
+      &original.sequence[6..]
     ].concat().to_vec())
   }
 
   #[test]
   fn test_swapping_symbols() {
-    let original = DNA { pairs: qwerty_pairs() };
+    let original = DNA { sequence: qwerty_sequence() };
     let new_dna1 = original.swap_symbols((2,0), (3,0));
     let new_dna2 = original.swap_symbols((2,0), (3,1));
     let new_dna3 = original.swap_symbols((2,1), (3,0));
     let new_dna4 = original.swap_symbols((2,1), (3,1));
 
-    assert_eq!(original.pairs, qwerty_pairs()); // should not change
+    assert_eq!(original.sequence, qwerty_sequence()); // should not change
 
-    assert_eq!(new_dna1.pairs, [
-      &original.pairs[0..2],
+    assert_eq!(new_dna1.sequence, [
+      &original.sequence[0..2],
       &[
         ("#".to_string(), "2".to_string()), 
         ("@".to_string(), "3".to_string()),
       ],
-      &original.pairs[4..]
+      &original.sequence[4..]
     ].concat().to_vec());
 
-    assert_eq!(new_dna2.pairs, [
-      &original.pairs[0..2],
+    assert_eq!(new_dna2.sequence, [
+      &original.sequence[0..2],
       &[
         ("3".to_string(), "2".to_string()), 
         ("#".to_string(), "@".to_string()), 
       ],
-      &original.pairs[4..]
+      &original.sequence[4..]
     ].concat().to_vec());
 
-    assert_eq!(new_dna3.pairs, [
-      &original.pairs[0..2],
+    assert_eq!(new_dna3.sequence, [
+      &original.sequence[0..2],
       &[
         ("@".to_string(), "#".to_string()), 
         ("2".to_string(), "3".to_string()), 
       ],
-      &original.pairs[4..]
+      &original.sequence[4..]
     ].concat().to_vec());
 
-    assert_eq!(new_dna4.pairs, [
-      &original.pairs[0..2],
+    assert_eq!(new_dna4.sequence, [
+      &original.sequence[0..2],
       &[
         ("@".to_string(), "3".to_string()), 
         ("#".to_string(), "2".to_string()), 
       ],
-      &original.pairs[4..]
+      &original.sequence[4..]
     ].concat().to_vec());
   }
 
-  fn qwerty_pairs() -> Pairs {
+  fn qwerty_sequence() -> Sequence {
     vec![
       ("~".to_string(), "`".to_string()), 
       ("!".to_string(), "1".to_string()), 

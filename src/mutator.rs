@@ -33,18 +33,18 @@ impl Mutator {
   }
 
   fn swap_random_keys(self: &Self, original: &DNA) -> DNA {
-    let (first_pos, second_pos) = self.two_random_key_positions(&original.pairs);
+    let (first_pos, second_pos) = self.two_random_key_positions(&original);
 
     original.swap_keys(first_pos, second_pos)
   }
 
   fn swap_random_symbols(self: &Self, original: &DNA) -> DNA {
-    let (first_pos, second_pos) = self.two_random_symbol_positions(&original.pairs);
+    let (first_pos, second_pos) = self.two_random_symbol_positions(&original);
 
     original.swap_symbols(first_pos, second_pos)
   }
 
-  fn two_random_key_positions(self: &Self, sequence: &Pairs) -> (usize, usize) {
+  fn two_random_key_positions(self: &Self, sequence: &DNA) -> (usize, usize) {
     let first_position = self.random_safe_key_position(sequence.len());
     let mut second_position: usize;
 
@@ -71,7 +71,7 @@ impl Mutator {
     position
   }
 
-  fn two_random_symbol_positions(self: &Self, sequence: &Pairs) -> (Position, Position) {
+  fn two_random_symbol_positions(self: &Self, sequence: &DNA) -> (Position, Position) {
     let non_alpha_positions = sequence.iter().enumerate()
       .filter(|(_, pair)| pair.0.chars().all(|c| !c.is_ascii_alphabetic()))
       .map(|entry| entry.0)
@@ -151,21 +151,21 @@ mod test {
       dna = mutator.swap_random_symbols(&dna);
     }
 
-    println!("{:?}", dna.pairs[1]);
-    println!("{:?}", dna.pairs[3]);
-    println!("{:?}", dna.pairs[13]);
-    println!("{:?}", dna.pairs[15]);
-    println!("{:?}", dna.pairs[44]);
+    println!("{:?}", dna.pair_at(1));
+    println!("{:?}", dna.pair_at(3));
+    println!("{:?}", dna.pair_at(13));
+    println!("{:?}", dna.pair_at(15));
+    println!("{:?}", dna.pair_at(44));
 
-    assert_eq!(("!".to_string(), "1".to_string()), dna.pairs[1]);
-    assert_eq!(("Q".to_string(), "q".to_string()), dna.pairs[13]);
-    assert_eq!("#".to_string(), dna.pairs[3].0);
-    assert_eq!(",".to_string(), dna.pairs[44].1);
+    assert_eq!(("!".to_string(), "1".to_string()), dna.pair_at(1));
+    assert_eq!(("Q".to_string(), "q".to_string()), dna.pair_at(13));
+    assert_eq!("#".to_string(), dna.pair_at(3).0);
+    assert_eq!(",".to_string(), dna.pair_at(44).1);
 
-    assert_ne!("W".to_string(), dna.pairs[14].0);
-    assert_ne!("w".to_string(), dna.pairs[14].1);
-    assert_ne!("3".to_string(), dna.pairs[3].1);
-    assert_ne!("<".to_string(), dna.pairs[44].0);
+    assert_ne!("W".to_string(), dna.pair_at(14).0);
+    assert_ne!("w".to_string(), dna.pair_at(14).1);
+    assert_ne!("3".to_string(), dna.pair_at(3).1);
+    assert_ne!("<".to_string(), dna.pair_at(44).0);
   }
 
   #[test]
@@ -207,9 +207,9 @@ mod test {
     let sequence = qwerty_dna();
 
     for _ in 0..10 {
-      let (pos1, pos2) = mutator.two_random_symbol_positions(&sequence.pairs);
-      let entry1 = sequence.pairs.get(pos1.0).unwrap();
-      let entry2 = sequence.pairs.get(pos2.0).unwrap();
+      let (pos1, pos2) = mutator.two_random_symbol_positions(&sequence);
+      let entry1 = sequence.pair_at(pos1.0);
+      let entry2 = sequence.pair_at(pos2.0);
 
       assert_ne!(pos1, pos2);
 
