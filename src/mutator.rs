@@ -4,38 +4,20 @@ use hashbrown::HashSet;
 
 use crate::layout::*;
 use crate::parser::*;
+use crate::preservative::*;
 
 pub struct Mutator {
-  preserved_positions: HashSet<Position>,
+  presie: Preservative,
   cache: HashSet<String>
 }
 
 type Pair = (String, String);
 type DNA = Vec<Pair>;
 
-fn parse_positions(template: &'static str) -> HashSet<Position> {
-  let tmp_layout = Layout { template: template.to_string() };
-  let mut preserved_positions: HashSet<Position> = HashSet::new();
-
-  for (position, entry) in tmp_layout.entries().iter().enumerate() {
-    let shifted_is_okay = entry.shifted.chars().all(|c|
-      c.is_ascii_punctuation() || c.is_ascii_alphanumeric()
-    );
-    let normal_is_okay = entry.normal.chars().all(|c|
-      c.is_ascii_punctuation() || c.is_ascii_alphanumeric()
-    );
-
-    if shifted_is_okay { preserved_positions.insert((position, 0)); }
-    if normal_is_okay { preserved_positions.insert((position, 1)); }
-  }
-
-  preserved_positions
-}
-
 impl Mutator {
   pub fn new(preserve: &'static str) -> Mutator {
-    let preserved_positions = parse_positions(preserve);
-    Mutator { preserved_positions, cache: HashSet::new() }
+    let presie = Preservative::from(preserve);
+    Mutator { presie, cache: HashSet::new() }
   }
 
   pub fn mutate_keys(self: &Self, layout: &Layout) -> Layout {
@@ -155,8 +137,8 @@ impl Mutator {
     loop {
       position = self.random_number(limit);
 
-      let shifted_is_safe = self.is_safe_position((position, 0));
-      let normal_is_safe = self.is_safe_position((position, 1));
+      let shifted_is_safe = self.presie.is_safe_position((position, 0));
+      let normal_is_safe = self.presie.is_safe_position((position, 1));
 
       if shifted_is_safe && normal_is_safe { break; }
     }
@@ -191,14 +173,10 @@ impl Mutator {
 
       position = (*number, layer);
 
-      if self.is_safe_position(position) { break; }
+      if self.presie.is_safe_position(position) { break; }
     }
 
     position
-  }
-
-  fn is_safe_position(self: &Self, position: Position) -> bool {
-    !self.preserved_positions.contains(&position)
   }
 
   fn random_number(self: &Self, size: usize) -> usize {
@@ -210,18 +188,6 @@ impl Mutator {
 #[cfg(test)]
 mod test {
   use super::*;
-
-  macro_rules! set {
-    ( $( $x:expr ),* ) => {
-        {
-            let mut temp_set = HashSet::new();
-            $(
-                temp_set.insert($x);
-            )*
-            temp_set
-        }
-    };
-  }
 
   #[test]
   fn it_mutates_keys() {
@@ -239,28 +205,6 @@ mod test {
     let new_layout = mutator.mutate_symbols(&layout);
 
     assert_ne!(new_layout.template, layout.template);
-  }
-
-  #[test]
-  fn parsing_preserved_positions() {
-    let list = parse_positions("
-      ∙ ! ∙ * ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
-      ∙ 1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
-        Q ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
-        q ∙ r ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
-        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
-        ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
-          ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
-          ∙ ∙ ∙ ∙ ∙ ∙ ∙ , . ∙ 
-    ");
-    assert_eq!(list, set! [
-      (1,0), (1,1),
-      (3,0),
-      (13, 0), (13, 1),
-      (15, 1),
-      (44, 1),
-      (45, 1)
-    ]);
   }
 
   #[test]
