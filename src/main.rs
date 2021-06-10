@@ -9,6 +9,7 @@ mod calculator;
 mod preservative;
 mod frequency;
 mod summary;
+mod dna;
 
 use crate::keyboard::*;
 use crate::calculator::*;
