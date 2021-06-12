@@ -80,7 +80,7 @@ pub const HALMAK_21: &'static str = "
       f m v c / g p x k y
 ";
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug,PartialEq,Clone)]
 pub struct Layout {
   pub template: String
 }

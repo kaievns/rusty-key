@@ -7,6 +7,7 @@ mod geometry;
 mod keyboard;
 mod calculator;
 mod preservative;
+mod population;
 mod frequency;
 mod summary;
 mod dna;
