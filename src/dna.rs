@@ -6,7 +6,7 @@ pub type Sequence = Vec<Pair>;
 
 #[derive(Debug,PartialEq,Eq)]
 pub struct DNA {
-  sequence: Sequence
+  pub sequence: Sequence
 }
 
 impl DNA {

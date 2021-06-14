@@ -1,6 +1,7 @@
 use crate::config::*;
 use crate::layout::*;
 use crate::mutator::*;
+use crate::splicer::*;
 
 type Members = Vec<Layout>;
 
@@ -17,7 +18,8 @@ impl Population {
 
   fn create_members(mom: &Layout, dad: &Layout) -> Members {
     let mutator = Mutator::new(PRESERVED_SYMBOLS);
-    let offspring = (*mom).clone(); // splicer::splice(mom, dad);
+    let splicer = Splicer::new(PRESERVED_SYMBOLS);
+    let offspring = splicer.sex(mom, dad);
     let mut members = Members::new();
 
     for i in 0..POPULATION_SIZE {

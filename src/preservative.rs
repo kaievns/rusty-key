@@ -19,6 +19,10 @@ impl Preservative {
     !self.restriced_positions.contains(&position)
   }
 
+  pub fn symbol_at(self: &Self, position: Position) -> Option<String> {
+    None
+  }
+
   fn parse_positions(template: &'static str) -> Positions {
     let tmp_layout = Layout { template: template.to_string() };
     let mut restriced_positions = Positions::new();

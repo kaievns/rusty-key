@@ -2,7 +2,6 @@ mod source;
 mod config;
 mod parser;
 mod layout;
-mod mutator;
 mod geometry;
 mod keyboard;
 mod calculator;
@@ -10,6 +9,8 @@ mod preservative;
 mod population;
 mod frequency;
 mod summary;
+mod mutator;
+mod splicer;
 mod dna;
 
 use crate::keyboard::*;
