@@ -103,40 +103,6 @@ pub const FULL_ORTHO: Geometry = Geometry {
   "
 };
 
-#[allow(dead_code)]
-pub const COMPACT_ORTHO: Geometry = Geometry {
-  template: "
-    q w e r t   y u i o p
-    a s d f g   h j k l ;
-    z x c v b   n m , . /
-         ⇧ ⇥     ↵ ︺
-  ",
-  hands: "
-    l l l l l   r r r r r
-    l l l l l   r r r r r
-    l l l l l   r r r r r
-         l l     r r
-  ",
-  fingers: "
-    1 2 3 4 4   4 4 3 2 1
-    1 2 3 4 4   4 4 3 2 1
-    1 2 3 4 4   4 4 3 2 1
-         5 5     5 5
-  ",
-  efforts: "
-    07 02 01 06 12   12 06 01 01 07
-    01 00 00 00 07   07 00 00 00 01
-    07 08 10 04 08   08 04 10 08 07
-            00 00     00 00
-  ",
-  rolling_pairs: FULL_ORTHO.rolling_pairs,
-  bad_starters: "
-    q     r t   y u     p
-        d   g   h   k    
-    z x c   b   n   , . / 
-  "
-};
-
 use strum::IntoEnumIterator; // 0.17.1
 use strum_macros::EnumIter; // 0.17.1
 
@@ -381,17 +347,6 @@ mod test {
       SpecialSymbol::Return     => Key { position: (4, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
       SpecialSymbol::LeftShift  => Key { position: (4, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
       SpecialSymbol::RightShift => Key { position: (4, 4), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }
-    });
-  }
-
-  #[test]
-  fn special_keys_on_compact_ortho() {
-    assert_eq!(COMPACT_ORTHO.special_keys(), map! {
-      SpecialSymbol::Tab        => Key { position: (3, 1), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::Space      => Key { position: (3, 3), hand: Hand::Right, finger: Finger::Thumb, effort: 0 },
-      SpecialSymbol::Return     => Key { position: (3, 2), hand: Hand::Right, finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::LeftShift  => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }, 
-      SpecialSymbol::RightShift => Key { position: (3, 0), hand: Hand::Left,  finger: Finger::Thumb, effort: 0 }
     });
   }
 
