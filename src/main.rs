@@ -10,7 +10,6 @@ mod population;
 mod frequency;
 mod summary;
 mod mutator;
-mod splicer;
 mod dna;
 
 use crate::keyboard::*;

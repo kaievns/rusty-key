@@ -8,7 +8,7 @@ pub const BAD_STARTER_PENALTY: usize = 80;
 pub const ROW_SKIP_PENALTY: usize = 50;
 pub const ROW_JUMP_PENALTY: usize = 30;
 
-pub const POPULATION_SIZE: usize = 10;
+pub const POPULATION_SIZE: usize = 30;
 pub const MUTATE_SYMBOLS: bool = false;
 
 pub const PRESERVED_SYMBOLS: &'static str = "";
