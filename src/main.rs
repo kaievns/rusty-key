@@ -7,6 +7,7 @@ mod keyboard;
 mod calculator;
 mod preservative;
 mod population;
+mod generation;
 mod frequency;
 mod summary;
 mod mutator;
