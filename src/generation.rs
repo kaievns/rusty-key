@@ -7,13 +7,13 @@ use crate::calculator::*;
 use crate::population::*;
 use crate::summary::*;
 
-pub struct Score<'a> {
-  layout: &'a Layout,
+pub struct Score {
+  layout: Layout,
   summary: Summary,
   deviation: f64
 }
 
-type Scores<'a> = Vec<Score<'a>>;
+type Scores = Vec<Score>;
 
 pub struct Generation {
   pub number: usize,
@@ -38,7 +38,7 @@ impl Generation {
 
   fn select_successor(self: &Self, text: &String) -> Layout {
     let scores = self.rate_against(text);
-    (*scores[0].layout).clone() // selection thing should be here
+    (scores[0].layout).clone() // selection thing should be here
   }
 
   fn rate_against(self: &Self, text: &String) -> Scores {
@@ -49,10 +49,10 @@ impl Generation {
 
   fn rate_layout_against(self: &Self, layout: &Layout, text: &String) -> Score {
     let deviation = self.population.deviation_for(layout);
-    let keyboard = Keyboard::from(layout, DEFAULT_GEOMETRY);
+    let keyboard = Keyboard::from(&layout, &DEFAULT_GEOMETRY);
     let calculator = Calculator::from(&keyboard);
-    let summary = calculator.run(&self.text);
+    let summary = calculator.run(text);
 
-    Score { layout, deviation, summary }
+    Score { layout: (*layout).clone(), deviation, summary }
   }
 }

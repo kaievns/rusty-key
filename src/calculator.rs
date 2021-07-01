@@ -8,13 +8,13 @@ use hashbrown::HashSet;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
-  keyboard: &'a Keyboard,
+  keyboard: &'a Keyboard<'a>,
   bad_starters: HashSet<Position>,
   rolling_pairs_map: HashSet<(Position, Position)>
 }
 
 impl Calculator<'_> {
-  pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator {
+  pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator<'a> {
     let bad_starters = keyboard.geometry.bad_starting_positions();
     let rolling_pairs_map = keyboard.geometry.rolling_position_pairs();
     
@@ -123,7 +123,7 @@ mod test {
 
   fn run_text(text: &'static str) -> Summary {
     let layout = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
     let calculator = Calculator::from(&keyboard);
   
     calculator.run(&text.to_string())

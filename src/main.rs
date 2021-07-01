@@ -23,17 +23,18 @@ fn main() -> Result<(), std::io::Error> {
   println!("Loaded text: {:}", data.len());
 
   let layouts = [
-    ("QWERTY", Keyboard::from(Layout { template: QWERTY.to_string() }, DEFAULT_GEOMETRY)),
-    ("DVORAK", Keyboard::from(Layout { template: DVORAK.to_string() }, DEFAULT_GEOMETRY)),
-    ("COLEMAK", Keyboard::from(Layout { template: COLEMAK.to_string() }, DEFAULT_GEOMETRY)),
-    ("WORKMAN", Keyboard::from(Layout { template: WORKMAN.to_string() }, DEFAULT_GEOMETRY)),
-    ("THE-1", Keyboard::from(Layout { template: THE_1.to_string() }, DEFAULT_GEOMETRY)),
-    ("HALMAK 2.1", Keyboard::from(Layout { template: HALMAK_21.to_string() }, DEFAULT_GEOMETRY))
+    ("QWERTY", Layout { template: QWERTY.to_string() } ),
+    ("DVORAK", Layout { template: DVORAK.to_string() } ),
+    ("COLEMAK", Layout { template: COLEMAK.to_string() } ),
+    ("WORKMAN", Layout { template: WORKMAN.to_string() } ),
+    ("THE-1", Layout { template: THE_1.to_string() } ),
+    ("HALMAK 2.1", Layout { template: HALMAK_21.to_string() } )
   ];
 
   for (name, layout) in layouts.iter() {
     println!("{}: \n{}", name, layout);
-    let calculator = Calculator::from(&layout);
+    let keyboard = Keyboard::from(&layout, &DEFAULT_GEOMETRY);
+    let calculator = Calculator::from(&keyboard);
     let summary = calculator.run(&data.to_string());
     println!("\n{}\n", summary);
   }

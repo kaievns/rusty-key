@@ -8,23 +8,23 @@ use crate::geometry::*;
 pub type KeyMap = HashMap<char, Key>;
 
 #[derive(Debug)]
-pub struct Keyboard {
+pub struct Keyboard<'a> {
   pub name: String,
-  pub layout: Layout,
-  pub geometry: Geometry,
+  pub layout: &'a Layout,
+  pub geometry: &'a Geometry,
   pub key_map: KeyMap
 }
 
-impl fmt::Display for Keyboard {
+impl fmt::Display for Keyboard<'_> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", self.layout.to_string(self.geometry == US_PC_KEYBOARD))
+    write!(f, "{}", self.layout.to_string(*self.geometry == US_PC_KEYBOARD))
   }
 }
 
-impl Keyboard {
-  pub fn from(layout: Layout, geometry: Geometry) -> Keyboard {
+impl Keyboard<'_> {
+  pub fn from<'a>(layout: &'a Layout, geometry: &'a Geometry) -> Keyboard<'a> {
     let name = layout.name();
-    let keys = Self::keys_from(&layout, &geometry);
+    let keys = Self::keys_from(layout, geometry);
     
     Keyboard { name, layout, geometry, key_map: keys }
   }
@@ -76,7 +76,7 @@ mod test {
   #[test]
   fn gets_the_right_name() {
     let layout = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.name, "QWERTY".to_string());
   }
@@ -84,7 +84,7 @@ mod test {
   #[test]
   fn has_correct_keys_layout() {
     let layout = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     let first_row = &keyboard.layout.entries()[13..23];
     let letters = first_row.iter().fold(String::new(), |name, key| format!("{}{}", name, key.normal));
@@ -95,7 +95,7 @@ mod test {
   #[test]
   fn builds_correct_key_mapping() {
     let layout = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (1, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 6 }));
     assert_eq!(keyboard.key_map.get(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, effort: 12 }));
@@ -114,7 +114,7 @@ mod test {
   #[test]
   fn gives_access_to_keys() {
     let layout = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(layout, US_PC_KEYBOARD);
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (1, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 6 }));
     assert_eq!(keyboard.key_for(&'S'), Some(&Key { position: (2, 1), hand: Hand::Left, finger: Finger::Ring, effort: 12 }));
