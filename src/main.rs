@@ -8,6 +8,7 @@ mod calculator;
 mod preservative;
 mod population;
 mod generation;
+mod selection;
 mod frequency;
 mod summary;
 mod mutator;

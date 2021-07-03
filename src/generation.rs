@@ -5,15 +5,7 @@ use crate::layout::*;
 use crate::keyboard::*;
 use crate::calculator::*;
 use crate::population::*;
-use crate::summary::*;
-
-pub struct Score {
-  layout: Layout,
-  summary: Summary,
-  deviation: f64
-}
-
-type Scores = Vec<Score>;
+use crate::selection::*;
 
 pub struct Generation {
   pub number: usize,
@@ -38,7 +30,8 @@ impl Generation {
 
   fn select_successor(self: &Self, text: &String) -> Layout {
     let scores = self.rate_against(text);
-    (scores[0].layout).clone() // selection thing should be here
+    let selection = Selection { scores };
+    selection.select_successor()
   }
 
   fn rate_against(self: &Self, text: &String) -> Scores {
