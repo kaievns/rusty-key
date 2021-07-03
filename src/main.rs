@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 mod source;
 mod config;
 mod parser;
@@ -16,12 +19,11 @@ mod dna;
 
 use crate::keyboard::*;
 use crate::calculator::*;
-use crate::config::{DEFAULT_GEOMETRY};
+use crate::config::{CONFIG};
 use crate::layout::*;
 
 fn main() -> Result<(), std::io::Error> {
-  let data = source::load(String::from("text"))?;
-  println!("Loaded text: {:}", data.len());
+  println!("Loaded text: {:}", CONFIG.data.len());
 
   let layouts = [
     ("QWERTY", Layout { template: QWERTY.to_string() } ),
@@ -34,9 +36,9 @@ fn main() -> Result<(), std::io::Error> {
 
   for (name, layout) in layouts.iter() {
     println!("{}: \n{}", name, layout);
-    let keyboard = Keyboard::from(&layout, &DEFAULT_GEOMETRY);
+    let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
     let calculator = Calculator::from(&keyboard);
-    let summary = calculator.run(&data.to_string());
+    let summary = calculator.run(&CONFIG.data);
     println!("\n{}\n", summary);
   }
 

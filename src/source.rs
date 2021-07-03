@@ -14,3 +14,7 @@ pub fn load(folder: String) -> Result<String, io::Error> {
 
   Ok(contents.join("\n\n"))
 }
+
+pub fn load_english_text() -> String {
+  load(String::from("text")).unwrap()
+}
