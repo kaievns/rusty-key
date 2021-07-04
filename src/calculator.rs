@@ -1,6 +1,6 @@
 use crate::config::*;
 use crate::parser::Position;
-use crate::geometry::{Key, Finger};
+use crate::geometry::{Key};
 use crate::keyboard::*;
 use crate::summary::*;
 
@@ -39,10 +39,10 @@ impl Calculator<'_> {
           effort += key.effort;
 
           if 
-            previous_key.hand == key.hand &&       // same hand
-            key != previous_key &&                 // different key
-            key.finger != Finger::Thumb &&         // not space
-            previous_key.finger != Finger::Thumb   // not from space
+            previous_key.hand == key.hand && // same hand
+            key != previous_key &&           // different key
+            key != space_key &&              // not space
+            previous_key != space_key        // not from space
           {
             let rolling = self.is_rolling_combo(previous_key, key);
           

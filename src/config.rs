@@ -9,7 +9,6 @@ pub const ROW_SKIP_PENALTY: usize = 50;
 pub const ROW_JUMP_PENALTY: usize = 30;
 
 pub const POPULATION_SIZE: usize = 30;
-pub const MUTATE_SYMBOLS: bool = false;
 
 lazy_static! {
   pub static ref CONFIG: Config = Config::defaults();
