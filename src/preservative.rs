@@ -10,6 +10,11 @@ pub struct Preservative {
 }
 
 impl Preservative {
+  pub fn default() -> Preservative {
+    // TODO implement loading from a file/org
+    Preservative::from(&"")
+  }
+
   pub fn from(template: &'static str) -> Preservative {
     let restriced_positions = Preservative::parse_positions(template);
     Preservative { restriced_positions }

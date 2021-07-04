@@ -16,7 +16,7 @@ impl Population {
   }
 
   fn create_members(ancestor: &Layout) -> Members {
-    let mutator = Mutator::new(PRESERVED_SYMBOLS);
+    let mutator = Mutator::new();
 
     let mut members = Members::new();
     members.push((*ancestor).clone());

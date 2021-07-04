@@ -11,8 +11,6 @@ pub const ROW_JUMP_PENALTY: usize = 30;
 pub const POPULATION_SIZE: usize = 30;
 pub const MUTATE_SYMBOLS: bool = false;
 
-pub const PRESERVED_SYMBOLS: &'static str = "";
-
 lazy_static! {
   pub static ref CONFIG: Config = Config::defaults();
 }
@@ -26,7 +24,7 @@ pub struct Config {
 impl Config {
   pub fn defaults() -> Config {
     let geometry = US_PC_KEYBOARD;
-    let preserve = Preservative::from(&PRESERVED_SYMBOLS);
+    let preserve = Preservative::default();
     let data = source::load_english_text();
 
     Config { geometry, preserve, data }

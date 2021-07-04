@@ -3,18 +3,22 @@ use rand::Rng;
 use hashbrown::HashSet;
 
 use crate::dna::*;
+use crate::config::*;
 use crate::layout::*;
 use crate::parser::*;
 use crate::preservative::*;
 
-pub struct Mutator {
-  presie: Preservative,
+pub struct Mutator<'a> {
+  presie: &'a Preservative,
   cache: HashSet<String>
 }
 
-impl Mutator {
-  pub fn new(preserve: &'static str) -> Mutator {
-    let presie = Preservative::from(preserve);
+impl Mutator<'_> {
+  pub fn new() -> Mutator<'static> {
+    Mutator::with_presie(&CONFIG.preserve)
+  }
+
+  fn with_presie(presie: &Preservative) -> Mutator {
     Mutator { presie, cache: HashSet::new() }
   }
 
@@ -117,7 +121,8 @@ mod test {
   #[test]
   fn it_mutates_keys() {
     let layout = Layout { template: QWERTY.to_string() };
-    let mutator = Mutator::new("");
+    let presie = Preservative::from(&"");
+    let mutator = Mutator::with_presie(&presie);
     let new_layout = mutator.mutate_keys(&layout);
 
     assert_ne!(new_layout.template, layout.template);
@@ -126,7 +131,8 @@ mod test {
   #[test]
   fn it_mutates_symbols() {
     let layout = Layout { template: QWERTY.to_string() };
-    let mutator = Mutator::new("");
+    let presie = Preservative::from(&"");
+    let mutator = Mutator::with_presie(&presie);
     let new_layout = mutator.mutate_symbols(&layout);
 
     assert_ne!(new_layout.template, layout.template);
@@ -134,7 +140,7 @@ mod test {
 
   #[test]
   fn it_never_mutates_preserved_positions() {
-    let mutator = Mutator::new("
+    let presie = Preservative::from(&"
       ∙ ! ∙ # ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
       ∙ 1 ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
         Q ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
@@ -144,6 +150,7 @@ mod test {
           ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
           ∙ ∙ ∙ ∙ ∙ ∙ ∙ , ∙ ∙ 
     ");
+    let mutator = Mutator::with_presie(&presie);
     let mut dna = qwerty_dna();
 
     for _ in 0..2000 {
@@ -170,7 +177,8 @@ mod test {
 
   #[test]
   fn test_random_keys_swap() {
-    let mutator = Mutator::new("");
+    let presie = Preservative::from(&"");
+    let mutator = Mutator::with_presie(&presie);
     let original = qwerty_dna();
 
     let new_dna1 = mutator.swap_random_keys(&original);
@@ -187,7 +195,8 @@ mod test {
 
   #[test]
   fn swapping_random_symbols() {
-    let mutator = Mutator::new("");
+    let presie = Preservative::from(&"");
+    let mutator = Mutator::with_presie(&presie);
     let original = qwerty_dna();
     let new_dna1 = mutator.swap_random_symbols(&original);
     let new_dna2 = mutator.swap_random_symbols(&original);
@@ -203,7 +212,8 @@ mod test {
 
   #[test]
   fn getting_two_random_symbol_positions() {
-    let mutator = Mutator::new("");
+    let presie = Preservative::from(&"");
+    let mutator = Mutator::with_presie(&presie);
     let sequence = qwerty_dna();
 
     for _ in 0..10 {
