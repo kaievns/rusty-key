@@ -46,6 +46,6 @@ impl Generation {
     let calculator = Calculator::from(&keyboard);
     let summary = calculator.run(&CONFIG.data);
 
-    Score { layout: (*layout).clone(), deviation, summary }
+    Score { layout: (*layout).clone(), deviation, score: summary.score() }
   }
 }
