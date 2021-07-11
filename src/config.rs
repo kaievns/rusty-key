@@ -1,6 +1,7 @@
 use crate::source;
 use crate::geometry::*;
 use crate::preservative::*;
+use crate::frequency::*;
 
 pub const SAME_HAND_PENALTY: usize = 5;
 pub const SAME_FINGER_PENALTY: usize = 100;
@@ -17,7 +18,8 @@ lazy_static! {
 pub struct Config {
   pub geometry: Geometry,
   pub preserve: Preservative,
-  pub data: String
+  pub data: String,
+  pub symbol_freaquencies: SymbolFrequencies
 }
 
 impl Config {
@@ -25,7 +27,8 @@ impl Config {
     let geometry = US_PC_KEYBOARD;
     let preserve = Preservative::default();
     let data = source::load_english_text();
+    let symbol_freaquencies = ENGLISH_TEXT_FREQUENCIES;
 
-    Config { geometry, preserve, data }
+    Config { geometry, preserve, data, symbol_freaquencies }
   }
 }

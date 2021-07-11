@@ -13,13 +13,15 @@ mod population;
 mod generation;
 mod selection;
 mod frequency;
+mod profiler;
 mod summary;
 mod mutator;
 mod dna;
 
 use crate::keyboard::*;
 use crate::calculator::*;
-use crate::config::{CONFIG};
+use crate::profiler::*;
+use crate::config::*;
 use crate::layout::*;
 
 fn main() -> Result<(), std::io::Error> {
@@ -39,7 +41,9 @@ fn main() -> Result<(), std::io::Error> {
     let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
     let calculator = Calculator::from(&keyboard);
     let summary = calculator.run(&CONFIG.data);
-    println!("\n{}\n", summary);
+    let fitness = profiler::calculate_fitness(&keyboard);
+
+    println!("\n{}\nfitness: {}\n", summary, fitness);
   }
 
   Ok(())

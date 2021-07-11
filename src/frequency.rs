@@ -13,8 +13,10 @@ pub fn calculate_frequencies(text: &String) -> UsageFrequencies {
   usage
 }
 
+pub type SymbolFrequencies = [(char, usize); 89];
+
 #[allow(dead_code)]
-pub const ENGLISH_TEXT_FREQUENCIES: [(char, usize); 89] = [
+pub const ENGLISH_TEXT_FREQUENCIES: SymbolFrequencies = [
   ('R', 1303), 
   ('>', 14), 
   ('_', 10), 
