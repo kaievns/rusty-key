@@ -6,6 +6,7 @@ use crate::keyboard::*;
 use crate::calculator::*;
 use crate::population::*;
 use crate::selection::*;
+use crate::profiler;
 
 pub struct Generation {
   pub number: usize,
@@ -31,7 +32,11 @@ impl Generation {
   fn select_successor(self: &Self) -> Layout {
     let scores = self.rate_layouts();
     let selection = Selection { scores };
-    selection.select_successor()
+    let winner_score = selection.select_the_fittest();
+    let winner_index = selection.scores.iter()
+      .position(|score| score == winner_score).unwrap();
+
+    (*self.population.members.get(winner_index).unwrap()).clone()
   }
 
   fn rate_layouts(self: &Self) -> Scores {
@@ -44,8 +49,9 @@ impl Generation {
     let deviation = self.population.deviation_for(layout);
     let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
     let calculator = Calculator::from(&keyboard);
-    let summary = calculator.run(&CONFIG.data);
+    let performance = calculator.run(&CONFIG.data).score();
+    let fitness = profiler::calculate_fitness(&keyboard);
 
-    Score { layout: (*layout).clone(), deviation, score: summary.score() }
+    Score { deviation, performance, fitness }
   }
 }

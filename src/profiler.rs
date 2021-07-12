@@ -31,8 +31,8 @@ fn total_possible_score(symbols: &Vec<String>) -> usize {
 
 fn score_for(symbol: &String) -> usize {
   match symbol.chars().nth(0).unwrap() {
-    'a'...'z' => 4,
-    '0'...'9' => 2,
+    'a'..='z' => 4,
+    '0'..='9' => 2,
     _ => 1
   }
 }
