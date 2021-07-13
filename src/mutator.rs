@@ -10,6 +10,7 @@ use crate::preservative::*;
 
 pub struct Mutator<'a> {
   presie: &'a Preservative,
+  #[allow(dead_code)]
   cache: HashSet<String>
 }
 

@@ -34,7 +34,7 @@ impl Config {
 }
 
 fn load_text() -> String {
-  if (cfg!(test)) { lorem_ipsum() }
+  if cfg!(test) { lorem_ipsum() }
   else { source::load_english_text() }
 }
 

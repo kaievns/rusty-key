@@ -20,7 +20,6 @@ mod dna;
 
 use crate::keyboard::*;
 use crate::calculator::*;
-use crate::profiler::*;
 use crate::config::*;
 use crate::layout::*;
 

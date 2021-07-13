@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::config::*;
 use crate::frequency::*;
 use crate::keyboard::*;
