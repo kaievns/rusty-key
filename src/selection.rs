@@ -97,9 +97,10 @@ mod test {
 
     for _ in 0..1000 {
       let selected = selection.select_the_fittest();
-      let the_fittest = selection.scores[3]
+      let the_fittest = &selection.scores[3];
+
       println!("{:?}", selected);
-      if *selected == the_fittest {
+      if *selected == *the_fittest {
         the_fittest_was_selected += 1;
       }
     }

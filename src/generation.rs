@@ -55,3 +55,28 @@ impl Generation {
     Score { deviation, performance, fitness }
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn test_gen_zero() {
+    let generation = Generation::zero();
+
+    assert_eq!(generation.number, 1);
+    assert_eq!(generation.population.members[0].name(), "QWERTY");
+  }
+
+  #[test]
+  fn test_next() {
+    let generation = Generation::zero();
+    let next_generation = generation.next();
+
+    println!("{:}", next_generation.population.members[0].template);
+
+    assert_eq!(next_generation.number, 2);
+    assert_ne!(next_generation.population.members[0].name(), "QWERTY");
+  }
+
+}

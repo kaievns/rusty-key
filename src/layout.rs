@@ -47,6 +47,7 @@ pub const WORKMAN: &'static str = "
 
 // frivolously reinterpreted symbols
 // source https://deskthority.net/wiki/BEAKL
+#[allow(dead_code)]
 pub const BEAKL_15: &'static str = "
   ~ $ # ! @ % ^ < > & { }
     1 2 3 4 5 6 7 8 9 0 - =
