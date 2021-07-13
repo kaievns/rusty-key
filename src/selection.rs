@@ -27,8 +27,9 @@ pub struct Selection {
 
 impl Selection {
   pub fn select_the_fittest(self: &Self) -> &Score {
-    self.calculate_ranks();
-    &self.scores[0] // selection thing should be here
+    let rank_space = self.create_rank_space();
+    let (index, _) = self.select_from_rank_space(&rank_space);
+    &self.scores[index]
   }
 
   fn select_from_rank_space(self: &Self, list: &RankSpace) -> (usize, f64) {
@@ -84,8 +85,27 @@ mod test {
     vec![
       Score { performance: 1.1, deviation: 0.3, fitness: 0.2 },
       Score { performance: 1.2, deviation: 0.5, fitness: 0.4 },
-      Score { performance: 1.3, deviation: 0.9, fitness: 0.5 }
+      Score { performance: 1.3, deviation: 0.8, fitness: 0.5 },
+      Score { performance: 1.5, deviation: 1.1, fitness: 0.7 }
     ]
+  }
+
+  #[test]
+  fn test_selection_of_the_fittest() {
+    let selection = Selection { scores: get_scores() };
+    let mut the_fittest_was_selected = 0;
+
+    for _ in 0..1000 {
+      let selected = selection.select_the_fittest();
+      let the_fittest = selection.scores[3]
+      println!("{:?}", selected);
+      if *selected == the_fittest {
+        the_fittest_was_selected += 1;
+      }
+    }
+
+    // the last (fittest) was returned half of the times
+    assert!((450..550).contains(&the_fittest_was_selected));
   }
 
   #[test]
@@ -96,24 +116,28 @@ mod test {
     let first = rank_space[0];
     let second = rank_space[1];
     let third = rank_space[2];
+    let fourth = rank_space[3];
 
     let mut first_selected = 0;
     let mut second_selected = 0;
     let mut third_selected = 0;
+    let mut fourth_selected = 0;
 
     for _ in 0..1000 {
       let selected = selection.select_from_rank_space(&rank_space);
       if selected == first { first_selected += 1; }
       else if selected == second { second_selected += 1; }
       else if selected == third { third_selected += 1; }
+      else if selected == fourth { fourth_selected += 1; }
       else { panic!("Unexpected item returned"); }
     }
 
-    println!("{:?} {:?} {:?}", first_selected, second_selected, third_selected);
+    println!("{:?} {:?} {:?} {:?}", first_selected, second_selected, third_selected, fourth_selected);
 
     assert!((450..550).contains(&first_selected));
     assert!((200..300).contains(&second_selected));
-    assert!((200..300).contains(&third_selected));
+    assert!((50..150).contains(&third_selected));
+    assert!((50..150).contains(&fourth_selected));
   }
 
   #[test]
@@ -121,9 +145,10 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.create_rank_space(), vec![
-      (2, 0.0), 
-      (1, 0.4934045236525953), 
-      (0, 0.9100071887066052)
+      (3, 0.0), 
+      (2, 0.4168819930487025), 
+      (1, 0.7219377608525404), 
+      (0, 1.0536796536796535)
     ])
   }
 
@@ -132,8 +157,9 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.calculate_ranks(), vec![
-      0.9100071887066052, 
-      0.4934045236525953, 
+      1.0536796536796535, 
+      0.7219377608525404, 
+      0.4168819930487025, 
       0.0
     ])
   }
@@ -143,8 +169,9 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.renormalise(), vec![
-      Score { performance: 0.8461538461538461, deviation: 0.3333333333333333, fitness: 0.4 }, 
-      Score { performance: 0.923076923076923, deviation: 0.5555555555555556, fitness: 0.8 }, 
+      Score { performance: 0.7333333333333334, deviation: 0.2727272727272727, fitness: 0.28571428571428575 }, 
+      Score { performance: 0.7999999999999999, deviation: 0.45454545454545453, fitness: 0.5714285714285715 }, 
+      Score { performance: 0.8666666666666667, deviation: 0.7272727272727273, fitness: 0.7142857142857143 }, 
       Score { performance: 1.0, deviation: 1.0, fitness: 1.0 }
     ])
   }
