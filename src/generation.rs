@@ -1,5 +1,6 @@
 use rayon::prelude::*;
 use once_cell::sync::OnceCell;
+use core::cmp::Ordering::Less;
 
 use crate::config::*;
 use crate::layout::*;
@@ -13,6 +14,8 @@ pub struct Generation {
   pub number: usize,
   pub population: Population
 }
+
+type Pair = (Layout, f64);
 
 impl Generation {
   pub fn zero() -> Generation {
@@ -30,8 +33,8 @@ impl Generation {
     Generation::new(self.number + 1, &pair.0)
   }
 
-  pub fn successor(self: &Self) -> (Layout, f64) {
-    static SUCCESSOR: OnceCell<(Layout, f64)> = OnceCell::new();
+  pub fn successor(self: &Self) -> Pair {
+    static SUCCESSOR: OnceCell<Pair> = OnceCell::new();
     SUCCESSOR.get_or_init(|| {
       let selection = self.create_selection();
       let score = selection.lucky_draw();
@@ -44,9 +47,21 @@ impl Generation {
     }).clone()
   }
 
-  // pub fn best(&self) -> (Layout, f64) {
-  //   let selection = self.create_selection();
-  // }
+  pub fn best(&self) -> Pair {
+    static BEST: OnceCell<Pair> = OnceCell::new();
+    BEST.get_or_init(|| {
+      let selection = self.create_selection();
+      let mut ratings: Vec<(usize, f64)> = selection.scores.iter().enumerate()
+        .map(|(i, score)| (i, self.rating_for(&score))).collect();
+      
+      ratings.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Less));
+      let best_rating = *ratings.first().unwrap();
+
+      let layout = self.population.members.get(best_rating.0).unwrap();
+
+      ((*layout).clone(), best_rating.1)
+    }).clone()
+  }
 
   fn rating_for(&self, score: &Score) -> f64 {
     score.performance * score.fitness
@@ -103,6 +118,15 @@ mod test {
     let succ2 = generation.successor();
 
     assert_eq!(succ1, succ2);
+  }
+
+  #[test]
+  fn test_best() {
+    let generation = Generation::zero();
+    let best1 = generation.best();
+    let best2 = generation.best();
+
+    assert_eq!(best1, best2);
   }
 
 }
