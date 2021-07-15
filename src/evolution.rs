@@ -84,8 +84,6 @@ impl Evolution {
     let guard = &mut *current.lock().unwrap();
     let current_generation = guard.replace(next_generation);
 
-    println!("tick! {:?}", current_generation.number);
-
     let past_gens = &mut *past.lock().unwrap();
     past_gens.push(current_generation);
   }
@@ -96,39 +94,28 @@ mod test {
   use super::*;
   use std::time;
 
-  // #[test]
-  // fn test_new() {
-  //   let evolution = Evolution::new();
-  //   let current_generation = evolution.current_generation.borrow();
+  #[test]
+  fn test_new() {
+    let evolution = Evolution::new();
+    assert_eq!(Evolution::fetch_status(&evolution.in_progress), false);
 
-  //   assert_eq!(evolution.in_progress, RefCell::new(false));
-  //   assert_eq!(current_generation.population.members[0].template, QWERTY);
-  // }
+    let guard = &*evolution.current_generation.lock().unwrap();
+    let current_generation = guard.borrow();
+
+    assert_eq!(current_generation.population.members[0].template, QWERTY);
+  }
 
   #[test]
   fn test_start() {
-    println!("creating");
     let evolution = Evolution::new();
+    assert_eq!(Evolution::fetch_status(&evolution.in_progress), false);
 
-    println!("starting");
     evolution.start();
+    assert_eq!(Evolution::fetch_status(&evolution.in_progress), true);
 
-    // assert_eq!(evolution.in_progress, RefCell::new(true));
-    println!("sleeping");
-    std::thread::sleep(time::Duration::from_millis(1000));
-    println!("current {:?}", evolution.current_layout());
-  
-    println!("stopping");
+    std::thread::sleep(time::Duration::from_millis(200));
     evolution.stop();
-
-    std::thread::sleep(time::Duration::from_millis(500));
-
-    // handle.join();
-
-    println!("asserting");
-    // assert_eq!(evolution.in_progress, RefCell::new(false));
-    // assert_eq!(evolution.inner.lock().unwrap().past_generations.len(), 1234);
-    assert!(false);
+    assert_eq!(Evolution::fetch_status(&evolution.in_progress), false);
   }
 
 }
