@@ -1,4 +1,5 @@
 use rayon::prelude::*;
+use once_cell::sync::OnceCell;
 
 use crate::config::*;
 use crate::layout::*;
@@ -25,24 +26,40 @@ impl Generation {
   }
 
   pub fn next(self: &Self) -> Generation {
-    let layout = self.select_successor();
-    Generation::new(self.number + 1, &layout)
+    let pair = self.successor();
+    Generation::new(self.number + 1, &pair.0)
   }
 
-  fn select_successor(self: &Self) -> Layout {
-    let scores = self.rate_layouts();
-    let selection = Selection { scores };
-    let winner_score = selection.select_the_fittest();
-    let winner_index = selection.scores.iter()
-      .position(|score| score == winner_score).unwrap();
+  pub fn successor(self: &Self) -> (Layout, f64) {
+    static SUCCESSOR: OnceCell<(Layout, f64)> = OnceCell::new();
+    SUCCESSOR.get_or_init(|| {
+      let selection = self.create_selection();
+      let score = selection.lucky_draw();
+      let index = selection.scores.iter()
+        .position(|s| s == score).unwrap();
 
-    (*self.population.members.get(winner_index).unwrap()).clone()
+      let layout = self.population.members.get(index).unwrap();
+
+      ((*layout).clone(), self.rating_for(&score))
+    }).clone()
   }
 
-  fn rate_layouts(self: &Self) -> Scores {
-    self.population.members.par_iter()
-      .map(|layout| self.rate_layout(layout))
-      .collect()
+  // pub fn best(&self) -> (Layout, f64) {
+  //   let selection = self.create_selection();
+  // }
+
+  fn rating_for(&self, score: &Score) -> f64 {
+    score.performance * score.fitness
+  }
+
+  fn create_selection(&self) -> &'static Selection {
+    static SELECTION: OnceCell<Selection> = OnceCell::new();
+    SELECTION.get_or_init(|| {
+      let scores = self.population.members.par_iter()
+          .map(|layout| self.rate_layout(layout))
+          .collect();
+        Selection { scores }
+    })
   }
 
   fn rate_layout(self: &Self, layout: &Layout) -> Score {
@@ -77,6 +94,15 @@ mod test {
 
     assert_eq!(next_generation.number, 2);
     assert_ne!(next_generation.population.members[0].name(), "QWERTY");
+  }
+
+  #[test]
+  fn test_successor() {
+    let generation = Generation::zero();
+    let succ1 = generation.successor();
+    let succ2 = generation.successor();
+
+    assert_eq!(succ1, succ2);
   }
 
 }

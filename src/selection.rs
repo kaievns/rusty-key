@@ -26,7 +26,7 @@ pub struct Selection {
 }
 
 impl Selection {
-  pub fn select_the_fittest(self: &Self) -> &Score {
+  pub fn lucky_draw(self: &Self) -> &Score {
     let rank_space = self.create_rank_space();
     let (index, _) = self.select_from_rank_space(&rank_space);
     &self.scores[index]
@@ -96,7 +96,7 @@ mod test {
     let mut the_fittest_was_selected = 0;
 
     for _ in 0..1000 {
-      let selected = selection.select_the_fittest();
+      let selected = selection.lucky_draw();
       let the_fittest = &selection.scores[3];
 
       println!("{:?}", selected);
