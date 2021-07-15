@@ -15,8 +15,6 @@ pub struct Generation {
   pub population: Population
 }
 
-type Pair = (Layout, f64);
-
 impl Generation {
   pub fn zero() -> Generation {
     let qwerty = Layout { template: QWERTY.to_string() };
@@ -29,12 +27,12 @@ impl Generation {
   }
 
   pub fn next(self: &Self) -> Generation {
-    let pair = self.successor();
-    Generation::new(self.number + 1, &pair.0)
+    let layout = self.successor();
+    Generation::new(self.number + 1, &layout)
   }
 
-  pub fn successor(self: &Self) -> Pair {
-    static SUCCESSOR: OnceCell<Pair> = OnceCell::new();
+  pub fn successor(self: &Self) -> Layout {
+    static SUCCESSOR: OnceCell<Layout> = OnceCell::new();
     SUCCESSOR.get_or_init(|| {
       let selection = self.create_selection();
       let score = selection.lucky_draw();
@@ -43,27 +41,29 @@ impl Generation {
 
       let layout = self.population.members.get(index).unwrap();
 
-      ((*layout).clone(), self.rating_for(&score))
+      (*layout).clone()
     }).clone()
   }
 
-  pub fn best(&self) -> Pair {
-    static BEST: OnceCell<Pair> = OnceCell::new();
+  pub fn best(&self) -> Layout {
+    static BEST: OnceCell<Layout> = OnceCell::new();
     BEST.get_or_init(|| {
-      let selection = self.create_selection();
-      let mut ratings: Vec<(usize, f64)> = selection.scores.iter().enumerate()
-        .map(|(i, score)| (i, self.rating_for(&score))).collect();
+      let mut ratings: Vec<(usize, f64)> = self.population.members.iter().enumerate()
+        .map(|(i, layout)| (i, self.rating_for(&layout))).collect();
       
       ratings.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Less));
       let best_rating = *ratings.first().unwrap();
 
       let layout = self.population.members.get(best_rating.0).unwrap();
 
-      ((*layout).clone(), best_rating.1)
+      (*layout).clone()
     }).clone()
   }
 
-  fn rating_for(&self, score: &Score) -> f64 {
+  pub fn rating_for(&self, layout: &Layout) -> f64 {
+    let index = self.population.members.iter().position(|l| *l == *layout).unwrap();
+    let score = self.create_selection().scores.get(index).unwrap();
+
     score.performance * score.fitness
   }
 
@@ -129,4 +129,14 @@ mod test {
     assert_eq!(best1, best2);
   }
 
+  #[test]
+  fn test_rating_for() {
+    let generation = Generation::zero();
+    let layout1 = &generation.population.members[0];
+    let layout2 = &generation.population.members[6].clone();
+
+    assert_eq!(generation.rating_for(layout1), generation.rating_for(layout1));
+    assert_eq!(generation.rating_for(layout1), generation.rating_for(layout1));
+    assert_ne!(generation.rating_for(layout1), generation.rating_for(layout2));
+  }
 }
