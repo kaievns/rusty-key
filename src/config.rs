@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+
 use crate::source;
 use crate::geometry::*;
 use crate::preservative::*;
@@ -11,9 +13,7 @@ pub const ROW_JUMP_PENALTY: usize = 30;
 
 pub const POPULATION_SIZE: usize = 30;
 
-lazy_static! {
-  pub static ref CONFIG: Config = Config::defaults();
-}
+pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 
 pub struct Config {
   pub geometry: Geometry,
