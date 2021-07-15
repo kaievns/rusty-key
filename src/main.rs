@@ -12,6 +12,7 @@ mod preservative;
 mod population;
 mod generation;
 mod selection;
+mod evolution;
 mod frequency;
 mod profiler;
 mod summary;

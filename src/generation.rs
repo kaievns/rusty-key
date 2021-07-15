@@ -10,7 +10,7 @@ use crate::profiler;
 
 pub struct Generation {
   pub number: usize,
-  population: Population
+  pub population: Population
 }
 
 impl Generation {
