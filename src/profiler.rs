@@ -1,8 +1,6 @@
 use crate::config::*;
 use crate::frequency::*;
 use crate::keyboard::*;
-use crate::geometry::*;
-use crate::layout::*;
 
 pub fn calculate_fitness(keyboard: &Keyboard) -> f64 {
   let symbols = symbols_by_frequency(&CONFIG.symbol_freaquencies);
@@ -81,6 +79,8 @@ fn symbols_in_band(symbols_with_efforts: &SymbolEfforts, index: usize) -> Vec<St
 #[cfg(test)]
 mod test {
   use super::*;
+  use crate::layout::*;
+  use crate::geometry::*;
 
   #[test]
   fn test_total_possible_score() {

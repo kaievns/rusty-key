@@ -16,33 +16,46 @@ mod summary;
 mod mutator;
 mod stats;
 mod dna;
+mod ui;
+mod events;
 
 use crate::keyboard::*;
 use crate::calculator::*;
 use crate::config::*;
 use crate::layout::*;
 
-fn main() -> Result<(), std::io::Error> {
-  println!("Loaded text: {:}", CONFIG.data.len());
+use crate::evolution::*;
+use crate::stats::*;
 
-  let layouts = [
-    ("QWERTY", Layout { template: QWERTY.to_string() } ),
-    ("DVORAK", Layout { template: DVORAK.to_string() } ),
-    ("COLEMAK", Layout { template: COLEMAK.to_string() } ),
-    ("WORKMAN", Layout { template: WORKMAN.to_string() } ),
-    ("THE-1", Layout { template: THE_1.to_string() } ),
-    ("HALMAK 2.1", Layout { template: HALMAK_21.to_string() } )
-  ];
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+  let evolution = Evolution::new();
+  let stats = Stats::new(&evolution);
 
-  for (name, layout) in layouts.iter() {
-    println!("{}: \n{}", name, layout);
-    let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
-    let calculator = Calculator::from(&keyboard);
-    let summary = calculator.run(&CONFIG.data);
-    let fitness = profiler::calculate_fitness(&keyboard);
+  ui::render(&stats);
 
-    println!("\n{}\nfitness: {}\n", summary, fitness);
-  }
+  evolution.start();
 
   Ok(())
 }
+
+
+// fn compare_known() {
+//   let layouts = [
+//     ("QWERTY", Layout { template: QWERTY.to_string() } ),
+//     ("DVORAK", Layout { template: DVORAK.to_string() } ),
+//     ("COLEMAK", Layout { template: COLEMAK.to_string() } ),
+//     ("WORKMAN", Layout { template: WORKMAN.to_string() } ),
+//     ("THE-1", Layout { template: THE_1.to_string() } ),
+//     ("HALMAK 2.1", Layout { template: HALMAK_21.to_string() } )
+//   ];
+
+//   for (name, layout) in layouts.iter() {
+//     println!("{}: \n{}", name, layout);
+//     let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
+//     let calculator = Calculator::from(&keyboard);
+//     let summary = calculator.run(&CONFIG.data);
+//     let fitness = profiler::calculate_fitness(&keyboard);
+
+//     println!("\n{}\nfitness: {}\n", summary, fitness);
+//   }
+// }

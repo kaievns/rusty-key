@@ -4,7 +4,6 @@
 use std::cell::RefCell;
 use std::sync::{Arc,Mutex};
 
-use crate::layout::*;
 use crate::generation::*;
 
 type Generations = Vec<Generation>;
@@ -86,6 +85,7 @@ impl Evolution {
 mod test {
   use super::*;
   use std::time;
+  use crate::layout::*;
 
   #[test]
   fn test_new() {
