@@ -14,6 +14,7 @@ mod frequency;
 mod profiler;
 mod summary;
 mod mutator;
+mod stats;
 mod dna;
 
 use crate::keyboard::*;

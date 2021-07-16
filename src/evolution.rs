@@ -8,12 +8,11 @@ use crate::layout::*;
 use crate::generation::*;
 
 type Generations = Vec<Generation>;
-type Winners = Vec<(Layout, usize)>;
 
 pub struct Evolution {
   in_progress: Arc<Mutex<RefCell<bool>>>,
   current_generation: Arc<Mutex<RefCell<Generation>>>,
-  past_generations: Arc<Mutex<Generations>>
+  pub past_generations: Arc<Mutex<Generations>>
 }
 
 impl Evolution {
@@ -39,12 +38,6 @@ impl Evolution {
   pub fn stop(&self) {
     let flag = &mut *self.in_progress.lock().unwrap();
     flag.replace(false);
-  }
-
-  fn current_layout(&self) -> Layout {
-    let guard = self.past_generations.lock().unwrap();
-    let generation = &(*guard)[0];
-    generation.population.members[0].clone()
   }
 
   fn start_thread(

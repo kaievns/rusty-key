@@ -18,8 +18,8 @@ pub struct Generation {
 
 #[derive(Debug,PartialEq)]
 pub struct Result {
-  summary: Summary,
-  fitness: f64,
+  pub summary: Summary,
+  pub fitness: f64,
   deviation: f64
 }
 
