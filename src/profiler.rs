@@ -156,7 +156,7 @@ mod test {
     assert_eq!(get_fitness_for(&QWERTY), 0.30612244897959184);
     assert_eq!(get_fitness_for(&DVORAK), 0.6938775510204082);
     assert_eq!(get_fitness_for(&COLEMAK), 0.5510204081632653);
-    assert_eq!(get_fitness_for(&WORKMAN), 0.5510204081632653);
-    assert_eq!(get_fitness_for(&HALMAK_21), 0.8571428571428571);
+    assert_eq!(get_fitness_for(&WORKMAN), 0.5714285714285714);
+    assert_eq!(get_fitness_for(&HALMAK_21), 0.8775510204081632);
   }
 }

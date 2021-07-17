@@ -19,38 +19,32 @@ mod ui;
 mod events;
 
 use crate::keyboard::*;
-use crate::calculator::*;
 use crate::config::*;
 use crate::layout::*;
 
-use crate::evolution::*;
+use crate::summary::*;
 
 fn main() {
-  let evolution = Evolution::new();
+  let layouts = [
+    ("QWERTY", &QWERTY.clone()),
+    ("DVORAK", &DVORAK.clone()),
+    ("COLEMAK", &COLEMAK.clone()),
+    ("WORKMAN", &WORKMAN.clone()),
+    ("THE-1", &THE_1.clone()),
+    ("HALMAK 2.1", &HALMAK_21.clone())
+  ];
 
-  ui::render();
+  for (name, layout) in layouts.iter() {
+    println!("{}: \n{}", name, layout);
+    let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
+    let summary = Summary::calculate(&keyboard);
 
-  evolution.start();
+    println!("\n{}\n", summary);
+  }
+
+  // let evolution = Evolution::new();
+
+  // ui::render();
+
+  // evolution.start();
 }
-
-
-// fn compare_known() {
-//   let layouts = [
-//     ("QWERTY", &QWERTY ),
-//     ("DVORAK", &DVORAK ),
-//     ("COLEMAK", &COLEMAK ),
-//     ("WORKMAN", &WORKMAN ),
-//     ("THE-1", &THE_1 ),
-//     ("HALMAK 2.1", &HALMAK_21 )
-//   ];
-
-//   for (name, layout) in layouts.iter() {
-//     println!("{}: \n{}", name, layout);
-//     let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
-//     let calculator = Calculator::from(&keyboard);
-//     let summary = calculator.run(&CONFIG.data);
-//     let fitness = profiler::calculate_fitness(&keyboard);
-
-//     println!("\n{}\nfitness: {}\n", summary, fitness);
-//   }
-// }

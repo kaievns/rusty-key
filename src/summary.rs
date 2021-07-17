@@ -31,16 +31,16 @@ impl Summary {
       effort: result.effort,
       overheads: result.overheads,
       awkwardness: result.awkwardness,
-      rollingness: result.rollingness,
-      fitness: fitness
+      rollingness: result.rollingness * 100.0,
+      fitness: fitness * 10.0
     }
   }
 
   pub fn score(self: &Self) -> f64 {
-    let positive = self.rollingness * 30.0 + self.fitness;
+    let positive = self.rollingness * 2.0 + self.fitness;
     let negative = self.effort + self.overheads + self.awkwardness;
     
-    positive / negative
+    positive * 10.0 / negative
   }
 }
 
@@ -51,36 +51,36 @@ mod test {
   #[test]
   fn test_score() {
     let qwerty = Summary {
-      effort: 3944.0107,
-      overheads: 3381.9770,
-      awkwardness: 1298.5920,
-      rollingness: 862.29,
-      fitness: 0.12
+      effort: 25.364358927857115,
+      overheads: 21.749859480289295,
+      awkwardness: 8.351385453605344,
+      rollingness: 5.545480152957474,
+      fitness: 3.0612244897959187,
     };
     let dvorak = Summary {
-      effort: 21221.795,
-      overheads: 173.72425,
-      awkwardness: 87.82080,
-      rollingness: 727.90,
-      fitness: 0.12
+      effort: 13.647965647593287,
+      overheads: 11.172394211488275,
+      awkwardness: 5.647850530759347,
+      rollingness: 4.681203543283286,
+      fitness: 6.938775510204081
     };
     let workman = Summary {
-      effort: 2260.6098,
-      overheads: 19413.950,
-      awkwardness: 805.4640,
-      rollingness: 166.615,
-      fitness: 0.12
+      effort: 14.022930115721358,
+      overheads: 12.019692695933353,
+      awkwardness: 4.928389611959803,
+      rollingness: 10.7151906630601,
+      fitness: 5.7142857142857135
     };
     let halmak = Summary {
-      effort: 1962.7665,
-      overheads: 16798.430,
-      awkwardness: 710.5200,
-      rollingness: 126.447,
-      fitness: 0.12
+      effort: 12.20033608970624,
+      overheads: 10.430491941178513,
+      awkwardness: 4.371095513530408,
+      rollingness: 8.13194318501912,
+      fitness: 8.775510204081632
     };
-    assert_eq!(qwerty.score(), 2.9994296417714126);
-    assert_eq!(dvorak.score(), 1.016467641864655);
-    assert_eq!(workman.score(), 0.22235608131340145);
-    assert_eq!(halmak.score(), 0.19482257766026942);
+    assert_eq!(qwerty.score(), 2.5515245143612324);
+    assert_eq!(dvorak.score(), 5.35022647808878);
+    assert_eq!(workman.score(), 8.764539779690535);
+    assert_eq!(halmak.score(), 9.273189938832633);
   }
 }

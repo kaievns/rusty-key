@@ -2,7 +2,7 @@ use std::io;
 use std::fs;
 
 pub fn load(folder: String) -> Result<String, io::Error> {
-  let pathname = format!("./sources/{}", folder);
+  let pathname = format!("assets/sources/{}", folder);
   let filenames = fs::read_dir(pathname).unwrap();
 
   let mut contents = Vec::new();
