@@ -7,9 +7,8 @@ use tui::widgets::{Widget, Block, Borders};
 use tui::layout::{Layout, Constraint, Direction};
 
 use crate::events::{Event, Events};
-use crate::stats::*;
 
-pub fn render(stats: &Stats) -> Result<(), Box<dyn std::error::Error>> {
+pub fn render() -> Result<(), Box<dyn std::error::Error>> {
   let stdout = io::stdout().into_raw_mode()?;
   let backend = TermionBackend::new(stdout);
   let mut terminal = Terminal::new(backend)?;

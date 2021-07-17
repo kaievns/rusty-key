@@ -12,8 +12,7 @@ use core::cmp::Ordering::Less;
 #[derive(PartialEq,Debug)]
 pub struct Score {
   pub performance: f64,
-  pub deviation: f64,
-  pub fitness: f64
+  pub deviation: f64
 }
 
 pub type Scores = Vec<Score>;
@@ -56,9 +55,8 @@ impl Selection {
       // recalculating from the top right corner
       let x = (1.0 - score.performance).powf(2.0);
       let y = (1.0 - score.deviation).powf(2.0);
-      let z = (1.0 - score.fitness).powf(2.0);
       
-      (x + y + z).sqrt() // distance
+      (x + y).sqrt() // distance
     })
     .collect()
   }
@@ -66,12 +64,10 @@ impl Selection {
   fn renormalise(self: &Self) -> Scores {
     let max_performance = self.scores.iter().map(|s| s.performance).fold(0./0., f64::max);
     let max_deviation = self.scores.iter().map(|s| s.deviation).fold(0./0., f64::max);
-    let max_fitness = self.scores.iter().map(|s| s.fitness).fold(0./0., f64::max);
 
     self.scores.iter().map(|s| Score {
       performance: s.performance / max_performance,
-      deviation: s.deviation / max_deviation,
-      fitness: s.fitness / max_fitness
+      deviation: s.deviation / max_deviation
     })
     .collect()
   }
@@ -83,10 +79,10 @@ mod test {
 
   fn get_scores() -> Scores {
     vec![
-      Score { performance: 1.1, deviation: 0.3, fitness: 0.2 },
-      Score { performance: 1.2, deviation: 0.5, fitness: 0.4 },
-      Score { performance: 1.3, deviation: 0.8, fitness: 0.5 },
-      Score { performance: 1.5, deviation: 1.1, fitness: 0.7 }
+      Score { performance: 1.1, deviation: 0.3 },
+      Score { performance: 1.2, deviation: 0.5 },
+      Score { performance: 1.3, deviation: 0.8 },
+      Score { performance: 1.5, deviation: 1.1 }
     ]
   }
 
@@ -147,9 +143,9 @@ mod test {
 
     assert_eq!(sel.create_rank_space(), vec![
       (3, 0.0), 
-      (2, 0.4168819930487025), 
-      (1, 0.7219377608525404), 
-      (0, 1.0536796536796535)
+      (2, 0.3035752675483198), 
+      (1, 0.580965283951653), 
+      (0, 0.774620378602204)
     ])
   }
 
@@ -158,9 +154,9 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.calculate_ranks(), vec![
-      1.0536796536796535, 
-      0.7219377608525404, 
-      0.4168819930487025, 
+      0.774620378602204, 
+      0.580965283951653, 
+      0.3035752675483198, 
       0.0
     ])
   }
@@ -170,10 +166,10 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.renormalise(), vec![
-      Score { performance: 0.7333333333333334, deviation: 0.2727272727272727, fitness: 0.28571428571428575 }, 
-      Score { performance: 0.7999999999999999, deviation: 0.45454545454545453, fitness: 0.5714285714285715 }, 
-      Score { performance: 0.8666666666666667, deviation: 0.7272727272727273, fitness: 0.7142857142857143 }, 
-      Score { performance: 1.0, deviation: 1.0, fitness: 1.0 }
+      Score { performance: 0.7333333333333334, deviation: 0.2727272727272727 }, 
+      Score { performance: 0.7999999999999999, deviation: 0.45454545454545453 }, 
+      Score { performance: 0.8666666666666667, deviation: 0.7272727272727273 }, 
+      Score { performance: 1.0, deviation: 1.0 }
     ])
   }
 }

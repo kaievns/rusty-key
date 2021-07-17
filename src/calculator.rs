@@ -2,7 +2,6 @@ use crate::config::*;
 use crate::parser::Position;
 use crate::geometry::{Key};
 use crate::keyboard::*;
-use crate::summary::*;
 
 use hashbrown::HashSet;
 
@@ -13,6 +12,19 @@ pub struct Calculator<'a> {
   rolling_pairs_map: HashSet<(Position, Position)>
 }
 
+#[derive(Debug,PartialEq)]
+pub struct Result {
+  pub effort: f64,
+  pub overheads: f64,
+  pub awkwardness: f64,
+  pub rollingness: f64
+}
+
+pub fn process(keyboard: &Keyboard) -> Result {
+  let calculator = Calculator::from(keyboard);
+  calculator.run(&CONFIG.data)
+}
+
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator<'a> {
     let bad_starters = keyboard.geometry.bad_starting_positions();
@@ -21,7 +33,7 @@ impl Calculator<'_> {
     Calculator { keyboard, bad_starters, rolling_pairs_map }
   }
 
-  pub fn run(self: &Self, text: &String) -> Summary {
+  pub fn run(self: &Self, text: &String) -> Result {
     let mut effort: usize = 0;
     let mut overheads: usize = 0;
     let mut awkwardness: usize = 0;
@@ -64,7 +76,13 @@ impl Calculator<'_> {
       }
     }
 
-    Summary { effort, overheads, awkwardness, rollingness }
+    // turning everything into coefficents against the text length
+    Result { 
+      effort: (effort as f64) / (text.len() as f64), 
+      overheads: (overheads as f64) / (text.len() as f64), 
+      awkwardness: (awkwardness as f64) / (text.len() as f64), 
+      rollingness: (rollingness as f64) / (text.len() as f64) 
+    }
   }
 
   fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> usize {
@@ -121,7 +139,7 @@ mod test {
   use crate::layout::{ Layout, QWERTY };
   use crate::geometry::US_PC_KEYBOARD;
 
-  fn run_text(text: &'static str) -> Summary {
+  fn run_text(text: &'static str) -> Result {
     let layout = Layout { template: QWERTY.to_string() };
     let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
     let calculator = Calculator::from(&keyboard);
@@ -131,11 +149,11 @@ mod test {
 
   #[test]
   fn calculates_basic() {
-    assert_eq!(run_text("QUwiEOrp"), Summary {
-      effort: 67,
-      overheads: 0,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("QUwiEOrp"), Result {
+      effort: (67 as f64) / 8.0,
+      overheads: 0.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     })
   }
 
@@ -143,21 +161,21 @@ mod test {
   fn penalises_same_finger_usage() {
     let penalty = SAME_HAND_PENALTY + SAME_FINGER_PENALTY + ROW_JUMP_PENALTY;
 
-    assert_eq!(run_text("fr"), Summary {
-      effort: penalty + 6,
-      overheads: penalty,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("fr"), Result {
+      effort: ((penalty + 6) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     })
   }
 
   #[test]
   fn does_not_penalise_same_key_usage() {
-    assert_eq!(run_text("ff"), Summary {
-      effort: 0,
-      overheads: 0,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("ff"), Result {
+      effort: 0.0,
+      overheads: 0.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     })
   }
 
@@ -165,11 +183,11 @@ mod test {
   fn penalises_row_jumps() {
     let penalty = SAME_HAND_PENALTY + ROW_JUMP_PENALTY;
 
-    assert_eq!(run_text("at"), Summary {
-      effort: penalty + 1 + 11,
-      overheads: penalty,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("at"), Result {
+      effort: ((penalty + 1 + 11) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     })
   }
 
@@ -177,11 +195,11 @@ mod test {
   fn penalises_row_skips() {
     let penalty = SAME_HAND_PENALTY + ROW_SKIP_PENALTY;
 
-    assert_eq!(run_text("vq"), Summary {
-      effort: penalty + 6 + 6,
-      overheads: penalty,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("vq"), Result {
+      effort: ((penalty + 6 + 6) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     })
   }
 
@@ -189,21 +207,21 @@ mod test {
   fn penalises_bad_starters() {
     let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY;
 
-    assert_eq!(run_text("qw"), Summary {
-      effort: penalty + 6 + 2,
-      overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0
+    assert_eq!(run_text("qw"), Result {
+      effort: ((penalty + 6 + 2) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: (BAD_STARTER_PENALTY as f64) / 2.0,
+      rollingness: 0.0
     });
   }
 
   #[test]
   fn doesnt_penalise_bad_starter_on_hand_switch() {
-    assert_eq!(run_text("qi"), Summary {
-      effort: 6 + 1,
-      overheads: 0,
-      awkwardness: 0,
-      rollingness: 0
+    assert_eq!(run_text("qi"), Result {
+      effort: ((6 + 1) as f64) / 2.0,
+      overheads: 0.0,
+      awkwardness: 0.0,
+      rollingness: 0.0
     });
   }
 
@@ -211,11 +229,11 @@ mod test {
   fn adds_extra_penalty_on_bad_starters_and_row_jump() {
     let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_JUMP_PENALTY;
 
-    assert_eq!(run_text("qs"), Summary {
-      effort: penalty + 6 + 0,
-      overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0
+    assert_eq!(run_text("qs"), Result {
+      effort: ((penalty + 6 + 0) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: (BAD_STARTER_PENALTY as f64) / 2.0,
+      rollingness: 0.0
     });
   }
 
@@ -223,11 +241,11 @@ mod test {
   fn adds_extra_penalty_on_bad_starters_and_skip_jump() {
     let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_SKIP_PENALTY;
 
-    assert_eq!(run_text("qv"), Summary {
-      effort: penalty + 6 + 6,
-      overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0
+    assert_eq!(run_text("qv"), Result {
+      effort: ((penalty + 6 + 6) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: (BAD_STARTER_PENALTY as f64) / 2.0,
+      rollingness: 0.0
     });
   }
 
@@ -235,11 +253,11 @@ mod test {
   fn adds_extra_penalty_on_bad_starters_and_same_finger() {
     let penalty = SAME_HAND_PENALTY + BAD_STARTER_PENALTY + ROW_SKIP_PENALTY + SAME_FINGER_PENALTY;
 
-    assert_eq!(run_text("qz"), Summary {
-      effort: penalty + 6 + 7,
-      overheads: penalty,
-      awkwardness: BAD_STARTER_PENALTY,
-      rollingness: 0
+    assert_eq!(run_text("qz"), Result {
+      effort: ((penalty + 6 + 7) as f64) / 2.0,
+      overheads: (penalty as f64) / 2.0,
+      awkwardness: (BAD_STARTER_PENALTY as f64) / 2.0,
+      rollingness: 0.0
     });
   }
 
@@ -247,11 +265,11 @@ mod test {
   fn doesnt_penalise_rolling_pairs_for_row_jumps() {
     let penalty = SAME_HAND_PENALTY + SAME_HAND_PENALTY;
 
-    assert_eq!(run_text("wfli"), Summary {
-      effort: penalty + 3,
-      overheads: penalty,
-      awkwardness: 0,
-      rollingness: 2
+    assert_eq!(run_text("wfli"), Result {
+      effort: ((penalty + 3) as f64) / 4.0,
+      overheads: (penalty as f64) / 4.0,
+      awkwardness: 0.0,
+      rollingness: 2.0 / 4.0
     });
   } 
 }

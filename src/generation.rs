@@ -5,11 +5,9 @@ use core::cmp::Ordering::Less;
 use crate::config::*;
 use crate::layout::*;
 use crate::keyboard::*;
-use crate::calculator::*;
 use crate::population::*;
 use crate::selection::*;
 use crate::summary::*;
-use crate::profiler;
 
 pub struct Generation {
   pub number: usize,
@@ -17,9 +15,8 @@ pub struct Generation {
 }
 
 #[derive(Debug,PartialEq)]
-pub struct Result {
-  pub summary: Summary,
-  pub fitness: f64,
+struct Result {
+  summary: Summary,
   deviation: f64
 }
 
@@ -55,7 +52,7 @@ impl Generation {
     static BEST: OnceCell<Layout> = OnceCell::new();
     BEST.get_or_init(|| {
       let mut ratings: Vec<(usize, f64)> = self.population.members.iter().enumerate()
-        .map(|(i, layout)| (i, self.rating_for(&layout))).collect();
+        .map(|(i, layout)| (i, self.summary_for(&layout).score())).collect();
       
       ratings.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Less));
       let best_rating = *ratings.first().unwrap();
@@ -64,15 +61,11 @@ impl Generation {
     })
   }
 
-  pub fn rating_for(&self, layout: &Layout) -> f64 {
-    let result = self.result_for(layout);
-
-    result.summary.score() * result.fitness
-  }
-
-  pub fn result_for(&self, layout: &Layout) -> &'static Result {
+  pub fn summary_for(&self, layout: &Layout) -> Summary {
     let index = self.population.members.iter().position(|l| *l == *layout).unwrap();
-    self.calculate_results().get(index).unwrap()
+    let result = self.calculate_results().get(index).unwrap();
+
+    result.summary.clone()
   }
 
   fn fetch_selection(&self) -> &'static Selection {
@@ -81,8 +74,7 @@ impl Generation {
       let scores: Vec<Score> = self.calculate_results().iter()
           .map(|result| Score {
             deviation: result.deviation,
-            performance: result.summary.score(),
-            fitness: result.fitness
+            performance: result.summary.score()
           })
           .collect();
         Selection { scores }
@@ -101,11 +93,9 @@ impl Generation {
   fn rate_layout(self: &Self, layout: &Layout) -> Result {
     let deviation = self.population.deviation_for(layout);
     let keyboard = Keyboard::from(&layout, &CONFIG.geometry);
-    let calculator = Calculator::from(&keyboard);
-    let summary = calculator.run(&CONFIG.data);
-    let fitness = profiler::calculate_fitness(&keyboard);
+    let summary = Summary::calculate(&keyboard);
 
-    Result { deviation, summary, fitness }
+    Result { deviation, summary }
   }
 }
 
@@ -151,24 +141,13 @@ mod test {
   }
 
   #[test]
-  fn test_rating_for() {
+  fn test_summary_for() {
     let generation = Generation::zero();
     let layout1 = &generation.population.members[0];
     let layout2 = &generation.population.members[6].clone();
 
-    assert_eq!(generation.rating_for(layout1), generation.rating_for(layout1));
-    assert_eq!(generation.rating_for(layout1), generation.rating_for(layout1));
-    assert_ne!(generation.rating_for(layout1), generation.rating_for(layout2));
-  }
-
-  #[test]
-  fn test_result_for() {
-    let generation = Generation::zero();
-    let layout1 = &generation.population.members[0];
-    let layout2 = &generation.population.members[6].clone();
-
-    assert_eq!(generation.result_for(layout1), generation.result_for(layout1));
-    assert_eq!(generation.result_for(layout1), generation.result_for(layout1));
-    assert_ne!(generation.result_for(layout1), generation.result_for(layout2));
+    assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));
+    assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));
+    assert_ne!(generation.summary_for(layout1), generation.summary_for(layout2));
   }
 }

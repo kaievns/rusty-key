@@ -14,7 +14,6 @@ mod frequency;
 mod profiler;
 mod summary;
 mod mutator;
-mod stats;
 mod dna;
 mod ui;
 mod events;
@@ -25,17 +24,13 @@ use crate::config::*;
 use crate::layout::*;
 
 use crate::evolution::*;
-use crate::stats::*;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
   let evolution = Evolution::new();
-  let stats = Stats::new(&evolution);
 
-  ui::render(&stats);
+  ui::render();
 
   evolution.start();
-
-  Ok(())
 }
 
 
