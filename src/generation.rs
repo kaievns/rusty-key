@@ -22,8 +22,7 @@ struct Result {
 
 impl Generation {
   pub fn zero() -> Generation {
-    let qwerty = Layout { template: QWERTY.to_string() };
-    Generation::new(1, &qwerty)
+    Generation::new(1, &QWERTY)
   }
 
   pub fn new(number: usize, layout: &Layout) -> Generation {

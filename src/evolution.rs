@@ -95,7 +95,7 @@ mod test {
     let guard = &*evolution.current_generation.lock().unwrap();
     let current_generation = guard.borrow();
 
-    assert_eq!(current_generation.population.members[0].template, QWERTY);
+    assert_eq!(current_generation.population.members[0], QWERTY.clone());
   }
 
   #[test]

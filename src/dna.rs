@@ -21,8 +21,8 @@ impl DNA {
   }
 
   pub fn to_layout(self: &Self) -> Layout {
-    let mut shifts = " ".to_string();
-    let mut normals = " ".to_string();
+    let mut shifts = "".to_string();
+    let mut normals = "".to_string();
     
     for (i, (shifted, normal)) in self.sequence.iter().enumerate() {
       shifts = format!("{} {}", shifts, shifted);
@@ -30,10 +30,10 @@ impl DNA {
   
       match i {
         12 | 25 | 36 => {
-          let spacer = if i == 36 { "     " } else { "   " };
+          let spacer = if i == 36 { "   " } else { " " };
 
-          shifts = format!("{}\n{}", shifts, spacer);
-          normals = format!("{}\n{}", normals, spacer);
+          shifts = format!("{}\n{}", shifts.trim(), spacer);
+          normals = format!("{}\n{}", normals.trim(), spacer);
         },
         _ => {}
       }
@@ -44,7 +44,7 @@ impl DNA {
       .collect::<Vec<String>>()
       .join("\n");
 
-    Layout { template: format!("\n{}\n", template) }
+    Layout { template: template }
   }
 
   pub fn swap_keys(self: &Self, pos1: usize, pos2: usize) -> DNA {
@@ -99,18 +99,16 @@ mod test {
 
   #[test]
   fn test_from_layout() {
-    let layout = Layout { template: QWERTY.to_string() };
-    let dna = DNA::from(&layout);
+    let dna = DNA::from(&QWERTY.clone());
     
     assert_eq!(dna.sequence, qwerty_sequence());
   }
 
   #[test]
   fn test_to_layout() {
-    let layout = Layout { template: QWERTY.to_string() };
     let dna = DNA { sequence: qwerty_sequence() };
 
-    assert_eq!(dna.to_layout(), layout);
+    assert_eq!(dna.to_layout(), QWERTY.clone());
   }
 
   #[test]

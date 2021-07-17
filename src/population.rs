@@ -51,7 +51,7 @@ mod test {
 
   #[test]
   fn test_new() {
-    let original = Layout { template: QWERTY.to_string() };
+    let original = QWERTY.clone();
     let population = Population::new(&original);
 
     assert_eq!(population.members.len(), POPULATION_SIZE);
@@ -64,7 +64,7 @@ mod test {
 
   #[test]
   fn test_deviation() {
-    let original = Layout { template: QWERTY.to_string() };
+    let original = QWERTY.clone();
     let population = Population::new(&original);
 
     assert_eq!(population.deviation_for(&population.members[0]), 0.0);

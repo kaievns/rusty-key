@@ -36,12 +36,12 @@ fn main() {
 
 // fn compare_known() {
 //   let layouts = [
-//     ("QWERTY", Layout { template: QWERTY.to_string() } ),
-//     ("DVORAK", Layout { template: DVORAK.to_string() } ),
-//     ("COLEMAK", Layout { template: COLEMAK.to_string() } ),
-//     ("WORKMAN", Layout { template: WORKMAN.to_string() } ),
-//     ("THE-1", Layout { template: THE_1.to_string() } ),
-//     ("HALMAK 2.1", Layout { template: HALMAK_21.to_string() } )
+//     ("QWERTY", &QWERTY ),
+//     ("DVORAK", &DVORAK ),
+//     ("COLEMAK", &COLEMAK ),
+//     ("WORKMAN", &WORKMAN ),
+//     ("THE-1", &THE_1 ),
+//     ("HALMAK 2.1", &HALMAK_21 )
 //   ];
 
 //   for (name, layout) in layouts.iter() {

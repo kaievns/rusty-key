@@ -121,7 +121,7 @@ mod test {
 
   #[test]
   fn it_mutates_keys() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let presie = Preservative::from(&"");
     let mutator = Mutator::with_presie(&presie);
     let new_layout = mutator.mutate_keys(&layout);
@@ -131,7 +131,7 @@ mod test {
   
   #[test]
   fn it_mutates_symbols() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let presie = Preservative::from(&"");
     let mutator = Mutator::with_presie(&presie);
     let new_layout = mutator.mutate_symbols(&layout);
@@ -232,6 +232,6 @@ mod test {
   }
 
   fn qwerty_dna() -> DNA {
-    DNA::from(&Layout { template: QWERTY.to_string() })
+    DNA::from(&QWERTY)
   }
 }

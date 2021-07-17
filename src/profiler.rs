@@ -108,8 +108,8 @@ mod test {
 
   #[test]
   fn test_symbols_by_effort() {
-    let qwerty = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(&qwerty, &US_PC_KEYBOARD);
+    let layout = QWERTY.clone();
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
     let symbols_with_efforts = symbols_by_effort(&keyboard);
     let top10 = &symbols_with_efforts[0..10];
 
@@ -129,8 +129,8 @@ mod test {
 
   #[test]
   fn test_symbols_in_band() {
-    let qwerty = Layout { template: QWERTY.to_string() };
-    let keyboard = Keyboard::from(&qwerty, &US_PC_KEYBOARD);
+    let layout = QWERTY.clone();
+    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
     let symbols_with_efforts = symbols_by_effort(&keyboard);
 
     assert_eq!(
@@ -145,19 +145,18 @@ mod test {
     assert_eq!(symbols_in_band(&symbols_with_efforts, 98), vec![] as Vec<String>);
   }
 
-  fn get_fitness_for(template: &'static str) -> f64 {
-    let layout = Layout { template: template.to_string() };
-    let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
+  fn get_fitness_for(layout: &Layout) -> f64 {
+    let keyboard = Keyboard::from(layout, &US_PC_KEYBOARD);
 
     calculate_fitness(&keyboard)
   }
   
   #[test]
   fn test_selection() {   
-    assert_eq!(get_fitness_for(QWERTY), 0.30612244897959184);
-    assert_eq!(get_fitness_for(DVORAK), 0.6938775510204082);
-    assert_eq!(get_fitness_for(COLEMAK), 0.5510204081632653);
-    assert_eq!(get_fitness_for(WORKMAN), 0.5510204081632653);
-    assert_eq!(get_fitness_for(HALMAK_21), 0.8571428571428571);
+    assert_eq!(get_fitness_for(&QWERTY), 0.30612244897959184);
+    assert_eq!(get_fitness_for(&DVORAK), 0.6938775510204082);
+    assert_eq!(get_fitness_for(&COLEMAK), 0.5510204081632653);
+    assert_eq!(get_fitness_for(&WORKMAN), 0.5510204081632653);
+    assert_eq!(get_fitness_for(&HALMAK_21), 0.8571428571428571);
   }
 }

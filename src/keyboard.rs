@@ -75,7 +75,7 @@ mod test {
 
   #[test]
   fn gets_the_right_name() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.name, "QWERTY".to_string());
@@ -83,7 +83,7 @@ mod test {
 
   #[test]
   fn has_correct_keys_layout() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     let first_row = &keyboard.layout.entries()[13..23];
@@ -94,7 +94,7 @@ mod test {
 
   #[test]
   fn builds_correct_key_mapping() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.key_map.get(&'q'), Some(&Key { position: (1, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 6 }));
@@ -113,7 +113,7 @@ mod test {
 
   #[test]
   fn gives_access_to_keys() {
-    let layout = Layout { template: QWERTY.to_string() };
+    let layout = QWERTY.clone();
     let keyboard = Keyboard::from(&layout, &US_PC_KEYBOARD);
 
     assert_eq!(keyboard.key_for(&'q'), Some(&Key { position: (1, 1), hand: Hand::Left, finger: Finger::Pinky, effort: 6 }));
