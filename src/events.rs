@@ -2,19 +2,31 @@ use std::io;
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
+use std::sync::Mutex;
 
 use termion::event::Key;
 use termion::input::TermRead;
 
-pub enum Event<I> {
-  Input(I),
+use once_cell::sync::OnceCell;
+
+use crate::generation::Outcome;
+
+pub fn inst() -> &'static Events {
+  static EVENTS: OnceCell<Events> = OnceCell::new();
+  EVENTS.get_or_init(|| { Events::new() })
+}
+
+pub enum Event {
+  Result(Outcome),
+  Input(Key),
   Tick,
 }
 
 /// A small event handler that wrap termion input and tick events. Each event
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
-  rx: mpsc::Receiver<Event<Key>>,
+  tx: Mutex<mpsc::Sender<Event>>,
+  rx: Mutex<mpsc::Receiver<Event>>,
   input_handle: thread::JoinHandle<()>,
   tick_handle: thread::JoinHandle<()>,
 }
@@ -54,6 +66,7 @@ impl Events {
       })
     };
     let tick_handle = {
+      let tx = tx.clone();
       thread::spawn(move || loop {
         if let Err(err) = tx.send(Event::Tick) {
           eprintln!("{}", err);
@@ -63,13 +76,20 @@ impl Events {
       })
     };
     Events {
-      rx,
+      rx: Mutex::new(rx),
+      tx: Mutex::new(tx),
       input_handle,
       tick_handle,
     }
   }
 
-  pub fn next(&self) -> Result<Event<Key>, mpsc::RecvError> {
-    self.rx.recv()
+  pub fn send_result(&self, outcome: &Outcome) {
+    let tx = self.tx.lock().unwrap();
+    tx.send(Event::Result((*outcome).clone()));
+  }
+
+  pub fn next(&self) -> Result<Event, mpsc::RecvError> {
+    let rx = self.rx.lock().unwrap();
+    rx.recv()
   }
 }

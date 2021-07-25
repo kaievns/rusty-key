@@ -20,6 +20,14 @@ struct Result {
   deviation: f64
 }
 
+#[derive(Debug,PartialEq,Clone)]
+pub struct Outcome {
+  pub winner: Layout,
+  pub winner_summary: Summary,
+  pub best: Layout,
+  pub best_summary: Summary
+}
+
 impl Generation {
   pub fn zero() -> Generation {
     Generation::new(1, &QWERTY)
@@ -58,6 +66,15 @@ impl Generation {
 
       (*self.population.members.get(best_rating.0).unwrap()).clone()
     })
+  }
+
+  pub fn outcome(&self) -> Outcome {
+    Outcome {
+      winner: self.successor().clone(),
+      winner_summary: self.summary_for(self.successor()),
+      best: self.best().clone(),
+      best_summary: self.summary_for(self.best())
+    }
   }
 
   pub fn summary_for(&self, layout: &Layout) -> Summary {
@@ -148,5 +165,14 @@ mod test {
     assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));
     assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));
     assert_ne!(generation.summary_for(layout1), generation.summary_for(layout2));
+  }
+  
+  #[test]
+  fn test_outcomes() {
+    let generation = Generation::zero();
+    let outcomes = generation.outcome();
+
+    assert_eq!(outcomes.best.name(), "QWERTY");
+    assert_eq!(outcomes.best_summary.score(), 12.3);
   }
 }

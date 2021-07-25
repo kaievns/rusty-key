@@ -5,6 +5,7 @@ use std::cell::RefCell;
 use std::sync::{Arc,Mutex};
 
 use crate::generation::*;
+use crate::events;
 
 type Generations = Vec<Generation>;
 
@@ -75,6 +76,9 @@ impl Evolution {
   ) {
     let guard = &mut *current.lock().unwrap();
     let current_generation = guard.replace(next_generation);
+
+    // sending the result for the UI to consume
+    events::inst().send_result(&current_generation.outcome());
 
     let past_gens = &mut *past.lock().unwrap();
     past_gens.push(current_generation);
