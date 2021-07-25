@@ -11,7 +11,12 @@ use crate::summary::*;
 
 pub struct Generation {
   pub number: usize,
-  pub population: Population
+  pub population: Population,
+
+  successor_cache: OnceCell<Layout>,
+  best_cache: OnceCell<Layout>,
+  selection_cache: OnceCell<Selection>,
+  results_cache: OnceCell<Vec<Result>>
 }
 
 #[derive(Debug,PartialEq)]
@@ -35,7 +40,21 @@ impl Generation {
 
   pub fn new(number: usize, layout: &Layout) -> Generation {
     let population = Population::new(layout);
-    Generation { number, population }
+
+    let successor_cache: OnceCell<Layout> = OnceCell::new();
+    let best_cache: OnceCell<Layout> = OnceCell::new();
+    let selection_cache: OnceCell<Selection> = OnceCell::new();
+    let results_cache: OnceCell<Vec<Result>> = OnceCell::new();
+
+    Generation { 
+      number, 
+      population,
+
+      successor_cache,
+      best_cache,
+      selection_cache,
+      results_cache
+    }
   }
 
   pub fn next(self: &Self) -> Generation {
@@ -43,9 +62,8 @@ impl Generation {
     Generation::new(self.number + 1, &layout)
   }
 
-  pub fn successor(self: &Self) -> &'static Layout {
-    static SUCCESSOR: OnceCell<Layout> = OnceCell::new();
-    SUCCESSOR.get_or_init(|| {
+  pub fn successor(self: &Self) -> &Layout {
+    self.successor_cache.get_or_init(|| {
       let selection = self.fetch_selection();
       let score = selection.lucky_draw();
       let index = selection.scores.iter()
@@ -55,9 +73,8 @@ impl Generation {
     })
   }
 
-  pub fn best(&self) -> &'static Layout {
-    static BEST: OnceCell<Layout> = OnceCell::new();
-    BEST.get_or_init(|| {
+  pub fn best(&self) -> &Layout {
+    self.best_cache.get_or_init(|| {
       let mut ratings: Vec<(usize, f64)> = self.population.members.iter().enumerate()
         .map(|(i, layout)| (i, self.summary_for(&layout).score())).collect();
       
@@ -84,9 +101,8 @@ impl Generation {
     result.summary.clone()
   }
 
-  fn fetch_selection(&self) -> &'static Selection {
-    static SELECTION: OnceCell<Selection> = OnceCell::new();
-    SELECTION.get_or_init(|| {
+  fn fetch_selection(&self) -> &Selection {
+    self.selection_cache.get_or_init(|| {
       let scores: Vec<Score> = self.calculate_results().iter()
           .map(|result| Score {
             deviation: result.deviation,
@@ -97,9 +113,8 @@ impl Generation {
     })
   }
 
-  fn calculate_results(&self) -> &'static Vec<Result> {
-    static RESULTS: OnceCell<Vec<Result>> = OnceCell::new();
-    RESULTS.get_or_init(|| {
+  fn calculate_results(&self) -> &Vec<Result> {
+    self.results_cache.get_or_init(|| {
       self.population.members.par_iter()
         .map(|layout| self.rate_layout(layout))
         .collect()
@@ -173,6 +188,6 @@ mod test {
     let outcomes = generation.outcome();
 
     assert_eq!(outcomes.best.name(), "QWERTY");
-    assert_eq!(outcomes.best_summary.score(), 12.3);
+    assert_eq!(outcomes.best_summary.score(), 3.39623053658556);
   }
 }
