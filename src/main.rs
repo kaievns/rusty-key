@@ -16,6 +16,7 @@ mod summary;
 mod mutator;
 mod dna;
 mod ui;
+mod model;
 mod events;
 
 // use crate::keyboard::*;

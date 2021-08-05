@@ -49,6 +49,13 @@ impl Layout {
     name.to_uppercase()
   }
 
+  pub fn long_name(&self) -> String {
+    let first6 = &self.entries()[13..23];
+    let name = first6.iter().fold(String::new(), |name, key| format!("{}{}", name, key.normal));
+  
+    name.to_uppercase()
+  }
+
   pub fn entries(self: &Self) -> Vec<Entry> {
     let mapping = two_layer_mapping_for(&self.template);
     let mut entries: Vec<_> = mapping.into_iter().collect();
