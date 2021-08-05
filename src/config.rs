@@ -18,8 +18,7 @@ pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 pub struct Config {
   pub geometry: Geometry,
   pub preserve: Preservative,
-  pub data: String,
-  pub symbol_freaquencies: SymbolFrequencies
+  pub data: String
 }
 
 impl Config {
@@ -27,9 +26,8 @@ impl Config {
     let geometry = US_PC_KEYBOARD;
     let preserve = Preservative::default();
     let data = load_text();
-    let symbol_freaquencies = ENGLISH_TEXT_FREQUENCIES;
 
-    Config { geometry, preserve, data, symbol_freaquencies }
+    Config { geometry, preserve, data }
   }
 }
 

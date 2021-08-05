@@ -1,9 +1,8 @@
-use crate::config::*;
 use crate::frequency::*;
 use crate::keyboard::*;
 
 pub fn calculate_fitness(keyboard: &Keyboard) -> f64 {
-  let symbols = symbols_by_frequency(&CONFIG.symbol_freaquencies);
+  let symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
   let efforts = symbols_by_effort(&keyboard);
 
   let max_score = total_possible_score(&symbols);
@@ -84,9 +83,9 @@ mod test {
 
   #[test]
   fn test_total_possible_score() {
-    let symbols = symbols_by_frequency(&ENGLISH_TEXT_FREQUENCIES);
+    let symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
     
-    assert_eq!(total_possible_score(&symbols), 147);
+    assert_eq!(total_possible_score(&symbols), 106);
   }
 
   #[test]
@@ -101,9 +100,9 @@ mod test {
 
   #[test]
   fn test_symbols_by_frequency() {
-    let most_frequent_symbols = symbols_by_frequency(&ENGLISH_TEXT_FREQUENCIES);
+    let most_frequent_symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
     let top10 = &most_frequent_symbols[0..10];
-    assert_eq!(top10, vec!["e", "t", "a", "o", "i", "n", "s", "r", "h", "l"]);
+    assert_eq!(top10, vec!["e", "a", "o", "i", "s", "n", "t", "r", "l", "p"]);
   }
 
   #[test]
@@ -153,10 +152,10 @@ mod test {
   
   #[test]
   fn test_selection() {   
-    assert_eq!(get_fitness_for(&QWERTY), 0.30612244897959184);
-    assert_eq!(get_fitness_for(&DVORAK), 0.6938775510204082);
-    assert_eq!(get_fitness_for(&COLEMAK), 0.5510204081632653);
-    assert_eq!(get_fitness_for(&WORKMAN), 0.5714285714285714);
-    assert_eq!(get_fitness_for(&HALMAK_21), 0.8775510204081632);
+    assert_eq!(get_fitness_for(&QWERTY), 0.42452830188679247);
+    assert_eq!(get_fitness_for(&DVORAK), 0.5660377358490566);
+    assert_eq!(get_fitness_for(&COLEMAK), 0.8207547169811321);
+    assert_eq!(get_fitness_for(&WORKMAN), 0.7075471698113207);
+    assert_eq!(get_fitness_for(&HALMAK_21), 0.7924528301886793);
   }
 }
