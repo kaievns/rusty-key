@@ -4,8 +4,9 @@ use termion::event::Key;
 use tui::Terminal;
 use tui::backend::TermionBackend;
 use tui::text::{Span};
-use tui::style::{Color, Style};
-use tui::widgets::{Block, Borders, Cell, Row, Table};
+use tui::style::{Color, Style, Modifier};
+use tui::symbols::{Marker};
+use tui::widgets::{Block, Borders, Cell, Row, Table, Dataset, Chart, Axis, GraphType};
 use tui::layout::{Layout, Constraint, Direction};
 
 use crate::events::{self,Event};
@@ -76,7 +77,57 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       let chart_block = Block::default()
             .title("Progress")
             .borders(Borders::ALL);
-      f.render_widget(chart_block, chunks[1]);
+      let top_scores = model.top_scores();
+      let best_scores = model.best_scores();
+      let winner_scores = model.winner_scores();
+      let datasets = vec![
+        Dataset::default()
+          .name("Top scores")
+          .marker(Marker::Braille)
+          .graph_type(GraphType::Line)
+          .style(Style::default().fg(Color::Cyan))
+          .data(&top_scores),
+        Dataset::default()
+          .name("Best scores")
+          .marker(Marker::Braille)
+          .graph_type(GraphType::Line)
+          .style(Style::default().fg(Color::Yellow))
+          .data(&best_scores),
+        Dataset::default()
+          .name("Winner scores")
+          .marker(Marker::Braille)
+          .graph_type(GraphType::Line)
+          .style(Style::default().fg(Color::Red))
+          .data(&winner_scores)
+      ];
+      let highest_score = top_scores.last().unwrap_or(&(0.0, 10.0)).1;
+      let chart = Chart::new(datasets)
+          .block(chart_block)
+          .y_axis(
+            Axis::default()
+              // .title("")
+              .style(Style::default().fg(Color::Gray))
+              .bounds([0.0, highest_score])
+              .labels(vec![
+                Span::raw("0"),
+                Span::raw(format!("{}", (highest_score / 3.0) as usize)),
+                Span::raw(format!("{}", (highest_score * 2.0 / 3.0) as usize)),
+                Span::raw(format!("{}", highest_score as usize)),
+            ])
+          )
+          .x_axis(
+            Axis::default()
+              // .title("")
+              .style(Style::default().fg(Color::Gray))
+              .bounds([0.0, top_scores.len() as f64])
+            //   .labels(vec![
+            //     Span::styled("0", Style::default().add_modifier(Modifier::BOLD)),
+            //     Span::raw("2.5"),
+            //     Span::styled("5.0", Style::default().add_modifier(Modifier::BOLD)),
+            // ])
+          );
+
+      f.render_widget(chart, chunks[1]);
 
       let details_block = Block::default()
           .title("Best layout")
