@@ -18,7 +18,7 @@ pub struct Score {
 pub type Scores = Vec<Score>;
 type RankSpace = Vec<(usize, f64)>;
 
-const RANK_SPACE_CUT_OFF: usize = 50; // %
+const RANK_SPACE_CUT_OFF: usize = 90; // %
 
 pub struct Selection {
   pub scores: Scores
@@ -54,9 +54,9 @@ impl Selection {
     self.renormalise().iter().map(|score| {
       // recalculating from the top right corner
       let x = (1.0 - score.performance).powf(2.0);
-      let y = (1.0 - score.deviation).powf(2.0);
+      let y = (1.0 - score.deviation/100.0).powf(2.0);
       
-      (x + y).sqrt() // distance
+      (x + y).sqrt() // distance from the top right corner
     })
     .collect()
   }

@@ -19,14 +19,19 @@ impl Population {
     let mutator = Mutator::new();
 
     let mut members = Members::new();
-    members.push((*ancestor).clone());
 
-    for i in 0..POPULATION_SIZE-1 {
-      let new_member = if i % 2 == 0 {
-        mutator.mutate_keys(&members[i])
-      } else {
-        mutator.mutate_symbols(&members[i])
-      };
+    for i in 0..POPULATION_SIZE {
+      let mut new_member = (*ancestor).clone();
+      let mutate_times = (i as f64 / MEMBERS_PER_MUTATION as f64).ceil() as usize;
+
+      for x in 0..mutate_times {
+        // if x % 2 == 0 {
+          new_member = mutator.mutate_keys(&new_member);
+        // } else {
+        //   new_member = mutator.mutate_symbols(&new_member);
+        // }
+      }
+      
       members.push(new_member);
     }
 
@@ -69,7 +74,9 @@ mod test {
 
     assert_eq!(population.deviation_for(&population.members[0]), 0.0);
     assert_eq!(population.deviation_for(&population.members[1]), 4.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[2]), 6.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[3]), 10.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[2]), 4.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[10]), 6.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[20]), 10.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[29]), 12.0/(original.template.len() as f64));
   }
 }

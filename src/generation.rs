@@ -175,7 +175,7 @@ mod test {
   fn test_summary_for() {
     let generation = Generation::zero();
     let layout1 = &generation.population.members[0];
-    let layout2 = &generation.population.members[6].clone();
+    let layout2 = &generation.population.members[29].clone();
 
     assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));
     assert_eq!(generation.summary_for(layout1), generation.summary_for(layout1));

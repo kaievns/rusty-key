@@ -120,11 +120,6 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
               // .title("")
               .style(Style::default().fg(Color::Gray))
               .bounds([0.0, top_scores.len() as f64])
-            //   .labels(vec![
-            //     Span::styled("0", Style::default().add_modifier(Modifier::BOLD)),
-            //     Span::raw("2.5"),
-            //     Span::styled("5.0", Style::default().add_modifier(Modifier::BOLD)),
-            // ])
           );
 
       f.render_widget(chart, chunks[1]);
