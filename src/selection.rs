@@ -54,7 +54,7 @@ impl Selection {
     self.renormalise().iter().map(|score| {
       // recalculating from the top right corner
       let x = (1.0 - score.performance).powf(2.0);
-      let y = (1.0 - score.deviation/100.0).powf(2.0);
+      let y = (1.0 - score.deviation/2.0).powf(2.0);
       
       (x + y).sqrt() // distance from the top right corner
     })

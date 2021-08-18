@@ -6,16 +6,11 @@ use crate::parser::*;
 type Positions = HashSet<Position>;
 
 pub struct Preservative {
-  restriced_positions: Positions
+  pub restriced_positions: Positions
 }
 
 impl Preservative {
-  pub fn default() -> Preservative {
-    // TODO implement loading from a file/org
-    Preservative::from(&"")
-  }
-
-  pub fn from(template: &'static str) -> Preservative {
+  pub fn from(template: String) -> Preservative {
     let restriced_positions = Preservative::parse_positions(template);
     Preservative { restriced_positions }
   }
@@ -24,8 +19,8 @@ impl Preservative {
     !self.restriced_positions.contains(&position)
   }
 
-  fn parse_positions(template: &'static str) -> Positions {
-    let tmp_layout = Layout { template: template.to_string() };
+  fn parse_positions(template: String) -> Positions {
+    let tmp_layout = Layout { template };
     let mut restriced_positions = Positions::new();
   
     for (position, entry) in tmp_layout.entries().iter().enumerate() {
@@ -71,7 +66,7 @@ mod test {
         ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
           ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
           ∙ ∙ ∙ ∙ ∙ ∙ ∙ , . ∙ 
-    ");
+    ".to_string());
     assert_eq!(presie.restriced_positions, set! [
       (1,0), (1,1),
       (3,0),

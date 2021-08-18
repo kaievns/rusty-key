@@ -1,3 +1,5 @@
+use std::fs;
+
 use once_cell::sync::Lazy;
 
 use crate::source;
@@ -11,8 +13,8 @@ pub const BAD_STARTER_PENALTY: usize = 80;
 pub const ROW_SKIP_PENALTY: usize = 50;
 pub const ROW_JUMP_PENALTY: usize = 30;
 
-pub const POPULATION_SIZE: usize = 40;
-pub const MEMBERS_PER_MUTATION: usize = 5; // 4 batches, key symbol key symbol
+pub const POPULATION_SIZE: usize = 50;
+pub const MEMBERS_PER_MUTATION: usize = 10; // 4 batches, key symbol key symbol
 
 pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 
@@ -25,10 +27,17 @@ pub struct Config {
 impl Config {
   pub fn defaults() -> Config {
     let geometry = US_PC_KEYBOARD;
-    let preserve = Preservative::default();
+    let preserve = Preservative::from(load_preserve_template());
     let data = load_text();
 
     Config { geometry, preserve, data }
+  }
+}
+
+fn load_preserve_template() -> String {
+  if cfg!(test) { String::from("") }
+  else {
+    fs::read_to_string("./preserve.txt").unwrap_or(String::from(""))
   }
 }
 

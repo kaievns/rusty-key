@@ -25,11 +25,11 @@ impl Population {
       let mutate_times = (i as f64 / MEMBERS_PER_MUTATION as f64).ceil() as usize;
 
       for x in 0..mutate_times {
-        // if x % 2 == 0 {
+        if x % 3 != 0 {
           new_member = mutator.mutate_keys(&new_member);
-        // } else {
-        //   new_member = mutator.mutate_symbols(&new_member);
-        // }
+        } else {
+          new_member = mutator.mutate_symbols(&new_member);
+        }
       }
       
       members.push(new_member);
