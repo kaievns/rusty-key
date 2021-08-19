@@ -20,9 +20,9 @@ impl Population {
 
     let mut members = Members::new();
 
-    for i in 0..POPULATION_SIZE {
+    for i in 0..CONFIG.population_size {
       let mut new_member = (*ancestor).clone();
-      let mutate_times = (i as f64 / MEMBERS_PER_MUTATION as f64).ceil() as usize;
+      let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
 
       for x in 0..mutate_times {
         if x % 3 != 0 {
@@ -59,7 +59,7 @@ mod test {
     let original = QWERTY.clone();
     let population = Population::new(&original);
 
-    assert_eq!(population.members.len(), POPULATION_SIZE);
+    assert_eq!(population.members.len(), CONFIG.population_size);
     assert_eq!(population.members[0].template, original.template);
 
     assert_ne!(population.members[0].template, population.members[1].template);

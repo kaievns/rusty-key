@@ -1,5 +1,7 @@
 use std::fs;
 
+use toml;
+use serde::Deserialize;
 use once_cell::sync::Lazy;
 
 use crate::source;
@@ -13,24 +15,54 @@ pub const BAD_STARTER_PENALTY: usize = 80;
 pub const ROW_SKIP_PENALTY: usize = 50;
 pub const ROW_JUMP_PENALTY: usize = 30;
 
-pub const POPULATION_SIZE: usize = 50;
-pub const MEMBERS_PER_MUTATION: usize = 10; // 4 batches, key symbol key symbol
-
 pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 
 pub struct Config {
   pub geometry: Geometry,
   pub preserve: Preservative,
-  pub data: String
+  pub data: String,
+  pub population_size: usize,
+  pub mutate_every: usize,
+  pub rank_space_cut_off: usize
+}
+
+#[derive(Deserialize,Debug)]
+pub struct ExternalConfig {
+  pub geometry: String,
+  pub population_size: usize,
+  pub mutate_every: usize,
+  pub rank_space_cut_off: usize
 }
 
 impl Config {
   pub fn defaults() -> Config {
-    let geometry = US_PC_KEYBOARD;
+    let config = load_external_config();
+    let geometry = if config.geometry == String::from("ORTHO") { FULL_ORTHO } else { US_PC_KEYBOARD };
     let preserve = Preservative::from(load_preserve_template());
     let data = load_text();
 
-    Config { geometry, preserve, data }
+    Config { 
+      geometry, 
+      preserve, 
+      data,
+      population_size: config.population_size,
+      mutate_every: config.mutate_every,
+      rank_space_cut_off: config.rank_space_cut_off
+    }
+  }
+}
+
+fn load_external_config() -> ExternalConfig {
+  let default_config = ExternalConfig {
+    geometry: "US-PC".to_string(),
+    population_size: 30,
+    mutate_every: 10,
+    rank_space_cut_off: 50
+  };
+  if cfg!(test) { default_config }
+  else {
+    let data = fs::read_to_string("./config.toml").unwrap_or(String::from(""));
+    toml::from_str(&data).unwrap_or(default_config)
   }
 }
 

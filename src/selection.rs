@@ -9,6 +9,8 @@
 use rand::Rng;
 use core::cmp::Ordering::Less;
 
+use crate::config::*;
+
 #[derive(PartialEq,Debug)]
 pub struct Score {
   pub performance: f64,
@@ -17,8 +19,6 @@ pub struct Score {
 
 pub type Scores = Vec<Score>;
 type RankSpace = Vec<(usize, f64)>;
-
-const RANK_SPACE_CUT_OFF: usize = 90; // %
 
 pub struct Selection {
   pub scores: Scores
@@ -33,7 +33,7 @@ impl Selection {
 
   fn select_from_rank_space(self: &Self, list: &RankSpace) -> (usize, f64) {
     let mut rng = rand::thread_rng();
-    let lucky = rng.gen_range(0..100) < RANK_SPACE_CUT_OFF;
+    let lucky = rng.gen_range(0..100) < CONFIG.rank_space_cut_off;
 
     if lucky || list.len() == 1 {
       *list.first().unwrap()

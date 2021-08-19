@@ -1,0 +1,4 @@
+geometry = "US-PC"
+population_size = 50
+mutate_every = 10 # adds a mutation with every batch
+rank_space_cut_off = 90 # percent
