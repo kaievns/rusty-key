@@ -25,7 +25,7 @@ impl Population {
       let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
 
       for x in 0..mutate_times {
-        if x % 3 != 0 {
+        if CONFIG.mutate_symbols == false || x % 3 != 0 {
           new_member = mutator.mutate_keys(&new_member);
         } else {
           new_member = mutator.mutate_symbols(&new_member);

@@ -23,6 +23,7 @@ pub struct Config {
   pub data: String,
   pub population_size: usize,
   pub mutate_every: usize,
+  pub mutate_symbols: bool,
   pub rank_space_cut_off: usize,
   pub progress_window_size: usize
 }
@@ -32,6 +33,7 @@ pub struct ExternalConfig {
   pub geometry: String,
   pub population_size: usize,
   pub mutate_every: usize,
+  pub mutate_symbols: bool,
   pub rank_space_cut_off: usize,
   pub progress_window_size: usize
 }
@@ -49,6 +51,7 @@ impl Config {
       data,
       population_size: config.population_size,
       mutate_every: config.mutate_every,
+      mutate_symbols: config.mutate_symbols,
       rank_space_cut_off: config.rank_space_cut_off,
       progress_window_size: config.progress_window_size
     }
@@ -60,6 +63,7 @@ fn load_external_config() -> ExternalConfig {
     geometry: "US-PC".to_string(),
     population_size: 30,
     mutate_every: 10,
+    mutate_symbols: true,
     rank_space_cut_off: 50,
     progress_window_size: 200
   };

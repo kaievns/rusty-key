@@ -1,5 +1,6 @@
 geometry = "US-PC"
-population_size = 30
-mutate_every = 6 # adds a mutation with every batch
+population_size = 40
+mutate_every = 8 # adds a mutation with every batch
+mutate_symbols = false
 rank_space_cut_off = 95 # percent
 progress_window_size = 200
