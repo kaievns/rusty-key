@@ -3,10 +3,10 @@ use termion::raw::IntoRawMode;
 use termion::event::Key;
 use tui::Terminal;
 use tui::backend::TermionBackend;
-use tui::text::{Span};
+use tui::text::{Span, Spans};
 use tui::style::{Color, Style, Modifier};
 use tui::symbols::{Marker};
-use tui::widgets::{Block, Borders, Cell, Row, Table, Dataset, Chart, Axis, GraphType};
+use tui::widgets::{Block, Borders, Cell, Row, Table, Dataset, Chart, Axis, GraphType, Paragraph};
 use tui::layout::{Layout, Constraint, Direction};
 
 use crate::events::{self,Event};
@@ -124,10 +124,25 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
 
       f.render_widget(chart, chunks[1]);
 
+      let details = match model.best_outcome() {
+        None => String::from("No results yet"),
+        Some(outcome) => format!(
+          "\n{}\n\nSummary:\n  effort:      {}\n  overheads:   {}\n  awkwardness: {}\n  rollingness: {}\n  fitness:     {}",
+          outcome.best.to_string(true),
+          outcome.best_summary.effort,
+          outcome.best_summary.overheads,
+          outcome.best_summary.awkwardness,
+          outcome.best_summary.rollingness,
+          outcome.best_summary.fitness
+        )
+      };
+
       let details_block = Block::default()
-          .title("Best layout")
-          .borders(Borders::ALL);
-      f.render_widget(details_block, main_chunks[1]);
+        .title("Best layout")
+        .borders(Borders::ALL);
+      let p = Paragraph::new(details)
+        .block(details_block);
+      f.render_widget(p, main_chunks[1]);
     })?;
 
     match events::inst().next()? {
