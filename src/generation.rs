@@ -39,7 +39,11 @@ impl Generation {
   }
 
   pub fn new(number: usize, layout: &Layout) -> Generation {
-    let population = Population::new(layout);
+    Generation::spawn(number, layout, layout)
+  }
+
+  fn spawn(number: usize, mom: &Layout, dad: &Layout) -> Generation {
+    let population = Population::new(mom, dad);
 
     let successor_cache: OnceCell<Layout> = OnceCell::new();
     let best_cache: OnceCell<Layout> = OnceCell::new();
@@ -58,8 +62,10 @@ impl Generation {
   }
 
   pub fn next(self: &Self) -> Generation {
-    let layout = self.successor();
-    Generation::new(self.number + 1, &layout)
+    let mom = self.best();
+    let dad = self.successor();
+
+    Generation::spawn(self.number + 1, &dad, &mom)
   }
 
   pub fn successor(self: &Self) -> &Layout {

@@ -9,19 +9,19 @@ pub struct Population {
 }
 
 impl Population {
-  pub fn new(ancestor: &Layout) -> Population {
-    let members = Population::create_members(ancestor);
+  pub fn new(mom: &Layout, dad: &Layout) -> Population {
+    let members = Population::create_members(mom, dad);
 
     Population { members }
   }
 
-  fn create_members(ancestor: &Layout) -> Members {
+  fn create_members(mom: &Layout, dad: &Layout) -> Members {
     let mutator = Mutator::new();
 
     let mut members = Members::new();
 
     for i in 0..CONFIG.population_size {
-      let mut new_member = (*ancestor).clone();
+      let mut new_member = if i % 3 == 0 { (*mom).clone() } else { (*dad).clone() };
       let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
 
       for x in 0..mutate_times {
@@ -29,7 +29,7 @@ impl Population {
           new_member = mutator.mutate_keys(&new_member);
         } else {
           new_member = mutator.mutate_symbols(&new_member);
-        }
+        } 
       }
       
       members.push(new_member);
@@ -57,7 +57,7 @@ mod test {
   #[test]
   fn test_new() {
     let original = QWERTY.clone();
-    let population = Population::new(&original);
+    let population = Population::new(&original, &original);
 
     assert_eq!(population.members.len(), CONFIG.population_size);
     assert_eq!(population.members[0].template, original.template);
@@ -70,7 +70,7 @@ mod test {
   #[test]
   fn test_deviation() {
     let original = QWERTY.clone();
-    let population = Population::new(&original);
+    let population = Population::new(&original, &original);
 
     assert_eq!(population.deviation_for(&population.members[0]), 0.0);
     assert_eq!(population.deviation_for(&population.members[1]), 4.0/(original.template.len() as f64));
