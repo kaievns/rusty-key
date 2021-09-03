@@ -1,5 +1,6 @@
 /* this is the view-model for the ui */
 
+use crate::config::CONFIG;
 use crate::summary::Summary;
 use crate::generation::Outcome;
 
@@ -8,7 +9,7 @@ pub struct ViewModel {
 }
 
 fn to_score(summary: &Summary) -> usize {
-  (summary.score() * 100.0) as usize
+  (summary.score() * 1000.0) as usize
 }
 
 impl ViewModel {
@@ -41,20 +42,23 @@ impl ViewModel {
   pub fn top_scores(&self) -> Vec<(f64, f64)> {
     let mut list = self.sorted_outcomes().clone();
     list.reverse(); // historical order
-    list.iter().enumerate().map(|(i, outcome)|
+    list.iter().rev().take(CONFIG.progress_window_size).rev()
+    .enumerate().map(|(i, outcome)|
       (i as f64, to_score(&outcome.best_summary) as f64)
     ).collect()
   }
 
   // best scores as they come
   pub fn best_scores(&self) -> Vec<(f64, f64)> {
-    self.outcomes.iter().enumerate().map(|(i, outcome)|
+    self.outcomes.iter().rev().take(CONFIG.progress_window_size).rev()
+    .enumerate().map(|(i, outcome)|
       (i as f64, to_score(&outcome.best_summary) as f64)
     ).collect()
   }
 
   pub fn winner_scores(&self) -> Vec<(f64, f64)> {
-    self.outcomes.iter().enumerate().map(|(i, outcome)|
+    self.outcomes.iter().rev().take(CONFIG.progress_window_size).rev()
+    .enumerate().map(|(i, outcome)|
       (i as f64, to_score(&outcome.winner_summary) as f64)
     ).collect()
   }
