@@ -73,10 +73,10 @@ mod test {
     let population = Population::new(&original, &original);
 
     assert_eq!(population.deviation_for(&population.members[0]), 0.0);
-    assert_eq!(population.deviation_for(&population.members[1]), 4.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[2]), 4.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[10]), 6.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[20]), 10.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[29]), 12.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[1]), 2.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[2]), 2.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[10]), 2.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[20]), 6.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[29]), 10.0/(original.template.len() as f64));
   }
 }

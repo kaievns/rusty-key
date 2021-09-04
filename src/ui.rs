@@ -128,7 +128,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
         None => String::from("No results yet"),
         Some(outcome) => format!(
           "\n{}\n\nSummary:\n  effort:      {}\n  overheads:   {}\n  awkwardness: {}\n  rollingness: {}\n  fitness:     {}",
-          outcome.best.to_string(true),
+          outcome.best.template,
           outcome.best_summary.effort,
           outcome.best_summary.overheads,
           outcome.best_summary.awkwardness,
