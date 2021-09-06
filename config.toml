@@ -2,5 +2,12 @@ geometry = "US-PC"
 population_size = 50
 mutate_every = 8 # adds a mutation with every batch
 mutate_symbols = false
-rank_space_cut_off = 95 # percent
+rank_space_cut_off = 99 # percent
 progress_window_size = 200
+
+[weights]
+effort = 1      # total effort
+overheads = 1   # total overheads
+awkwardness = 2 # bad startes
+rollingness = 1 # combos
+fitness = 1     # usage balance

@@ -1,5 +1,6 @@
 use std::fmt;
 
+use crate::config::CONFIG;
 use crate::keyboard::*;
 use crate::calculator;
 use crate::profiler;
@@ -37,8 +38,14 @@ impl Summary {
   }
 
   pub fn score(self: &Self) -> f64 {
-    let positive = self.rollingness * 2.0 + self.fitness;
-    let negative = self.effort + self.overheads + self.awkwardness;
+    let weights = &CONFIG.weights;
+    let positive = 
+      self.rollingness * (weights.rollingness as f64) + 
+      self.fitness * (weights.fitness as f64);
+    let negative = 
+      self.effort * (weights.effort as f64) + 
+      self.overheads * (weights.overheads as f64) + 
+      self.awkwardness * (weights.awkwardness as f64);
     
     positive * 10.0 / negative
   }
@@ -78,9 +85,9 @@ mod test {
       rollingness: 8.13194318501912,
       fitness: 8.775510204081632
     };
-    assert_eq!(qwerty.score(), 2.5515245143612324);
-    assert_eq!(dvorak.score(), 5.35022647808878);
-    assert_eq!(workman.score(), 8.764539779690535);
-    assert_eq!(halmak.score(), 9.273189938832633);
+    assert_eq!(qwerty.score(), 1.5517192716779282);
+    assert_eq!(dvorak.score(), 3.8138042585401886);
+    assert_eq!(workman.score(), 5.30479151040565);
+    assert_eq!(halmak.score(), 6.261573684293221);
   }
 }

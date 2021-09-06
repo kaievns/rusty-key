@@ -231,6 +231,25 @@ mod test {
     }
   }
 
+  // #[test]
+  // fn test_lots_of_symbol_mutations_bunches_and_bunches() {
+  //   let presie = Preservative::from("
+  //   ~ ! @ # $ % ^ & * < > _ +
+  //   ` 1 2 3 4 5 6 7 8 9 0 - =
+  //     ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+  //     ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙
+  //     ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+  //     ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+  //       ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+  //       ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ ∙ 
+  //   ".to_string());
+  //   println!("{:?}", presie.restriced_positions);
+  //   let mutator = Mutator::with_presie(&presie);
+  //   let mut dna = qwerty_dna();
+    
+  //   assert!(false);
+  // }
+
   fn qwerty_dna() -> DNA {
     DNA::from(&QWERTY)
   }

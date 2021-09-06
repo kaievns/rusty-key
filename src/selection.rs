@@ -54,7 +54,7 @@ impl Selection {
     self.renormalise().iter().map(|score| {
       // recalculating from the top right corner
       let x = (1.0 - score.performance).powf(2.0);
-      let y = (1.0 - score.deviation/2.0).powf(2.0); // deprioritizing the deviation
+      let y = (1.0 - score.deviation).powf(2.0); // deprioritizing the deviation
       
       (x + y).sqrt() // distance from the top right corner
     })
@@ -142,10 +142,10 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.create_rank_space(), vec![
-      (3, 0.5), 
-      (2, 0.6501818633764926), 
-      (1, 0.7981901014273034), 
-      (0, 0.9038688398800749)
+      (3, 0.0), 
+      (2, 0.3035752675483198), 
+      (1, 0.580965283951653), 
+      (0, 0.774620378602204)
     ])
   }
 
@@ -154,10 +154,10 @@ mod test {
     let sel = Selection { scores: get_scores() };
 
     assert_eq!(sel.calculate_ranks(), vec![
-      0.9038688398800749, 
-      0.7981901014273034, 
-      0.6501818633764926, 
-      0.5
+      0.774620378602204, 
+      0.580965283951653, 
+      0.3035752675483198, 
+      0.0
     ])
   }
   

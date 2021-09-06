@@ -25,7 +25,8 @@ pub struct Config {
   pub mutate_every: usize,
   pub mutate_symbols: bool,
   pub rank_space_cut_off: usize,
-  pub progress_window_size: usize
+  pub progress_window_size: usize,
+  pub weights: Weights
 }
 
 #[derive(Deserialize,Debug)]
@@ -35,7 +36,17 @@ pub struct ExternalConfig {
   pub mutate_every: usize,
   pub mutate_symbols: bool,
   pub rank_space_cut_off: usize,
-  pub progress_window_size: usize
+  pub progress_window_size: usize,
+  pub weights: Weights
+}
+
+#[derive(Deserialize,Debug)]
+pub struct Weights {
+  pub effort: usize,
+  pub overheads: usize,
+  pub awkwardness: usize,
+  pub rollingness: usize,
+  pub fitness: usize
 }
 
 impl Config {
@@ -53,24 +64,35 @@ impl Config {
       mutate_every: config.mutate_every,
       mutate_symbols: config.mutate_symbols,
       rank_space_cut_off: config.rank_space_cut_off,
-      progress_window_size: config.progress_window_size
+      progress_window_size: config.progress_window_size,
+      weights: config.weights
     }
   }
 }
 
 fn load_external_config() -> ExternalConfig {
-  let default_config = ExternalConfig {
+  if cfg!(test) { default_config() }
+  else {
+    let data = fs::read_to_string("./config.toml").unwrap_or(String::from(""));
+    toml::from_str(&data).unwrap_or(default_config())
+  }
+}
+
+fn default_config() -> ExternalConfig {
+  ExternalConfig {
     geometry: "US-PC".to_string(),
     population_size: 30,
     mutate_every: 10,
     mutate_symbols: true,
     rank_space_cut_off: 50,
-    progress_window_size: 200
-  };
-  if cfg!(test) { default_config }
-  else {
-    let data = fs::read_to_string("./config.toml").unwrap_or(String::from(""));
-    toml::from_str(&data).unwrap_or(default_config)
+    progress_window_size: 200,
+    weights: Weights {
+      effort: 1,
+      overheads: 1,
+      awkwardness: 1,
+      rollingness: 1,
+      fitness: 1
+    }
   }
 }
 

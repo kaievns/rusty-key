@@ -134,7 +134,7 @@ mod test {
     });
 
     assert_eq!(model.top_list(), vec![
-      vec!["1".to_string(), "QWFPGJLUY;".to_string(), "9999".to_string()]
+      vec!["1".to_string(), "QWFPGJLUY;".to_string(), "6666".to_string()]
     ]);
 
     model.record(Outcome {
@@ -157,8 +157,8 @@ mod test {
     });
 
     assert_eq!(model.top_list(), vec![
-      vec!["1".to_string(), "QDRWBJFUP;".to_string(), "95470".to_string()], 
-      vec!["2".to_string(), "QWFPGJLUY;".to_string(), "9999".to_string()]
+      vec!["1".to_string(), "QDRWBJFUP;".to_string(), "63646".to_string()], 
+      vec!["2".to_string(), "QWFPGJLUY;".to_string(), "6666".to_string()]
     ]);
   }
 
@@ -236,7 +236,7 @@ mod test {
       }
     });
 
-    assert_eq!(model.top_scores(), vec![(0.0, 9999.0)]);
+    assert_eq!(model.top_scores(), vec![(0.0, 6666.0)]);
 
     model.record(Outcome {
       best: WORKMAN.clone(),
@@ -258,7 +258,7 @@ mod test {
     });
 
     assert_eq!(model.top_scores(), vec![
-      (0.0, 9999.0), (1.0, 95470.0)
+      (0.0, 6666.0), (1.0, 63646.0)
     ]);
   }
 
@@ -287,7 +287,7 @@ mod test {
       }
     });
 
-    assert_eq!(model.best_scores(), vec![(0.0, 9999.0)]);
+    assert_eq!(model.best_scores(), vec![(0.0, 6666.0)]);
 
     model.record(Outcome {
       best: WORKMAN.clone(),
@@ -309,7 +309,7 @@ mod test {
     });
 
     assert_eq!(model.best_scores(), vec![
-      (0.0, 9999.0), (1.0, 5523.0)
+      (0.0, 6666.0), (1.0, 3682.0)
     ]);
   }
 
@@ -338,7 +338,7 @@ mod test {
       }
     });
 
-    assert_eq!(model.winner_scores(), vec![(0.0, 7699.0)]);
+    assert_eq!(model.winner_scores(), vec![(0.0, 5133.0)]);
 
     model.record(Outcome {
       best: WORKMAN.clone(),
@@ -360,7 +360,7 @@ mod test {
     });
 
     assert_eq!(model.winner_scores(), vec![
-      (0.0, 7699.0), (1.0, 6259.0)
+      (0.0, 5133.0), (1.0, 4173.0)
     ]);
   }
 }
