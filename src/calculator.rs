@@ -1,15 +1,16 @@
 use crate::config::*;
 use crate::parser::Position;
-use crate::geometry::{Key};
+use crate::geometry::{Key,Geometry};
 use crate::keyboard::*;
 
-use hashbrown::HashSet;
+use hashbrown::{HashSet};
+use once_cell::sync::Lazy;
 
 #[derive(Debug)]
 pub struct Calculator<'a> {
   keyboard: &'a Keyboard<'a>,
-  bad_starters: HashSet<Position>,
-  rolling_pairs_map: HashSet<(Position, Position)>
+  bad_starters: &'a HashSet<Position>,
+  rolling_pairs_map: &'a HashSet<(Position, Position)>
 }
 
 #[derive(Debug,PartialEq)]
@@ -25,10 +26,20 @@ pub fn process(keyboard: &Keyboard) -> Result {
   calculator.run(&CONFIG.data)
 }
 
+struct MappingsSet {
+  bad_starters: HashSet<Position>,
+  rolling_pairs: HashSet<(Position, Position)>
+}
+
+static MAPPINGS_CACHE: Lazy<MappingsSet> = Lazy::new(|| MappingsSet {
+  bad_starters: CONFIG.geometry.bad_starting_positions(),
+  rolling_pairs: CONFIG.geometry.rolling_position_pairs()
+});
+
 impl Calculator<'_> {
   pub fn from<'a>(keyboard: &'a Keyboard) -> Calculator<'a> {
-    let bad_starters = keyboard.geometry.bad_starting_positions();
-    let rolling_pairs_map = keyboard.geometry.rolling_position_pairs();
+    let bad_starters = &MAPPINGS_CACHE.bad_starters;
+    let rolling_pairs_map = &MAPPINGS_CACHE.rolling_pairs;
     
     Calculator { keyboard, bad_starters, rolling_pairs_map }
   }
