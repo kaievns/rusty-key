@@ -9,7 +9,7 @@
 use rand::Rng;
 use core::cmp::Ordering::Less;
 
-use crate::config::*;
+use crate::config::CONFIG;
 
 #[derive(PartialEq,Debug)]
 pub struct Score {
@@ -33,7 +33,7 @@ impl Selection {
 
   fn select_from_rank_space(self: &Self, list: &RankSpace) -> (usize, f64) {
     let mut rng = rand::thread_rng();
-    let lucky = rng.gen_range(0..100) < CONFIG.rank_space_cut_off;
+    let lucky = rng.gen_range(0..100) < CONFIG.selection.rank_space_cut_off;
 
     if lucky || list.len() == 1 {
       *list.first().unwrap()
@@ -54,7 +54,7 @@ impl Selection {
     self.renormalise().iter().map(|score| {
       // recalculating from the top right corner
       let x = (1.0 - score.performance).powf(2.0);
-      let y = (1.0 - score.deviation).powf(2.0); // deprioritizing the deviation
+      let y = (1.0 - score.deviation * CONFIG.selection.diversity_bias).powf(2.0); // deprioritizing the deviation
       
       (x + y).sqrt() // distance from the top right corner
     })
