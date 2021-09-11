@@ -1,17 +1,17 @@
-geometry = "US-PC"
-population_size = 50
-mutate_every = 8 # adds a mutation with every batch
+geometry = "ORTHO"
+population_size = 40
+mutate_every = 10 # adds a mutation with every batch
 mutate_symbols = false
 progress_window_size = 200
 
 [selection]
-rank_space_cut_off = 99 # percent
-diversity_bias = 1.0 # coefficient 0..1
+rank_space_cut_off = 95 # percent
+diversity_bias = 0.25 # coefficient 0..1
 
 
 [weights]
 effort = 1      # total effort
 overheads = 1   # total overheads
 awkwardness = 2 # bad startes
-rollingness = 1 # combos
-fitness = 1     # usage balance
+rollingness = 2 # combos
+fitness = 10     # usage balance

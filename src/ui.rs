@@ -127,7 +127,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       let details = match model.best_outcome() {
         None => String::from("No results yet"),
         Some(outcome) => format!(
-          "\n{}\n\nSummary:\n  effort:      {}\n  overheads:   {}\n  awkwardness: {}\n  rollingness: {}\n  fitness:     {}",
+          "\n{}\n\nSummary:\n  effort:      {:>6.2}\n  overheads:   {:>6.2}\n  awkwardness: {:>6.2}\n  rollingness: {:>6.2}\n  fitness:     {:>6.2}",
           outcome.best.template,
           outcome.best_summary.effort,
           outcome.best_summary.overheads,
