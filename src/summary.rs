@@ -26,7 +26,13 @@ impl fmt::Display for Summary  {
 impl Summary {
   pub fn calculate(keyboard: &Keyboard) -> Summary {
     let result = calculator::process(keyboard);
-    let fitness = profiler::calculate_fitness(keyboard);
+    // let result = calculator::Result {
+    //   effort: 1.0,
+    //   overheads: 1.0,
+    //   awkwardness: 1.0,
+    //   rollingness: 1.0
+    // };
+    let fitness = 1.0; //, profiler::calculate_fitness(keyboard);
 
     Summary {
       effort: result.effort,
@@ -38,6 +44,7 @@ impl Summary {
   }
 
   pub fn score(self: &Self) -> f64 {
+    // self.fitness / 10.0
     let weights = &CONFIG.weights;
     
     (weights.rollingness as f64) * self.rollingness / 5.0 +

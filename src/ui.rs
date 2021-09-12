@@ -47,7 +47,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
           .split(main_chunks[0]);
 
       let table_block = Block::default()
-            .title("Latest results")
+            .title(" Latest results ")
             .borders(Borders::ALL);
       // f.render_widget(table_block, chunks[0]);
 
@@ -74,8 +74,12 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       f.render_widget(table, chunks[0]);
 
 
+      let generation_number = match model.outcomes.last() {
+        Some(outcome) => outcome.generation_number,
+        None => 0
+      };
       let chart_block = Block::default()
-            .title("Progress")
+            .title(format!(" Progress (gen {}) ", generation_number))
             .borders(Borders::ALL);
       let top_scores = model.top_scores();
       let best_scores = model.best_scores();
@@ -138,7 +142,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       };
 
       let details_block = Block::default()
-        .title("Best layout")
+        .title(" Best layout ")
         .borders(Borders::ALL);
       let p = Paragraph::new(details)
         .block(details_block);

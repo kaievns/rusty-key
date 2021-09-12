@@ -5,7 +5,7 @@ use crate::summary::Summary;
 use crate::generation::Outcome;
 
 pub struct ViewModel {
-  outcomes: Vec<Outcome>
+  pub outcomes: Vec<Outcome>
 }
 
 fn to_score(summary: &Summary) -> usize {

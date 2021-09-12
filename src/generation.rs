@@ -27,6 +27,7 @@ struct Result {
 
 #[derive(Debug,PartialEq,Clone)]
 pub struct Outcome {
+  pub generation_number: usize,
   pub winner: Layout,
   pub winner_summary: Summary,
   pub best: Layout,
@@ -93,6 +94,7 @@ impl Generation {
 
   pub fn outcome(&self) -> Outcome {
     Outcome {
+      generation_number: self.number,
       winner: self.successor().clone(),
       winner_summary: self.summary_for(self.successor()),
       best: self.best().clone(),
