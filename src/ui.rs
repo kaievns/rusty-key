@@ -131,13 +131,18 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       let details = match model.best_outcome() {
         None => String::from("No results yet"),
         Some(outcome) => format!(
-          "\n{}\n\nSummary:\n  effort:      {:>6.2}\n  overheads:   {:>6.2}\n  awkwardness: {:>6.2}\n  rollingness: {:>6.2}\n  fitness:     {:>6.2}",
+          "\n{}\n\nSummary:\n  effort:      {:>6.2} ({:>2.0}%)\n  overheads:   {:>6.2} ({:>2.0}%)\n  awkwardness: {:>6.2} ({:>2.0}%)\n  rollingness: {:>6.2} ({:>2.0}%)\n  fitness:     {:>6.2} ({:>2.0}%)",
           outcome.best.template,
           outcome.best_summary.effort,
+          100.0 * 9.0 / outcome.best_summary.effort,
           outcome.best_summary.overheads,
+          100.0 * 7.0 / outcome.best_summary.overheads,
           outcome.best_summary.awkwardness,
+          100.0 * 2.0 / outcome.best_summary.awkwardness,
           outcome.best_summary.rollingness,
-          outcome.best_summary.fitness
+          100.0 * outcome.best_summary.rollingness / 18.0,
+          outcome.best_summary.fitness,
+          100.0 * outcome.best_summary.fitness / 18.0
         )
       };
 
