@@ -26,7 +26,8 @@ pub struct Config {
   pub mutate_symbols: bool,
   pub progress_window_size: usize,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig
+  pub weights: WeightsConfig,
+  pub elites: ElitesConfig
 }
 
 #[derive(Deserialize,Debug)]
@@ -37,7 +38,8 @@ pub struct ExternalConfig {
   pub mutate_symbols: bool,
   pub progress_window_size: usize,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig
+  pub weights: WeightsConfig,
+  pub elites: ElitesConfig
 }
 
 #[derive(Deserialize,Debug)]
@@ -53,6 +55,12 @@ pub struct WeightsConfig {
 pub struct SelectionConfig {
   pub rank_space_cut_off: usize,
   pub diversity_bias: f64
+}
+
+#[derive(Deserialize,Debug)]
+pub struct ElitesConfig {
+  pub inject: bool,
+  pub portion: usize
 }
 
 impl Config {
@@ -71,7 +79,8 @@ impl Config {
       mutate_symbols: config.mutate_symbols,
       progress_window_size: config.progress_window_size,
       selection: config.selection,
-      weights: config.weights
+      weights: config.weights,
+      elites: config.elites
     }
   }
 }
@@ -91,6 +100,10 @@ fn default_config() -> ExternalConfig {
     mutate_every: 10,
     mutate_symbols: true,
     progress_window_size: 200,
+    elites: ElitesConfig {
+      inject: true,
+      portion: 3
+    },
     selection: SelectionConfig {
       rank_space_cut_off: 50,
       diversity_bias: 1.0

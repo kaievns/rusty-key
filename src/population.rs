@@ -21,7 +21,7 @@ impl Population {
     let mut members = Members::new();
 
     for i in 0..CONFIG.population_size {
-      let mut new_member = if i % 3 == 0 { (*mom).clone() } else { (*dad).clone() };
+      let mut new_member = if i % CONFIG.elites.portion == 0 { (*mom).clone() } else { (*dad).clone() };
       let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
 
       for x in 0..mutate_times {
