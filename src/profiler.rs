@@ -1,11 +1,13 @@
+use once_cell::sync::OnceCell;
+
 use crate::frequency::*;
 use crate::keyboard::*;
 
 pub fn calculate_fitness(keyboard: &Keyboard) -> f64 {
-  let symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
+  let symbols = symbols_by_frequency();
   let efforts = symbols_by_effort(&keyboard);
 
-  let max_score = total_possible_score(&symbols);
+  let max_score = total_possible_score(symbols);
   let mut score = 0;
 
   for (i, symbol) in symbols.iter().enumerate() {
@@ -19,9 +21,12 @@ pub fn calculate_fitness(keyboard: &Keyboard) -> f64 {
 }
 
 fn total_possible_score(symbols: &Vec<String>) -> usize {
-  symbols.iter()
-    .map(|symbol| score_for(symbol))
-    .sum()
+  static TOTAL_SCORE: OnceCell<usize> = OnceCell::new();
+  *TOTAL_SCORE.get_or_init(|| {
+    symbols.iter()
+      .map(|symbol| score_for(symbol))
+      .sum()
+  })
 }
 
 fn score_for(symbol: &String) -> usize {
@@ -33,27 +38,30 @@ fn score_for(symbol: &String) -> usize {
 }
 
 // returns a list of symbols ordered by usage frequency
-fn symbols_by_frequency(frequencies: &SymbolFrequencies) -> Vec<String> {
-  let mut sorted = frequencies.to_vec();
-  sorted.sort_by(|a,b| {
-    if a.1 == b.1 { a.0.cmp(&b.0) }
-    else { b.1.cmp(&a.1) }
-  });
+fn symbols_by_frequency() -> &'static Vec<String> {
+  static SYMBOLS: OnceCell<Vec<String>> = OnceCell::new();
+  SYMBOLS.get_or_init(|| {
+    let mut sorted = CURRENT_FREQUENCIES.to_vec();
+    sorted.sort_by(|a,b| {
+      if a.1 == b.1 { a.0.cmp(&b.0) }
+      else { b.1.cmp(&a.1) }
+    });
 
-  sorted.iter()
-    .map(|(symbol,_)| symbol.to_string())
-    .filter(|symbol| *symbol != " ".to_string())
-    .filter(|symbol| symbol.chars().all(|c| !c.is_ascii_uppercase()))
-    .collect()
+    sorted.iter()
+      .filter(|(symbol,_)| *symbol != ' ')
+      .filter(|(symbol,_)| !symbol.is_ascii_uppercase())
+      .map(|(symbol,_)| symbol.to_string())
+      .collect()
+  })
 }
 
 // returns a list of symbol<>effort pairs that represent the keyboard
 type SymbolEfforts = Vec<(String, usize)>;
 fn symbols_by_effort(keyboard: &Keyboard) -> SymbolEfforts {
   let mut sorted: SymbolEfforts = keyboard.key_map.iter()
+    .filter(|(symbol, _)| **symbol != ' ')
+    .filter(|(symbol, _)| !symbol.is_ascii_uppercase())
     .map(|(symbol, key)| (symbol.to_string(), key.effort))
-    .filter(|(symbol, _)| *symbol != " ".to_string())
-    .filter(|(symbol, _)| symbol.chars().all(|c| !c.is_ascii_uppercase()))
     .collect();
 
   sorted.sort_by(|a,b| {
@@ -83,7 +91,7 @@ mod test {
 
   #[test]
   fn test_total_possible_score() {
-    let symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
+    let symbols = symbols_by_frequency();
     
     assert_eq!(total_possible_score(&symbols), 106);
   }
@@ -100,7 +108,7 @@ mod test {
 
   #[test]
   fn test_symbols_by_frequency() {
-    let most_frequent_symbols = symbols_by_frequency(&CURRENT_FREQUENCIES);
+    let most_frequent_symbols = symbols_by_frequency();
     let top10 = &most_frequent_symbols[0..10];
     assert_eq!(top10, vec!["e", "a", "o", "i", "s", "n", "t", "r", "l", "p"]);
   }

@@ -86,6 +86,7 @@ mod test {
   fn test_push() {
     let mut model = ViewModel::new();
     let outcome = Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -115,6 +116,7 @@ mod test {
     assert_eq!(model.top_list().len(), 0);
 
     model.record(Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -138,6 +140,7 @@ mod test {
     ]);
 
     model.record(Outcome {
+      generation_number: 1,
       best: WORKMAN.clone(),
       best_summary: Summary {
         effort: 0.234,
@@ -169,6 +172,7 @@ mod test {
     assert_eq!(model.best_outcome(), None);
 
     model.record(Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -190,6 +194,7 @@ mod test {
     assert_eq!(model.best_outcome(), Some(model.outcomes[0].clone()));
 
     model.record(Outcome {
+      generation_number: 1,
       best: WORKMAN.clone(),
       best_summary: Summary {
         effort: 0.234,
@@ -218,6 +223,7 @@ mod test {
     assert_eq!(model.top_scores().len(), 0);
 
     model.record(Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -239,6 +245,7 @@ mod test {
     assert_eq!(model.top_scores(), vec![(0.0, 20629.0)]);
 
     model.record(Outcome {
+      generation_number: 1,
       best: WORKMAN.clone(),
       best_summary: Summary {
         effort: 0.234,
@@ -269,6 +276,7 @@ mod test {
     assert_eq!(model.best_scores().len(), 0);
 
     model.record(Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -290,6 +298,7 @@ mod test {
     assert_eq!(model.best_scores(), vec![(0.0, 20629.0)]);
 
     model.record(Outcome {
+      generation_number: 1,
       best: WORKMAN.clone(),
       best_summary: Summary {
         effort: 2.234,
@@ -320,6 +329,7 @@ mod test {
     assert_eq!(model.winner_scores().len(), 0);
 
     model.record(Outcome {
+      generation_number: 1,
       best: COLEMAK.clone(),
       best_summary: Summary {
         effort: 1.234,
@@ -341,6 +351,7 @@ mod test {
     assert_eq!(model.winner_scores(), vec![(0.0, 16799.0)]);
 
     model.record(Outcome {
+      generation_number: 1,
       best: WORKMAN.clone(),
       best_summary: Summary {
         effort: 0.234,
