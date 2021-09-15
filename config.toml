@@ -18,4 +18,4 @@ effort = 1      # total effort
 overheads = 1   # total overheads
 awkwardness = 1 # bad startes
 rollingness = 1 # combos
-fitness = 1000     # usage balance
+fitness = 1     # usage balance

@@ -40,11 +40,11 @@ impl Summary {
   pub fn score(self: &Self) -> f64 {
     let weights = &CONFIG.weights;
     
-    (weights.rollingness as f64) * self.rollingness / 5.0 +
-    (weights.fitness as f64) * self.fitness / 10.0 +
-    (weights.effort as f64) * 10.0 / self.effort +
-    (weights.overheads as f64) * 10.0 / self.overheads +
-    (weights.awkwardness as f64) * 5.0 / self.awkwardness
+    (weights.rollingness as f64) * self.rollingness / 18.0 +
+    (weights.fitness as f64) * self.fitness / 18.0 +
+    (weights.effort as f64) * 9.0 / self.effort +
+    (weights.overheads as f64) * 7.0 / self.overheads +
+    (weights.awkwardness as f64) * 2.0 / self.awkwardness
   }
 }
 
@@ -82,9 +82,9 @@ mod test {
       rollingness: 8.13194318501912,
       fitness: 8.775510204081632
     };
-    assert_eq!(qwerty.score(), 2.8679486231979876);
-    assert_eq!(dvorak.score(), 4.143184040460975);
-    assert_eq!(workman.score(), 5.274082633001935);
-    assert_eq!(halmak.score(), 5.42619476151838);
+    assert_eq!(qwerty.score(), 1.3943012416927965);
+    assert_eq!(dvorak.score(), 2.2856546599937184);
+    assert_eq!(workman.score(), 2.5427443285981193);
+    assert_eq!(halmak.score(), 2.805648048745065);
   }
 }
