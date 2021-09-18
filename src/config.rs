@@ -21,7 +21,6 @@ pub struct Config<'a> {
   pub geometry: &'a Geometry,
   pub preserve: Preservative,
   pub data: String,
-  pub mutate_every: usize,
   pub progress_window_size: usize,
   pub population: PopulationConfig,
   pub selection: SelectionConfig,
@@ -31,7 +30,6 @@ pub struct Config<'a> {
 #[derive(Deserialize,Debug)]
 pub struct ExternalConfig {
   pub geometry: String,
-  pub mutate_every: usize,
   pub progress_window_size: usize,
   pub population: PopulationConfig,
   pub selection: SelectionConfig,
@@ -72,7 +70,6 @@ impl Config<'_> {
       geometry, 
       preserve, 
       data,
-      mutate_every: config.mutate_every,
       progress_window_size: config.progress_window_size,
       population: config.population,
       selection: config.selection,
@@ -92,7 +89,6 @@ fn load_external_config() -> ExternalConfig {
 fn default_config() -> ExternalConfig {
   ExternalConfig {
     geometry: "US-PC".to_string(),
-    mutate_every: 10,
     progress_window_size: 200,
     population: PopulationConfig {
       size: 30,

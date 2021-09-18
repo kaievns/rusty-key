@@ -9,33 +9,52 @@ pub struct Population {
 }
 
 impl Population {
-  pub fn new(mom: &Layout, dad: &Layout) -> Population {
-    let members = Population::create_members(mom, dad);
+  pub fn new(normal: &Layout, elite: &Layout) -> Population {
+    let members = Population::create_members(normal, elite);
 
     Population { members }
   }
 
-  fn create_members(mom: &Layout, dad: &Layout) -> Members {
+  fn create_members(normal: &Layout, elite: &Layout) -> Members {
     let mutator = Mutator::new();
 
     let mut members = Members::new();
 
-    for i in 0..CONFIG.population.size {
-      let mut new_member = if i % CONFIG.population.elites == 0 { (*mom).clone() } else { (*dad).clone() };
-      let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
+    members.push((*normal).clone()); // retaining the original
 
-      for x in 0..mutate_times {
-        if CONFIG.population.symbols == false || x % 3 != 0 {
-          new_member = mutator.mutate_keys(&new_member);
+    let mut batch = Population::make_prestine_batch(normal, elite);
+    
+    loop {
+      batch = batch.iter().enumerate().map(|(i, layout)| {
+        if CONFIG.population.symbols && i % 2 != 0 {
+          mutator.mutate_symbols(layout)
         } else {
-          new_member = mutator.mutate_symbols(&new_member);
-        } 
-      }
-      
-      members.push(new_member);
+          mutator.mutate_keys(layout)
+        }
+      }).collect();
+
+      for layout in batch.iter() { members.push((*layout).clone()); }
+
+      if members.len() > CONFIG.population.size { break; }
     }
 
+    members.truncate(CONFIG.population.size);
     members
+  }
+
+  fn make_prestine_batch(normal: &Layout, elite: &Layout) -> Members {
+    let batch_size = ((CONFIG.population.size as f64) / (CONFIG.population.steps as f64)).ceil() as usize;
+    let elites_per_batch = ((batch_size as f64) * (CONFIG.population.elites as f64) / 100.0).ceil() as usize;
+    let normals_per_batch = batch_size - elites_per_batch;
+
+    let mut batch = Members::new();
+    
+    for i in 0..batch_size {
+      let parent = if i < normals_per_batch { normal } else { elite };
+      batch.push((*parent).clone());
+    }
+
+    batch
   }
 
   pub fn deviation_for(self: &Self, member: &Layout) -> f64 {
@@ -72,11 +91,12 @@ mod test {
     let original = QWERTY.clone();
     let population = Population::new(&original, &original);
 
+
     assert_eq!(population.deviation_for(&population.members[0]), 0.0);
-    assert_eq!(population.deviation_for(&population.members[1]), 2.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[1]), 4.0/(original.template.len() as f64));
     assert_eq!(population.deviation_for(&population.members[2]), 2.0/(original.template.len() as f64));
     assert_eq!(population.deviation_for(&population.members[10]), 2.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[20]), 6.0/(original.template.len() as f64));
-    assert_eq!(population.deviation_for(&population.members[29]), 10.0/(original.template.len() as f64));
+    assert_eq!(population.deviation_for(&population.members[20]), 4.0/(original.template.len() as f64));
+    // assert_eq!(population.deviation_for(&population.members[29]), 2.0/(original.template.len() as f64));
   }
 }

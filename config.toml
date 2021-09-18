@@ -1,7 +1,5 @@
 geometry = "US-PC"
 
-mutate_every = 10 # adds a mutation with every batch
-
 progress_window_size = 100
 
 [population]
