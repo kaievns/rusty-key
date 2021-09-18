@@ -20,12 +20,12 @@ impl Population {
 
     let mut members = Members::new();
 
-    for i in 0..CONFIG.population_size {
-      let mut new_member = if i % CONFIG.elites.portion == 0 { (*mom).clone() } else { (*dad).clone() };
+    for i in 0..CONFIG.population.size {
+      let mut new_member = if i % CONFIG.population.elites == 0 { (*mom).clone() } else { (*dad).clone() };
       let mutate_times = (i as f64 / CONFIG.mutate_every as f64).ceil() as usize;
 
       for x in 0..mutate_times {
-        if CONFIG.mutate_symbols == false || x % 3 != 0 {
+        if CONFIG.population.symbols == false || x % 3 != 0 {
           new_member = mutator.mutate_keys(&new_member);
         } else {
           new_member = mutator.mutate_symbols(&new_member);
@@ -59,7 +59,7 @@ mod test {
     let original = QWERTY.clone();
     let population = Population::new(&original, &original);
 
-    assert_eq!(population.members.len(), CONFIG.population_size);
+    assert_eq!(population.members.len(), CONFIG.population.size);
     assert_eq!(population.members[0].template, original.template);
 
     assert_ne!(population.members[0].template, population.members[1].template);

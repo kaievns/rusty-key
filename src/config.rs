@@ -21,25 +21,21 @@ pub struct Config<'a> {
   pub geometry: &'a Geometry,
   pub preserve: Preservative,
   pub data: String,
-  pub population_size: usize,
   pub mutate_every: usize,
-  pub mutate_symbols: bool,
   pub progress_window_size: usize,
+  pub population: PopulationConfig,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig,
-  pub elites: ElitesConfig
+  pub weights: WeightsConfig
 }
 
 #[derive(Deserialize,Debug)]
 pub struct ExternalConfig {
   pub geometry: String,
-  pub population_size: usize,
   pub mutate_every: usize,
-  pub mutate_symbols: bool,
   pub progress_window_size: usize,
+  pub population: PopulationConfig,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig,
-  pub elites: ElitesConfig
+  pub weights: WeightsConfig
 }
 
 #[derive(Deserialize,Debug)]
@@ -58,9 +54,11 @@ pub struct SelectionConfig {
 }
 
 #[derive(Deserialize,Debug)]
-pub struct ElitesConfig {
-  pub inject: bool,
-  pub portion: usize
+pub struct PopulationConfig {
+  pub size: usize,
+  pub steps: usize,
+  pub elites: usize,
+  pub symbols: bool
 }
 
 impl Config<'_> {
@@ -74,13 +72,11 @@ impl Config<'_> {
       geometry, 
       preserve, 
       data,
-      population_size: config.population_size,
       mutate_every: config.mutate_every,
-      mutate_symbols: config.mutate_symbols,
       progress_window_size: config.progress_window_size,
+      population: config.population,
       selection: config.selection,
-      weights: config.weights,
-      elites: config.elites
+      weights: config.weights
     }
   }
 }
@@ -96,13 +92,13 @@ fn load_external_config() -> ExternalConfig {
 fn default_config() -> ExternalConfig {
   ExternalConfig {
     geometry: "US-PC".to_string(),
-    population_size: 30,
     mutate_every: 10,
-    mutate_symbols: true,
     progress_window_size: 200,
-    elites: ElitesConfig {
-      inject: true,
-      portion: 3
+    population: PopulationConfig {
+      size: 30,
+      steps: 3,
+      elites: 30,
+      symbols: true
     },
     selection: SelectionConfig {
       rank_space_cut_off: 50,

@@ -64,7 +64,7 @@ impl Generation {
 
   pub fn next(self: &Self) -> Generation {
     let dad = self.successor();
-    let mom = if CONFIG.elites.inject { self.best() } else { dad };
+    let mom = if CONFIG.population.elites > 0 { self.best() } else { dad };
 
     Generation::spawn(self.number + 1, &dad, &mom)
   }

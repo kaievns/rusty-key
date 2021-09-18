@@ -1,17 +1,18 @@
 geometry = "US-PC"
-population_size = 60
+
 mutate_every = 10 # adds a mutation with every batch
-mutate_symbols = false
 
 progress_window_size = 100
+
+[population]
+size = 60
+steps = 4 # mutation rounds per population
+elites = 10 # percentile of elites (set to 0 to switch off)
+symbols = false # mutate punctuation idependently
 
 [selection]
 rank_space_cut_off = 95 # percent
 diversity_bias = 0.25 # coefficient 0..1
-
-[elites]
-portion = 5
-inject = true
 
 [weights]
 effort = 4      # total effort
