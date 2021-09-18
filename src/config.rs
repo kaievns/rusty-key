@@ -17,8 +17,8 @@ pub const ROW_JUMP_PENALTY: usize = 30;
 
 pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 
-pub struct Config {
-  pub geometry: Geometry,
+pub struct Config<'a> {
+  pub geometry: &'a Geometry,
   pub preserve: Preservative,
   pub data: String,
   pub population_size: usize,
@@ -63,10 +63,10 @@ pub struct ElitesConfig {
   pub portion: usize
 }
 
-impl Config {
-  pub fn defaults() -> Config {
+impl Config<'_> {
+  pub fn defaults() -> Config<'static> {
     let config = load_external_config();
-    let geometry = if config.geometry == String::from("ORTHO") { FULL_ORTHO } else { US_PC_KEYBOARD };
+    let geometry = if config.geometry == String::from("ORTHO") { &*FULL_ORTHO } else { &*US_PC_KEYBOARD };
     let preserve = Preservative::from(load_preserve_template());
     let data = load_text();
 

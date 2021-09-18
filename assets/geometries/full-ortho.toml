@@ -1,0 +1,40 @@
+template = """
+1 2 3 4 5   6 7 8 9 0 - =
+q w e r t   y u i o p [ ]
+a s d f g   h j k l ; ' \\
+z x c v b   n m , . /
+   ` ⇧ ︺    ↵ ⇪ ⇥
+"""
+hands = """
+l l l l l   r r r r r r r
+l l l l l   r r r r r r r
+l l l l l   r r r r r r r
+l l l l l   r r r r r
+   l l l     r r r
+"""
+fingers = """
+1 2 3 4 4   4 4 3 2 1 1 1
+1 2 3 4 4   4 4 3 2 1 1 1
+1 2 3 4 4   4 4 3 2 1 1 1
+1 2 3 4 4   4 4 3 2 1
+   5 5 5     5 5 5
+"""
+# those are not really verified
+# i took the us-pc geometry efforts
+# and used my creative license on them
+efforts = """
+14 08 07 13 16   16 13 07 08 14 15 17
+07 02 01 06 12   12 06 01 01 07 09 13
+01 00 00 00 07   07 00 00 00 01 05 11
+07 08 10 04 08   08 04 10 08 07
+     00 00 00     00 00 00
+"""
+rolling_pairs = """
+we wr wf er ew oi ou oj iu io
+as af ;l ;j sd se sf df li lk lj kj fe fw fs fa j;
+"""
+bad_starters = """
+q     r t   y u     p [ ]
+    d   g   h   k     ' \\
+z x c   b   n   , . / 
+"""

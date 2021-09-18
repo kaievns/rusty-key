@@ -17,7 +17,7 @@ pub struct Keyboard<'a> {
 
 impl fmt::Display for Keyboard<'_> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", self.layout.to_string(*self.geometry == US_PC_KEYBOARD))
+    write!(f, "{}", self.layout.to_string(*self.geometry == *US_PC_KEYBOARD))
   }
 }
 

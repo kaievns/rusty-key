@@ -4,20 +4,20 @@ pub type Position = (usize, usize);
 pub type Mapping = HashMap<Position, String>;
 pub type TwoLayerMapping = HashMap<Position, (String, String)>;
 
-pub fn value_for(template: &'static str, position: Position) -> Option<String> {
+pub fn value_for(template: &String, position: Position) -> Option<String> {
   match mapping_for(template).get(&position) {
     Some(str) => Some(str.to_string()),
     _ => None
   }
 }
 
-pub fn position_for(template: &'static str, value: String) -> Option<Position> {
+pub fn position_for(template: &String, value: String) -> Option<Position> {
   let mapping = mapping_for(template);
 
   mapping.iter().find_map(|(key, val)| if *val == value { Some(*key) } else { None })
 }
 
-pub fn mapping_for(template: &'static str) -> Mapping {
+pub fn mapping_for(template: &String) -> Mapping {
   let mut mapping = Mapping::new();
 
   for (row, line) in template.trim().lines().enumerate() {
@@ -84,26 +84,26 @@ mod test {
 
   #[test]
   fn it_parses_templates_correctly() {
-    assert_eq!(value_for(TEMPLATE, (0,1)), Some(String::from("2")));
-    assert_eq!(value_for(TEMPLATE, (1,0)), Some(String::from("a")));
-    assert_eq!(value_for(TEMPLATE, (2,2)), Some(String::from("z")));
+    assert_eq!(value_for(&TEMPLATE.to_string(), (0,1)), Some(String::from("2")));
+    assert_eq!(value_for(&TEMPLATE.to_string(), (1,0)), Some(String::from("a")));
+    assert_eq!(value_for(&TEMPLATE.to_string(), (2,2)), Some(String::from("z")));
   }
 
   #[test]
   fn it_returns_none_when_a_position_doesnt_exists() {
-    assert_eq!(value_for(TEMPLATE, (22, 22)), None);
+    assert_eq!(value_for(&TEMPLATE.to_string(), (22, 22)), None);
   }
 
   #[test]
   fn it_finds_positions_by_value() {
-    assert_eq!(position_for(TEMPLATE, String::from("1")), Some((0,0)));
-    assert_eq!(position_for(TEMPLATE, String::from("b")), Some((1,1)));
-    assert_eq!(position_for(TEMPLATE, String::from("z")), Some((2,2)));
+    assert_eq!(position_for(&TEMPLATE.to_string(), String::from("1")), Some((0,0)));
+    assert_eq!(position_for(&TEMPLATE.to_string(), String::from("b")), Some((1,1)));
+    assert_eq!(position_for(&TEMPLATE.to_string(), String::from("z")), Some((2,2)));
   }
 
   #[test]
   fn it_returns_none_when_a_value_doesnt_exists() {
-    assert_eq!(position_for(TEMPLATE, String::from("shnt")), None);
+    assert_eq!(position_for(&TEMPLATE.to_string(), String::from("shnt")), None);
   }
 
   #[test]
