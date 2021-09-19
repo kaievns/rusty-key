@@ -190,13 +190,13 @@ mod test {
     assert_ne!(generation.summary_for(layout1), generation.summary_for(layout2));
   }
   
-  #[test]
-  fn test_outcomes() {
-    let generation = Generation::zero();
-    let outcomes = generation.outcome();
+  // #[test]
+  // fn test_outcomes() {
+  //   let generation = Generation::zero();
+  //   let outcomes = generation.outcome();
 
-    // QWERTY is rarely the best now
-    // assert_eq!(outcomes.best.name(), "QWERTY");
-    // assert_eq!(outcomes.best_summary.score(), 4.227205305110984);
-  }
+  //   // QWERTY is rarely the best now
+  //   // assert_eq!(outcomes.best.name(), "QWERTY");
+  //   // assert_eq!(outcomes.best_summary.score(), 4.227205305110984);
+  // }
 }

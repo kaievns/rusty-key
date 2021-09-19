@@ -26,9 +26,7 @@ pub enum Event {
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
   tx: Mutex<mpsc::Sender<Event>>,
-  rx: Mutex<mpsc::Receiver<Event>>,
-  input_handle: thread::JoinHandle<()>,
-  tick_handle: thread::JoinHandle<()>,
+  rx: Mutex<mpsc::Receiver<Event>>
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -51,41 +49,41 @@ impl Events {
 
   pub fn with_config(config: Config) -> Events {
     let (tx, rx) = mpsc::channel();
-    let input_handle = {
-      let tx = tx.clone();
-      thread::spawn(move || {
-        let stdin = io::stdin();
-        for evt in stdin.keys() {
-          if let Ok(key) = evt {
-            if let Err(err) = tx.send(Event::Input(key)) {
-              eprintln!("{}", err);
-              return;
-            }
+    
+    let txl = tx.clone();
+    thread::spawn(move || {
+      let stdin = io::stdin();
+      for evt in stdin.keys() {
+        if let Ok(key) = evt {
+          if let Err(err) = txl.send(Event::Input(key)) {
+            eprintln!("{}", err);
+            return;
           }
         }
-      })
-    };
-    let tick_handle = {
-      let tx = tx.clone();
-      thread::spawn(move || loop {
-        if let Err(err) = tx.send(Event::Tick) {
-          eprintln!("{}", err);
-          break;
-        }
-        thread::sleep(config.tick_rate);
-      })
-    };
+      }
+    });
+
+    let txn = tx.clone();
+    thread::spawn(move || loop {
+      if let Err(err) = txn.send(Event::Tick) {
+        eprintln!("{}", err);
+        break;
+      }
+      thread::sleep(config.tick_rate);
+    });
+
     Events {
       rx: Mutex::new(rx),
-      tx: Mutex::new(tx),
-      input_handle,
-      tick_handle,
+      tx: Mutex::new(tx)
     }
   }
 
   pub fn send_result(&self, outcome: &Outcome) {
     let tx = self.tx.lock().unwrap();
-    tx.send(Event::Result((*outcome).clone()));
+    if let Err(err) = tx.send(Event::Result((*outcome).clone())) {
+      eprintln!("{}", err);
+      return;
+    }
   }
 
   pub fn next(&self) -> Result<Event, mpsc::RecvError> {

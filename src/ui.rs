@@ -19,7 +19,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
 
   let mut model = ViewModel::new();
 
-  terminal.clear();
+  terminal.clear()?;
 
   loop {
     terminal.draw(|f| {
@@ -160,7 +160,7 @@ pub fn render() -> Result<(), Box<dyn std::error::Error>> {
       },
       Event::Input(key) => {  // any key
         if key == Key::Char('q') {
-          terminal.clear();
+          terminal.clear()?;
           break; 
         }
       },

@@ -88,6 +88,7 @@ impl DNA {
     self.sequence.iter()
   }
 
+  #[allow(dead_code)]
   pub fn pair_at(self: &Self, i: usize) -> Pair {
     self.sequence[i].clone()
   }

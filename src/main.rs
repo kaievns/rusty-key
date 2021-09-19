@@ -19,9 +19,9 @@ mod ui;
 mod model;
 mod events;
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
   let evolution = evolution::Evolution::new();
   evolution.start();
 
-  ui::render();
+  ui::render()
 }

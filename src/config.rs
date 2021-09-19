@@ -8,12 +8,6 @@ use crate::source;
 use crate::geometry::*;
 use crate::preservative::*;
 
-pub const SAME_HAND_PENALTY: usize = 5;
-pub const SAME_FINGER_PENALTY: usize = 100;
-pub const BAD_STARTER_PENALTY: usize = 80;
-pub const ROW_SKIP_PENALTY: usize = 50;
-pub const ROW_JUMP_PENALTY: usize = 30;
-
 pub static CONFIG: Lazy<Config> = Lazy::new(||{ Config::defaults() });
 
 pub struct Config<'a> {
