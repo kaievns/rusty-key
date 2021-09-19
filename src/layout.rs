@@ -7,18 +7,23 @@ use crate::parser::*;
 pub const QWERTY: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/qwerty".to_string())
 });
+#[allow(dead_code)]
 pub const DVORAK: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/dvorak".to_string())
 });
+#[allow(dead_code)]
 pub const COLEMAK: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/colemak".to_string())
 });
+#[allow(dead_code)]
 pub const WORKMAN: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/workman".to_string())
 });
+#[allow(dead_code)]
 pub const THE_1: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/the_1".to_string())
 });
+#[allow(dead_code)]
 pub const HALMAK_21: Lazy<Layout> = Lazy::new(|| { 
   Layout::load(&"assets/layouts/halmak_21".to_string())
 });

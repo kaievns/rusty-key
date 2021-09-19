@@ -3,14 +3,14 @@ geometry = "US-PC"
 progress_window_size = 100
 
 [population]
-size = 60
-steps = 4 # mutation rounds per population
-elites = 10 # percentile of elites (set to 0 to switch off)
+size = 50
+steps = 5 # mutation rounds per population
+elites = 30 # percentile of elites (set to 0 to switch off)
 symbols = false # mutate punctuation idependently
 
 [selection]
-rank_space_cut_off = 95 # percent
-diversity_bias = 0.25 # coefficient 0..1
+rank_space_cut_off = 96 # percent
+diversity_bias = 0.5 # coefficient 0..1
 
 [weights]
 effort = 4      # total effort

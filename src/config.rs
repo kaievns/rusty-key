@@ -7,7 +7,6 @@ use once_cell::sync::Lazy;
 use crate::source;
 use crate::geometry::*;
 use crate::preservative::*;
-use crate::frequency::*;
 
 pub const SAME_HAND_PENALTY: usize = 5;
 pub const SAME_FINGER_PENALTY: usize = 100;

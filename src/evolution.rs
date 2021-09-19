@@ -35,6 +35,7 @@ impl Evolution {
     );
   }
 
+  #[allow(dead_code)]
   pub fn stop(&self) {
     let flag = &mut *self.in_progress.lock().unwrap();
     flag.replace(false);
