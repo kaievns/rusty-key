@@ -53,6 +53,8 @@ impl Calculator<'_> {
     let space_key = self.keyboard.key_for(&' ').unwrap();
 
     let mut previous_key = space_key;
+    let mut rolling = false;
+    let rolling_discount = 100 - CONFIG.penalties.rolling_discount;
 
     for symbol in text.chars() {
       let key = self.keyboard.key_for(&symbol);
@@ -67,14 +69,19 @@ impl Calculator<'_> {
             key != space_key &&              // not space
             previous_key != space_key        // not from space
           {
-            let rolling = self.is_rolling_combo(previous_key, key);
+            let mut same_hand_penalties = self.same_hand_penalties(previous_key, key);
+            let mut awkwardness_penalty = self.awkward_penalty(previous_key, key);
+
+            // only allowing two rolling symbols in a row to awoid counting the change of direction as a roll
+            rolling = if rolling { false } else { self.is_rolling_combo(previous_key, key) };
           
             if rolling {
               rollingness += 1;
+
+              same_hand_penalties = (same_hand_penalties * rolling_discount) / 100;
+              awkwardness_penalty = (awkwardness_penalty  * rolling_discount) / 100;
             }
 
-            let same_hand_penalties = self.same_hand_penalties(previous_key, key, rolling);
-            let awkwardness_penalty = self.awkward_penalty(previous_key, key, rolling);
 
             effort += same_hand_penalties + awkwardness_penalty;
             overheads += same_hand_penalties + awkwardness_penalty;
@@ -96,26 +103,18 @@ impl Calculator<'_> {
     }
   }
 
-  fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key, rolling: bool) -> usize {
-    let mut penalties = SAME_HAND_PENALTY;
+  fn same_hand_penalties(self: &Self, last_key: &Key, next_key: &Key) -> usize {
+    let mut penalties = CONFIG.penalties.same_hand;
 
     if last_key.finger == next_key.finger {
-      penalties += SAME_FINGER_PENALTY;
+      penalties += CONFIG.penalties.same_finger;
     }
     
-    if !rolling {
-      match self.row_distance(last_key, next_key) {
-        2 => {
-          penalties += ROW_SKIP_PENALTY;
-        },
-        1 => {
-          penalties += ROW_JUMP_PENALTY;
-        },
-        _ => {}
-      }
+    match self.row_distance(last_key, next_key) {
+      2 => penalties + CONFIG.penalties.row_skip,
+      1 => penalties + CONFIG.penalties.row_jump,
+      _ => penalties
     }
-
-    penalties
   }
 
   fn row_distance(self: &Self, last_key: &Key, next_key: &Key) -> usize {
@@ -129,9 +128,9 @@ impl Calculator<'_> {
     }
   }  
 
-  fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key, rolling: bool) -> usize {
-    if !rolling && self.bad_starters.contains(&last_key.position) {
-      BAD_STARTER_PENALTY
+  fn awkward_penalty(self: &Self, last_key: &Key, _next_key: &Key) -> usize {
+    if self.bad_starters.contains(&last_key.position) {
+      CONFIG.penalties.bad_starter
     } else {
       0
     }
@@ -277,10 +276,10 @@ mod test {
     let penalty = SAME_HAND_PENALTY + SAME_HAND_PENALTY;
 
     assert_eq!(run_text("wfli"), Result {
-      effort: ((penalty + 3) as f64) / 4.0,
-      overheads: (penalty as f64) / 4.0,
-      awkwardness: 0.0,
-      rollingness: 2.0 / 4.0
+      effort: 11.25, 
+      overheads: 10.5, 
+      awkwardness: 0.0, 
+      rollingness: 0.25
     });
   } 
 }

@@ -23,7 +23,8 @@ pub struct Config<'a> {
   pub progress_window_size: usize,
   pub population: PopulationConfig,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig
+  pub weights: WeightsConfig,
+  pub penalties: PenaltiesConfig
 }
 
 #[derive(Deserialize,Debug)]
@@ -32,7 +33,8 @@ pub struct ExternalConfig {
   pub progress_window_size: usize,
   pub population: PopulationConfig,
   pub selection: SelectionConfig,
-  pub weights: WeightsConfig
+  pub weights: WeightsConfig,
+  pub penalties: PenaltiesConfig
 }
 
 #[derive(Deserialize,Debug)]
@@ -58,6 +60,16 @@ pub struct PopulationConfig {
   pub symbols: bool
 }
 
+#[derive(Deserialize,Debug)]
+pub struct PenaltiesConfig {
+  pub same_hand: usize,
+  pub same_finger: usize,
+  pub bad_starter: usize,
+  pub row_skip: usize,
+  pub row_jump: usize,
+  pub rolling_discount: usize
+}
+
 impl Config<'_> {
   pub fn defaults() -> Config<'static> {
     let config = load_external_config();
@@ -72,7 +84,8 @@ impl Config<'_> {
       progress_window_size: config.progress_window_size,
       population: config.population,
       selection: config.selection,
-      weights: config.weights
+      weights: config.weights,
+      penalties: config.penalties
     }
   }
 }
@@ -105,6 +118,14 @@ fn default_config() -> ExternalConfig {
       awkwardness: 1,
       rollingness: 1,
       fitness: 1
+    },
+    penalties: PenaltiesConfig {
+      same_hand: 5,
+      same_finger: 100,
+      bad_starter: 80,
+      row_skip: 50,
+      row_jump: 30,
+      rolling_discount: 80
     }
   }
 }

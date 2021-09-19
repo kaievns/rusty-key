@@ -5,7 +5,7 @@ progress_window_size = 100
 [population]
 size = 50
 steps = 5 # mutation rounds per population
-elites = 30 # percentile of elites (set to 0 to switch off)
+elites = 50 # percentile of elites (set to 0 to switch off)
 symbols = false # mutate punctuation idependently
 
 [selection]
@@ -17,4 +17,12 @@ effort = 4      # total effort
 overheads = 1   # total overheads
 awkwardness = 1 # bad startes
 rollingness = 2 # combos
-fitness = 8     # usage balance
+fitness = 6     # usage balance
+
+[penalties]
+same_hand = 20      # base line same hand usage penalty
+same_finger = 100   # base line same finger usage penalty
+bad_starter = 80    # same hand starts from an awkward position
+row_skip = 50       # going row 1 to 3 or other way around
+row_jump = 30       # jumping to adjusent row
+rolling_discount = 80 # % of penalties decrease in case of a rolling combo
